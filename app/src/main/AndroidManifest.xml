@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+>
+    <!--允许获取精确位置，精准定位必选-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!--后台获取位置信息，若需后台定位则必选-->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!--用于申请调用A-GPS模块,卫星定位加速-->
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+    <application
+            android:allowBackup="true"
+            android:fullBackupContent="@xml/backup_rules"
+            tools:targetApi="31"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:label="@string/app_name"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.FindMaimaiDX">
+
+        <activity
+
+                android:name=".MainLaunch"
+                android:exported="true"
+                android:label="@string/app_name"
+
+                android:theme="@style/Theme.FindMaimaiDX" tools:ignore="WrongManifestParent">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
