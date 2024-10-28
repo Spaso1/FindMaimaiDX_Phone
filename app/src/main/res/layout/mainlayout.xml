@@ -15,7 +15,7 @@
                 android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
                 android:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"/>
         <TextView
-                android:text="TextView"
+                android:text="卡在这个页面检查权限并且关闭夜间模式"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/textView"/>
 

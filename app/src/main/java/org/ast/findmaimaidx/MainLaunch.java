@@ -2,11 +2,14 @@ package org.ast.findmaimaidx;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.location.*;
+import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -18,22 +21,20 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Place;
 import org.ast.findmaimaidx.utill.AddressParser;
 import org.ast.findmaimaidx.utill.PlaceAdapter;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static androidx.core.location.LocationManagerCompat.requestLocationUpdates;
 
@@ -51,12 +52,14 @@ public class MainLaunch extends AppCompatActivity {
     private String x;
     private String y;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-
+    private PlaceAdapter adapter;
     public static String province;
     public static String city;
     List<Place> a = new ArrayList<>();
     List<Place> b = new ArrayList<>();
-
+    private boolean flag = true;
+    private double tagXY[] = new double[2];
+    private String tagplace;
     @Override
     @SuppressLint({"MissingInflatedId", "Range"})
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,14 +131,34 @@ public class MainLaunch extends AppCompatActivity {
                         b.add(p);
                     }
                 }
-                placeAdapter = new PlaceAdapter(b);
-                recyclerView.setAdapter(placeAdapter);
+                a.clear();
+                TreeMap<Double, Place> treeMap = new TreeMap<>();
+
+                for (Place p : b) {
+                    double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
+                    p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                    treeMap.put(distance, p);
+                }
+                for (Double key : treeMap.keySet()) {
+                    a.add(treeMap.get(key));
+                }
+                adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(Place place) {
+                        tagXY = new double[]{place.getX(), place.getY()};
+                        Toast.makeText(MainLaunch.this, "Clicked: " + place.getName(), Toast.LENGTH_SHORT).show();
+                        tagplace = place.getName();
+                        showNavigationOptions();
+
+                    }
+                });
+                recyclerView.setAdapter(adapter);
                 // 设置Toolbar
                 Toolbar toolbar = findViewById(R.id.toolbar);
                 setSupportActionBar(toolbar);// 设置Toolbar标题
 
                 if (getSupportActionBar() != null) {
-                    getSupportActionBar().setTitle("FindMaimaiDX - " + b.size() + " 店铺" + "\n" + tot);
+                    getSupportActionBar().setTitle("FindMaimaiDX - " + a.size() + " 店铺" + "\n" + tot);
                 }
 
                 for (Place p : a) {
@@ -188,26 +211,30 @@ public class MainLaunch extends AppCompatActivity {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 8f, new LocationListener() {
                 @Override
                 public void onLocationChanged(@NonNull Location location) {
-                    x = String.valueOf(location.getLongitude());
-                    y = String.valueOf(location.getLatitude());
-                    if (location != null) {
-                        Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
-                        try {
-                            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                            if (addresses.size() > 0) {
-                                Address address = addresses.get(0);
-                                String detail = address.getAddressLine(0);
-                                addressTextView.setText(detail);
-                                tot = detail;
-                                province = address.getAdminArea();
-                                city = address.getLocality();
-                                extracted();
+                    if(flag) {
+                        x = String.valueOf(location.getLongitude());
+                        y = String.valueOf(location.getLatitude());
+                        if (location != null) {
+                            Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
+                            try {
+                                List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                                if (addresses.size() > 0) {
+                                    Address address = addresses.get(0);
+                                    String detail = address.getAddressLine(0);
+                                    addressTextView.setText(detail);
+                                    tot = detail;
+                                    province = address.getAdminArea();
+                                    city = address.getLocality();
+                                    extracted();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                addressTextView.setText("Error getting address");
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            addressTextView.setText("Error getting address");
                         }
+                        flag = false;
                     }
+
                 }
             });
         }
@@ -230,7 +257,76 @@ public class MainLaunch extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(MainLaunch.this));
     }
 
+    private void showNavigationOptions() {
+        final CharSequence[] items = {"Google Maps", "高德地图", "百度地图"};
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("选择导航应用")
+                .setItems(items, (dialog, item) -> {
+                    switch (item) {
+                        case 0:
+                            startGoogleMaps();
+                            break;
+                        case 1:
+                            startAmap();
+                            break;
+                        case 2:
+                            startBaiduMaps();
+                            break;
+                    }
+                })
+                .show();
+    }
+
+    private void startGoogleMaps() {
+        String uri = "google.navigation:q=" + tagXY[0] + "," + tagXY[1]; // 北京市经纬度
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+        intent.setPackage("com.google.android.apps.maps");
+        startActivity(intent);
+    }
+
+    private void startAmap() {
+        // 高德地图
+        Intent intent = new Intent("android.intent.action.VIEW", android.net.Uri.parse("androidamap://route?sourceApplication=appName&slat=&slon=&sname=我的位置&dlat=" + tagXY[1] +"&dlon="+ tagXY[0]+"&dname=" +tagplace + "&dev=0&t=2"));
+        MainLaunch.this.startActivity(intent);
+
+    }
+
+    private void startBaiduMaps() {
+        String uri = "baidumap://map/direction?destination=" + tagXY[0] + "," + tagXY[1] +"&mode=driving&src=appName";
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+        intent.setPackage("com.baidu.BaiduMap");
+
+    }
+
+    public static boolean isPackageInstalled(String packageName) {
+        return new File("\\Android\\data\\" + packageName).exists();
+    }
+
+    private void showInstallAppDialog(String appName) {
+        new AlertDialog.Builder(this)
+                .setTitle("应用未安装")
+                .setMessage(appName + "尚未安装，是否前往应用商店下载？")
+                .setPositiveButton("确定", (dialog, which) -> {
+                    Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getAppPackageName(appName)));
+                    startActivity(marketIntent);
+                })
+                .setNegativeButton("取消", null)
+                .show();
+    }
+
+    private String getAppPackageName(String appName) {
+        switch (appName) {
+            case "Google Maps":
+                return "com.google.android.apps.maps";
+            case "高德地图":
+                return "com.autonavi.minimap";
+            case "百度地图":
+                return "com.baidu.BaiduMap";
+            default:
+                return "";
+        }
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();

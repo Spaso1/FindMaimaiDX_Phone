@@ -4,36 +4,51 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.ast.findmaimaidx.R;
-import org.ast.findmaimaidx.been.Place;
 
 import java.util.List;
+
+import org.ast.findmaimaidx.R;
+import org.ast.findmaimaidx.been.Place;
 
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHolder> {
 
     private List<Place> placeList;
+    private OnItemClickListener listener;
 
-    public PlaceAdapter(List<Place> placeList) {
+    public interface OnItemClickListener {
+        void onItemClick(Place place);
+    }
+
+    public PlaceAdapter(List<Place> placeList, OnItemClickListener listener) {
         this.placeList = placeList;
+        this.listener = listener;
     }
 
     @NonNull
     @Override
     public PlaceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_place, parent, false);
-        return new PlaceViewHolder(view);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_place, parent, false);
+        return new PlaceViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull PlaceViewHolder holder, int position) {
         Place place = placeList.get(position);
         holder.nameTextView.setText(place.getName());
-        holder.provinceTextView.setText("省: " + place.getProvince());
-        holder.cityTextView.setText("市: " + place.getCity());
-        holder.areaTextView.setText("区: " + place.getArea());
-        holder.addressTextView.setText("详细地址: " + place.getAddress());
+        holder.provinceTextView.setText(place.getProvince());
+        holder.cityTextView.setText(place.getCity());
+        holder.areaTextView.setText(place.getArea());
+        holder.addressTextView.setText(place.getAddress());
+
+        // 设置点击监听器
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(place);
+            }
+        });
     }
 
     @Override
@@ -48,7 +63,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         TextView areaTextView;
         TextView addressTextView;
 
-        PlaceViewHolder(View itemView) {
+        PlaceViewHolder(@NonNull View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
             provinceTextView = itemView.findViewById(R.id.provinceTextView);
