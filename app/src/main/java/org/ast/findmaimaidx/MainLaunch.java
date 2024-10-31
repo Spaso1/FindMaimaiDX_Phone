@@ -120,6 +120,7 @@ public class MainLaunch extends AppCompatActivity {
                         city = address.getLocality();
                         extracted();
                     }
+
                 } catch (IOException e) {
                     e.printStackTrace();
                     addressTextView.setText("Error getting address");
