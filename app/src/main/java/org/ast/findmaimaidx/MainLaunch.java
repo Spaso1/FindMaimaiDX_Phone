@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
@@ -65,15 +66,20 @@ public class MainLaunch extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mainlayout);
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "请允许定位权限再打开应用", Toast.LENGTH_SHORT);
+            Intent intent = new Intent(this, MainLaunch.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
-
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         // 检查网络权限
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -94,7 +100,34 @@ public class MainLaunch extends AppCompatActivity {
         }
         
 
+        TextView textView = findViewById(R.id.textView);
+        textView.setOnClickListener(v -> {
+            //刷新定位
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Toast.makeText(this, "正在刷新定位", Toast.LENGTH_SHORT).show();
+            x = String.valueOf(location.getLongitude());
+            y = String.valueOf(location.getLatitude());
+            if (location != null) {
+                Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
+                try {
+                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                    if (addresses.size() > 0) {
+                        Address address = addresses.get(0);
+                        String detail = address.getAddressLine(0);
+                        addressTextView.setText(detail);
+                        tot = detail;
+                        province = address.getAdminArea();
+                        city = address.getLocality();
+                        extracted();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    addressTextView.setText("Error getting address");
+                }
+            }
+            Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
 
+        });
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -123,6 +156,8 @@ public class MainLaunch extends AppCompatActivity {
 
             @Override
             protected void onPostExecute(String result) {
+                a.clear();
+                b.clear();
                 a = parseJsonToPlaceList(result);
                 // 设置适配器
 
@@ -145,11 +180,16 @@ public class MainLaunch extends AppCompatActivity {
                 adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(Place place) {
-                        tagXY = new double[]{place.getX(), place.getY()};
-                        Toast.makeText(MainLaunch.this, "Clicked: " + place.getName(), Toast.LENGTH_SHORT).show();
-                        tagplace = place.getName();
-                        showNavigationOptions();
-
+                        Intent intent = new Intent(MainLaunch.this, PageActivity.class);
+                        intent.putExtra("id", place.getId());
+                        intent.putExtra("name", place.getName());
+                        intent.putExtra("address", place.getAddress());
+                        intent.putExtra("province", place.getProvince());
+                        intent.putExtra("city", place.getCity());
+                        intent.putExtra("area", place.getArea());
+                        intent.putExtra("x", place.getX());
+                        intent.putExtra("y", place.getY());
+                        startActivity(intent);
                     }
                 });
                 recyclerView.setAdapter(adapter);
@@ -212,6 +252,7 @@ public class MainLaunch extends AppCompatActivity {
                 @Override
                 public void onLocationChanged(@NonNull Location location) {
                     if(flag) {
+                        Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
                         x = String.valueOf(location.getLongitude());
                         y = String.valueOf(location.getLatitude());
                         if (location != null) {
@@ -232,13 +273,14 @@ public class MainLaunch extends AppCompatActivity {
                                 addressTextView.setText("Error getting address");
                             }
                         }
-                        flag = false;
+                        Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
+
                     }
 
                 }
             });
         }
-
+        //手动刷新定位
     private void extracted() {
         //tot = tot.split("\"")[1];
         Log.i("TAG", "x=" + x + ";y=" + y);
@@ -255,78 +297,10 @@ public class MainLaunch extends AppCompatActivity {
         sendGetRequest();
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainLaunch.this));
-    }
-
-    private void showNavigationOptions() {
-        final CharSequence[] items = {"Google Maps", "高德地图", "百度地图"};
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("选择导航应用")
-                .setItems(items, (dialog, item) -> {
-                    switch (item) {
-                        case 0:
-                            startGoogleMaps();
-                            break;
-                        case 1:
-                            startAmap();
-                            break;
-                        case 2:
-                            startBaiduMaps();
-                            break;
-                    }
-                })
-                .show();
-    }
-
-    private void startGoogleMaps() {
-        String uri = "google.navigation:q=" + tagXY[0] + "," + tagXY[1]; // 北京市经纬度
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-        intent.setPackage("com.google.android.apps.maps");
-        startActivity(intent);
-    }
-
-    private void startAmap() {
-        // 高德地图
-        Intent intent = new Intent("android.intent.action.VIEW", android.net.Uri.parse("androidamap://route?sourceApplication=appName&slat=&slon=&sname=我的位置&dlat=" + tagXY[1] +"&dlon="+ tagXY[0]+"&dname=" +tagplace + "&dev=0&t=2"));
-        MainLaunch.this.startActivity(intent);
 
     }
 
-    private void startBaiduMaps() {
-        String uri = "baidumap://map/direction?destination=" + tagXY[0] + "," + tagXY[1] +"&mode=driving&src=appName";
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-        intent.setPackage("com.baidu.BaiduMap");
 
-    }
-
-    public static boolean isPackageInstalled(String packageName) {
-        return new File("\\Android\\data\\" + packageName).exists();
-    }
-
-    private void showInstallAppDialog(String appName) {
-        new AlertDialog.Builder(this)
-                .setTitle("应用未安装")
-                .setMessage(appName + "尚未安装，是否前往应用商店下载？")
-                .setPositiveButton("确定", (dialog, which) -> {
-                    Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getAppPackageName(appName)));
-                    startActivity(marketIntent);
-                })
-                .setNegativeButton("取消", null)
-                .show();
-    }
-
-    private String getAppPackageName(String appName) {
-        switch (appName) {
-            case "Google Maps":
-                return "com.google.android.apps.maps";
-            case "高德地图":
-                return "com.autonavi.minimap";
-            case "百度地图":
-                return "com.baidu.BaiduMap";
-            default:
-                return "";
-        }
-    }
     @Override
     protected void onDestroy() {
         super.onDestroy();

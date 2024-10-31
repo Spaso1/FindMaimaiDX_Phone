@@ -39,6 +39,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+                android:name=".PageActivity"
+                android:exported="true"
+                android:theme="@style/Theme.FindMaimaiDX" tools:ignore="WrongManifestParent">
+        </activity>
     </application>
 
 </manifest>

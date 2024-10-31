@@ -12,6 +12,16 @@ public class Place {
     private double y;
 
     public Place(int id, String name, String province, String city, String area, String address, int isUse, double x, double y) {
+        this.id = id;
+        this.name = name;
+        this.province = province;
+        this.city = city;
+        this.area = area;
+        this.address = address;
+        this.isUse = isUse;
+        this.x = x;
+        this.y = y;
+
 
     }
 

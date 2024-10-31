@@ -15,7 +15,7 @@
                 android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
                 android:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"/>
         <TextView
-                android:text="卡在这个页面检查权限并且关闭夜间模式"
+                android:text="卡在这个页面打开定位权限并且关闭夜间模式"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/textView"/>
 
@@ -25,6 +25,6 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="7mm"
+            android:layout_marginTop="9mm"
             android:scrollbars="vertical" tools:layout_editor_absoluteY="161dp" tools:layout_editor_absoluteX="0dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
