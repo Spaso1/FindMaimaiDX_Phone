@@ -2,32 +2,48 @@ package org.ast.findmaimaidx;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Market;
 import org.ast.findmaimaidx.been.Place;
 import org.ast.findmaimaidx.utill.FindNearMarket;
+import org.w3c.dom.Text;
 
 import java.io.File;
+import java.lang.reflect.Type;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.ast.findmaimaidx.utill.FindNearMarket.findnear;
 
 public class PageActivity extends AppCompatActivity {
     private double[] tagXY;
     private String tagplace;
+    public static  TextView t2 ;
     public static List<Market> marketList = new ArrayList<>();
+    public static LinearLayout t3 ;
+    public static Context context;
+    public static String key = "bb0e04ceb735481cf4e461628345f4ec";
+    public static List<TextView> textViews = new ArrayList<>();
     @Override
     @SuppressLint({"MissingInflatedId", "Range"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
         setContentView(R.layout.item2);
         String name = getIntent().getStringExtra("name").split(" ")[0];
         String address = getIntent().getStringExtra("address");
@@ -55,14 +71,23 @@ public class PageActivity extends AppCompatActivity {
         Button button = findViewById(R.id.button);
         button.setText("导航");
         Place place = new Place(1, name, province, city, area, address, 1, x, y);
-        //findnear(place);
+        findnear(place);
+        t2 = findViewById(R.id.textView2);
+        t2.setText("\n附近商超");
+        t2.setTextSize(20.0F);
+        t3 = findViewById(R.id.hor);
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 在这里执行按钮点击时的操作
+                tagXY[0] = x;
+                tagXY[1] = y;
+                tagplace = name;
                 showNavigationOptions();
             }
         });
+        Toast.makeText(this, "正在获取附近信息", Toast.LENGTH_SHORT).show();
     }
     private void showNavigationOptions() {
         final CharSequence[] items = {"Google Maps", "高德地图", "百度地图"};
@@ -133,5 +158,74 @@ public class PageActivity extends AppCompatActivity {
             default:
                 return "";
         }
+    }
+
+
+    @SuppressLint("StaticFieldLeak")
+    public void findnear(Place place_centor) {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... voids) {
+                OkHttpClient client = new OkHttpClient();
+                String web = "https://restapi.amap.com/v5/place/around?key=" + key + "&radius=1000&location=" + place_centor.getX() + "," + place_centor.getY() + "&page_size=25&types=060200|060201|060202|060400|060401|060402|060403|060404|060405|060406|060407|060408|060409|060411|060413|060414|060415|";
+                System.out.println(web);
+                @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
+                        .url(web)
+                        .build();
+
+                try (Response response = client.newCall(request).execute()) {
+                    if (((Response) response).isSuccessful()) {
+                        return response.body().string();
+                    } else {
+                        return "Error: " + response.code();
+                    }
+                } catch (Exception e) {
+                    Log.e("OkHttp", "Error: " + e.getMessage());
+                    return "Error: " + e.getMessage();
+                }
+            }
+
+            @SuppressLint("StaticFieldLeak")
+            @Override
+            protected void onPostExecute(String result) {
+                if (result.contains("pois")) {
+                    String b = result.split("\"pois\":")[1];
+                    result = b.split("]")[0] + "]";
+                    marketList = parseJsonToPlaceList2(result);
+                    for (Market market : marketList) {
+                        Log.d("Market", market.getName());
+                    }
+                    for (int i = 0; i < marketList.size(); i++) {
+                        TextView t = new TextView(PageActivity.context);
+                        double distance = DistanceCalculator.calculateDistance(Double.parseDouble(marketList.get(i).getLocation().split(",")[0]), Double.parseDouble(marketList.get(i).getLocation().split(",")[1]), place_centor.getX(), place_centor.getY());
+                        DecimalFormat decimalFormat = new DecimalFormat("0.#");
+                        String formattedResult = decimalFormat.format(distance*1000);
+
+                        t.setText(marketList.get(i).getName() + " \n距离机厅:" + formattedResult + "米\n");
+                        t.setTextSize(15.0F);
+                        int finalI = i;
+                        t.isTextSelectable();
+                        t.isEnabled();
+                        t.setOnClickListener(v -> {
+                            tagXY[0] = Double.parseDouble(marketList.get(finalI).getLocation().split(",")[0]);
+                            tagXY[1] = Double.parseDouble(marketList.get(finalI).getLocation().split(",")[1]);
+
+                            tagplace = marketList.get(finalI).getName().split(" ")[0];
+                            //导航
+                            Toast.makeText(PageActivity.context, "即将导航" + marketList.get(finalI).getName(), Toast.LENGTH_SHORT).show();
+                            showNavigationOptions();
+                        });
+                        textViews.add(t);
+                        t3.addView(t);
+                    }
+                }
+            }
+        }.execute();
+    }
+    private static List<Market> parseJsonToPlaceList2(String jsonString) {
+        Gson gson = new Gson();
+        Type placeListType = new TypeToken<List<Market>>() {
+        }.getType();
+        return gson.fromJson(jsonString, placeListType);
     }
 }

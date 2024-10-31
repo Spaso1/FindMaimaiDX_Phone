@@ -39,13 +39,21 @@
               android:id="@+id/x"/>
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
               android:id="@+id/y"/>
-    <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
     <Button
             android:text="导航"
             android:layout_width="227dp"
             android:layout_marginLeft="20mm"
             android:layout_height="wrap_content" android:id="@+id/button"/>
+    <TextView
+            android:text="TextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/textView2"/>
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                      android:orientation="vertical"
+        android:id="@+id/hor"/>
+    </ScrollView>
 
 </LinearLayout>
