@@ -147,9 +147,12 @@ public class MainLaunch extends AppCompatActivity {
                     if (((Response) response).isSuccessful()) {
                         return response.body().string();
                     } else {
+                        Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show();
+
                         return "Error: " + response.code();
                     }
                 } catch (Exception e) {
+                    Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show();
                     Log.e("OkHttp", "Error: " + e.getMessage());
                     return "Error: " + e.getMessage();
                 }
@@ -190,6 +193,9 @@ public class MainLaunch extends AppCompatActivity {
                         intent.putExtra("area", place.getArea());
                         intent.putExtra("x", place.getX());
                         intent.putExtra("y", place.getY());
+                        intent.putExtra("count",place.getCount());
+                        intent.putExtra("bad",place.getBad());
+                        intent.putExtra("good",place.getGood());
                         startActivity(intent);
                     }
                 });

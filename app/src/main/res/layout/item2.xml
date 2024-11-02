@@ -1,9 +1,9 @@
 <!-- res/layout/item_place.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
+              xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical"
-              android:padding="16dp">
+              android:padding="16dp" tools:ignore="WebViewLayout">
 
     <TextView
             android:id="@+id/nameTextView"
@@ -29,6 +29,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp" />
+    <WebView android:layout_width="wrap_content" android:layout_height="wrap_content"
+             android:background="@android:color/transparent"
+             android:id="@+id/imageView1"/>
+    <View android:layout_width="wrap_content" android:layout_height="3dp" />
+    <WebView android:layout_width="wrap_content" android:layout_height="wrap_content"
+             android:background="@android:color/transparent"
+             android:id="@+id/imageView2"/>
 
     <TextView
             android:id="@+id/addressTextView"
@@ -39,11 +46,29 @@
               android:id="@+id/x"/>
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
               android:id="@+id/y"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        <Button
+                android:id="@+id/likeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="赞"
+                android:layout_marginLeft="5mm"
+                android:layout_centerInParent="true"/>
+        <Button
+                android:id="@+id/disButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="踩"
+                android:layout_marginLeft="15mm"
+                android:layout_centerInParent="true"/>
+    </LinearLayout>
+
     <Button
             android:text="导航"
             android:layout_width="227dp"
             android:layout_marginLeft="20mm"
             android:layout_height="wrap_content" android:id="@+id/button"/>
+
     <TextView
             android:text="TextView"
             android:layout_width="match_parent"

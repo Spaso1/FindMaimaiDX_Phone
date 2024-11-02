@@ -1,16 +1,20 @@
 package org.ast.findmaimaidx;
 
+import android.animation.AnimatorSet;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
-import android.content.Intent;
+import android.content.*;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.gson.Gson;
@@ -39,6 +43,12 @@ public class PageActivity extends AppCompatActivity {
     public static Context context;
     public static String key = "bb0e04ceb735481cf4e461628345f4ec";
     public static List<TextView> textViews = new ArrayList<>();
+    private Button likeButton;
+    private Button disButton;
+    private boolean isLike = false;
+    private boolean isDis = false;
+    private SharedPreferences sp ;
+    public static int id;
     @Override
     @SuppressLint({"MissingInflatedId", "Range"})
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +56,16 @@ public class PageActivity extends AppCompatActivity {
         context = this;
         setContentView(R.layout.item2);
         String name = getIntent().getStringExtra("name").split(" ")[0];
+        int id2 = getIntent().getIntExtra("id", 0);
         String address = getIntent().getStringExtra("address");
         String province = getIntent().getStringExtra("province");
         String city = getIntent().getStringExtra("city");
         String area = getIntent().getStringExtra("area");
         double x = getIntent().getDoubleExtra("x", 0);
         double y = getIntent().getDoubleExtra("y", 0);
+        int count = getIntent().getIntExtra("count", 0);
+        int good = getIntent().getIntExtra("good", 0);
+        int bad = getIntent().getIntExtra("bad", 0);
         TextView textView = findViewById(R.id.nameTextView);
         textView.setText(name);
         TextView textView2 = findViewById(R.id.addressTextView);
@@ -70,13 +84,19 @@ public class PageActivity extends AppCompatActivity {
         tagplace = name;
         Button button = findViewById(R.id.button);
         button.setText("导航");
-        Place place = new Place(1, name, province, city, area, address, 1, x, y);
+        id = id2;
+        Log.d("id", String.valueOf(id));
+
+        Place place = new Place(id2, name, province, city, area, address, 1, x, y, count, good, bad);
         findnear(place);
+
         t2 = findViewById(R.id.textView2);
         t2.setText("\n附近商超");
         t2.setTextSize(20.0F);
         t3 = findViewById(R.id.hor);
 
+        sp = getSharedPreferences("like@dis", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,6 +108,97 @@ public class PageActivity extends AppCompatActivity {
             }
         });
         Toast.makeText(this, "正在获取附近信息", Toast.LENGTH_SHORT).show();
+
+
+        likeButton = findViewById(R.id.likeButton);
+        likeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isLike) {
+                    startShakeAnimation(likeButton);
+
+                }else {
+                    if (isDis) {
+                        backAnimation(disButton);
+                        sendGetRequest(4);
+                    }
+                    isLike = true;
+                    isDis = false;
+                    startLikeAnimation(likeButton);
+                    editor.remove(name);
+                    editor.putString(name,"1");
+                    editor.apply();
+                    sendGetRequest(1);
+                }
+            }
+        });
+        disButton = findViewById(R.id.disButton);
+        disButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isDis) {
+                    startShakeAnimation(disButton);
+                }else {
+                    if (isLike) {
+                        backAnimation(likeButton);
+                        sendGetRequest(3);
+                    }
+                    isDis = true;
+                    isLike = false;
+                    startLikeAnimation(disButton);
+                    editor.remove(name);
+                    editor.putString(name,"0");
+                    editor.apply();
+                    sendGetRequest(2);
+                }
+            }
+        });
+
+        if(sp.contains(name)) {
+            if(sp.getString(name,"0").equals("1")) {
+                likeButton.setBackgroundColor(Color.parseColor("#FF0000"));
+                likeButton.setTextColor(Color.parseColor("#FFFFFF"));
+                isLike = true;
+            }else {
+                disButton.setBackgroundColor(Color.parseColor("#FF0000"));
+                disButton.setTextColor(Color.parseColor("#FFFFFF"));
+                isDis = true;
+            }
+        }
+        WebView webView = findViewById(R.id.imageView1);
+        String imageUrl = "https://img.shields.io/badge/like-" + good + "-green";
+        webView.setBackgroundColor(0x00000000); // 设置背景为透明
+
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true); // 启用JavaScript
+        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                // 注入JavaScript来设置网页背景为透明
+                view.loadUrl("javascript:(function() { " +
+                        "document.body.style.backgroundColor = 'transparent'; " +
+                        "})()");
+            }
+        });
+        webView.loadUrl(imageUrl); // 加载网页
+        WebView webView2 = findViewById(R.id.imageView2);
+        String imageUrl2 = "https://img.shields.io/badge/dislike-" + bad + "-red";
+        webView2.setBackgroundColor(0x00000000); // 设置背景为透明
+        webView2.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                // 注入JavaScript来设置网页背景为透明
+                view.loadUrl("javascript:(function() { " +
+                        "document.body.style.backgroundColor = 'transparent'; " +
+                        "})()");
+            }
+        });
+
+        webView2.loadUrl(imageUrl2); // 加载网页
+
     }
     private void showNavigationOptions() {
         final CharSequence[] items = {"Google Maps", "高德地图", "百度地图"};
@@ -159,7 +270,40 @@ public class PageActivity extends AppCompatActivity {
                 return "";
         }
     }
+    @SuppressLint("StaticFieldLeak")
+    private void sendGetRequest(int type) {
+        AsyncTask<Void, Void, String> asyncTask = new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... voids) {
+                OkHttpClient client = new OkHttpClient();
+                String web = "http://www.godserver.cn:11451/place?id=" + id + "&type=" + type;
+                System.out.println(web);
+                @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
+                        .url(web)
+                        .build();
 
+                try (Response response = client.newCall(request).execute()) {
+                    if (((Response) response).isSuccessful()) {
+                        return response.body().string();
+                    } else {
+                        return "Error: " + response.code();
+                    }
+                } catch (Exception e) {
+                    Log.e("OkHttp", "Error: " + e.getMessage());
+                    Toast.makeText(PageActivity.this, "上传失败!", Toast.LENGTH_SHORT).show();
+                    return "Error: " + e.getMessage();
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                if(result.equals("1")) {
+                    Toast.makeText(PageActivity.this, "上传成功!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PageActivity.this, "数据会在第二天刷新~", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }.execute();
+    }
 
     @SuppressLint("StaticFieldLeak")
     public void findnear(Place place_centor) {
@@ -218,6 +362,10 @@ public class PageActivity extends AppCompatActivity {
                         textViews.add(t);
                         t3.addView(t);
                     }
+                }else {
+                    TextView ttt =new TextView(PageActivity.context);
+                    ttt.setText("暂时关闭");
+                    t3.addView(ttt);
                 }
             }
         }.execute();
@@ -227,5 +375,58 @@ public class PageActivity extends AppCompatActivity {
         Type placeListType = new TypeToken<List<Market>>() {
         }.getType();
         return gson.fromJson(jsonString, placeListType);
+    }
+
+    private void startLikeAnimation(Button button) {
+        // 缩放动画
+        ObjectAnimator scaleOutX = ObjectAnimator.ofFloat(button, "scaleX", 1f, 1.5f);
+        ObjectAnimator scaleOutY = ObjectAnimator.ofFloat(button, "scaleY", 1f, 1.5f);
+        ObjectAnimator scaleInX = ObjectAnimator.ofFloat(button, "scaleX", 1.5f, 1f);
+        ObjectAnimator scaleInY = ObjectAnimator.ofFloat(button, "scaleY", 1.5f, 1f);
+
+        // 晃动动画
+        ObjectAnimator shake1 = ObjectAnimator.ofFloat(button, "rotation", 0f, -5f);
+        ObjectAnimator shake2 = ObjectAnimator.ofFloat(button, "rotation", -5f, 5f);
+        ObjectAnimator shake3 = ObjectAnimator.ofFloat(button, "rotation", 5f, -3f);
+        ObjectAnimator shake4 = ObjectAnimator.ofFloat(button, "rotation", -3f, 0f);
+
+        // 颜色变化动画
+        ObjectAnimator colorAnim = ObjectAnimator.ofInt(button, "backgroundColor", Color.BLACK, Color.RED);
+        colorAnim.setEvaluator(new ArgbEvaluator());
+
+        // 组合动画
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(scaleOutX, scaleOutY, shake1, shake2, shake3, shake4);
+        animatorSet.play(scaleInX).with(scaleInY).after(shake4);
+        animatorSet.play(colorAnim).with(scaleInX);
+
+        animatorSet.setDuration(300);
+        animatorSet.start();
+    }
+    private void startShakeAnimation(Button button) {
+        // 晃动动画
+        ObjectAnimator shake1 = ObjectAnimator.ofFloat(button, "rotation", 0f, -5f);
+        ObjectAnimator shake2 = ObjectAnimator.ofFloat(button, "rotation", -5f, 5f);
+        ObjectAnimator shake3 = ObjectAnimator.ofFloat(button, "rotation", 5f, -3f);
+        ObjectAnimator shake4 = ObjectAnimator.ofFloat(button, "rotation", -3f, 0f);
+
+        // 组合动画
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playSequentially(shake1, shake2, shake3, shake4);
+
+        animatorSet.setDuration(300);
+        animatorSet.start();
+    }
+    private void backAnimation(Button button) {
+        // 颜色变化动画
+        ObjectAnimator colorAnim = ObjectAnimator.ofInt(button, "backgroundColor", Color.RED, Color.BLACK);
+        colorAnim.setEvaluator(new ArgbEvaluator());
+
+        // 组合动画
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.play(colorAnim);
+
+        animatorSet.setDuration(300);
+        animatorSet.start();
     }
 }
