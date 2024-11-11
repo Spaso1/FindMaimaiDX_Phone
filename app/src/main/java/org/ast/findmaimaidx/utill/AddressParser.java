@@ -1,5 +1,6 @@
 package org.ast.findmaimaidx.utill;
 
+import android.util.Log;
 import org.ast.findmaimaidx.MainLaunch;
 
 import java.util.ArrayList;
@@ -37,6 +38,21 @@ public class AddressParser {
                 MainLaunch.province = province;
             } else {
                 System.out.println("无法解析地址");
+                if(address.contains("市")) {
+                    if(address.contains("北京市")) {
+                        MainLaunch.city = "北京市";
+                        MainLaunch.province = "北京市";
+                    }else if(address.contains("上海市")) {
+                        MainLaunch.city = "上海市";
+                        MainLaunch.province = "上海市";
+                    }else if(address.contains("重庆市")) {
+                        MainLaunch.city = "重庆市";
+                        MainLaunch.province = "重庆市";
+                    }else if(address.contains("天津市")) {
+                        MainLaunch.city = "天津市";
+                        MainLaunch.province = "天津市";
+                    }
+                }
             }
         }catch (Exception e) {
         }

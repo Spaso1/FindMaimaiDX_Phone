@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -13,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
@@ -61,72 +63,131 @@ public class MainLaunch extends AppCompatActivity {
     private boolean flag = true;
     private double tagXY[] = new double[2];
     private String tagplace;
+    private boolean isFlag = true;
     @Override
     @SuppressLint({"MissingInflatedId", "Range"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mainlayout);
+        String userInput = "";
+        try {
+            // 获取传递过来的数据
+            Intent intent = getIntent();
+            userInput = intent.getStringExtra("address");
+            if(!userInput.isEmpty()) {
+                isFlag = false;
 
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "请允许定位权限再打开应用", Toast.LENGTH_SHORT);
-            Intent intent = new Intent(this, MainLaunch.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
         }
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        // 检查网络权限
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
-                != PackageManager.PERMISSION_GRANTED) {
-            // 请求网络权限
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.INTERNET},
-                    REQUEST_CODE_PERMISSIONS);
+        if(isFlag) {
+            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},0x123);
+        }else {
+            tot = userInput;
+            extracted();
         }
+
         addressTextView = findViewById(R.id.textView);
-        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},0x123);
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-        }
-        
 
         TextView textView = findViewById(R.id.textView);
         textView.setOnClickListener(v -> {
             //刷新定位
-            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            Toast.makeText(this, "正在刷新定位", Toast.LENGTH_SHORT).show();
-            x = String.valueOf(location.getLongitude());
-            y = String.valueOf(location.getLatitude());
-            if (location != null) {
-                Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
-                try {
-                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                    if (addresses.size() > 0) {
-                        Address address = addresses.get(0);
-                        String detail = address.getAddressLine(0);
-                        addressTextView.setText(detail);
-                        tot = detail;
-                        province = address.getAdminArea();
-                        city = address.getLocality();
-                        extracted();
-                    }
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    addressTextView.setText("Error getting address");
+            // 创建一个AlertDialog.Builder对象
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            final CharSequence[] items = {"联系作者", "自动刷新定位", "手动选择定位"};
+// 设置对话框标题
+            builder.setTitle("选择");
+// 添加“确定”按钮
+            builder.setItems(items, (dialog, item) -> {
+                switch (item) {
+                    case 0:
+// 创建一个Intent对象，指定动作和数据类型
+                        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                        emailIntent.setType("message/rfc822"); // 设置数据类型为邮件
+
+// 设置邮件的基本信息
+                        String[] recipients = {"astralpath@163.com"}; // 收件人邮箱地址
+                        emailIntent.putExtra(Intent.EXTRA_EMAIL, "astralpath@163.com");
+                        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "FindMaimaiDX问题提交"); // 邮件主题
+                        emailIntent.putExtra(Intent.EXTRA_TEXT, "邮件至 astralpath@163.com"); // 邮件正文
+
+// 检查是否有可以处理此Intent的应用
+                        if (emailIntent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(emailIntent); // 启动邮件发送界面
+                        } else {
+                            // 如果没有可以处理此Intent的应用，则显示错误消息
+                            Toast.makeText(this, "没有可用的邮件客户端", Toast.LENGTH_SHORT).show();
+                        }
+
+                        break;
+                    case 1:
+                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            return;
+                        }
+                        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        x = String.valueOf(location.getLongitude());
+                        y = String.valueOf(location.getLatitude());
+
+                        if (location != null) {
+                            Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
+                            try {
+                                List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                                if (addresses.size() > 0) {
+                                    Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
+                                    Address address = addresses.get(0);
+                                    String detail = address.getAddressLine(0);
+                                    addressTextView.setText(detail);
+                                    tot = detail;
+                                    province = address.getAdminArea();
+                                    city = address.getLocality();
+                                    extracted();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                addressTextView.setText("Error getting address");
+                            }
+                        }
+                        break;
+                    case 2:
+                        // 创建一个AlertDialog.Builder
+                        AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+                        final EditText input = new EditText(this);
+                        builder2.setTitle("请输入地址(省份+城市 如:湖北省武汉市)")
+                                .setView(input)
+                                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // 获取用户输入的数据
+                                        String userInput = input.getText().toString();
+                                        // 在这里处理用户输入的数据
+                                        Intent intent = new Intent(MainLaunch.this, MainLaunch.class);
+                                        intent.putExtra("address", userInput);
+                                        startActivity(intent);
+                                    }
+                                })
+                                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                        // 创建并显示对话框
+                        AlertDialog dialog2 = builder2.create();
+                        dialog2.show();
+                        break;
                 }
-            }
-            Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
+            }).show();
 
         });
     }
@@ -174,9 +235,15 @@ public class MainLaunch extends AppCompatActivity {
                 TreeMap<Double, Place> treeMap = new TreeMap<>();
 
                 for (Place p : b) {
-                    double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
-                    p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
-                    treeMap.put(distance, p);
+                    if (isFlag) {
+                        double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
+                        p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                        treeMap.put(distance, p);
+                    }else {
+                        p.setName(p.getName());
+                        treeMap.put((double)p.getId(), p);
+
+                    }
                 }
                 for (Double key : treeMap.keySet()) {
                     a.add(treeMap.get(key));
@@ -232,6 +299,7 @@ public class MainLaunch extends AppCompatActivity {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             //获取最新的定位信息
             Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Log.d("Location", "onLocationChanged11111111111111111111");
 
             x = String.valueOf(lastKnownLocation.getLongitude());
             y = String.valueOf(lastKnownLocation.getLatitude());
@@ -255,9 +323,10 @@ public class MainLaunch extends AppCompatActivity {
             }
         }
             //每隔三秒获取一次GPS信息
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 8f, new LocationListener() {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 6000, 8f, new LocationListener() {
                 @Override
                 public void onLocationChanged(@NonNull Location location) {
+                    Log.d("Location", "onLocationChanged11111111111111111111");
                     if(flag) {
                         Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
                         x = String.valueOf(location.getLongitude());

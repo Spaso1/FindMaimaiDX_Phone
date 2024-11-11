@@ -41,7 +41,7 @@ public class PageActivity extends AppCompatActivity {
     public static List<Market> marketList = new ArrayList<>();
     public static LinearLayout t3 ;
     public static Context context;
-    public static String key = "bb0e04ceb735481cf4e461628345f4ec";
+    public static String key = "";
     public static List<TextView> textViews = new ArrayList<>();
     private Button likeButton;
     private Button disButton;
@@ -107,8 +107,6 @@ public class PageActivity extends AppCompatActivity {
                 showNavigationOptions();
             }
         });
-        Toast.makeText(this, "正在获取附近信息", Toast.LENGTH_SHORT).show();
-
 
         likeButton = findViewById(R.id.likeButton);
         likeButton.setOnClickListener(new View.OnClickListener() {
@@ -166,7 +164,7 @@ public class PageActivity extends AppCompatActivity {
             }
         }
         WebView webView = findViewById(R.id.imageView1);
-        String imageUrl = "https://img.shields.io/badge/like-" + good + "-green";
+        String imageUrl = "https://img.shields.io/badge/recommend-" + good + "-green";
         webView.setBackgroundColor(0x00000000); // 设置背景为透明
 
         WebSettings webSettings = webView.getSettings();
@@ -184,7 +182,7 @@ public class PageActivity extends AppCompatActivity {
         });
         webView.loadUrl(imageUrl); // 加载网页
         WebView webView2 = findViewById(R.id.imageView2);
-        String imageUrl2 = "https://img.shields.io/badge/dislike-" + bad + "-red";
+        String imageUrl2 = "https://img.shields.io/badge/oppose-" + bad + "-red";
         webView2.setBackgroundColor(0x00000000); // 设置背景为透明
         webView2.setWebViewClient(new WebViewClient() {
             @Override
@@ -311,7 +309,7 @@ public class PageActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(Void... voids) {
                 OkHttpClient client = new OkHttpClient();
-                String web = "https://restapi.amap.com/v5/place/around?key=" + key + "&radius=1000&location=" + place_centor.getX() + "," + place_centor.getY() + "&page_size=25&types=060200|060201|060202|060400|060401|060402|060403|060404|060405|060406|060407|060408|060409|060411|060413|060414|060415|";
+                String web = "http://www.godserver.cn:11451/getNear?x=" + place_centor.getX() +"&y=" + place_centor.getY();
                 System.out.println(web);
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
@@ -332,9 +330,7 @@ public class PageActivity extends AppCompatActivity {
             @SuppressLint("StaticFieldLeak")
             @Override
             protected void onPostExecute(String result) {
-                if (result.contains("pois")) {
-                    String b = result.split("\"pois\":")[1];
-                    result = b.split("]")[0] + "]";
+                if (result.contains("address")) {
                     marketList = parseJsonToPlaceList2(result);
                     for (Market market : marketList) {
                         Log.d("Market", market.getName());

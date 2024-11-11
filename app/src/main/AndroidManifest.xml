@@ -31,7 +31,8 @@
                 android:name=".MainLaunch"
                 android:exported="true"
                 android:label="@string/app_name"
-
+                android:allowTaskReparenting="false"
+                android:alwaysRetainTaskState="true"
                 android:theme="@style/Theme.FindMaimaiDX" tools:ignore="WrongManifestParent">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
