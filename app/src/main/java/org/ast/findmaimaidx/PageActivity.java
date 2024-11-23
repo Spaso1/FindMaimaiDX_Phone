@@ -19,9 +19,7 @@ import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Market;
 import org.ast.findmaimaidx.been.Place;
@@ -29,6 +27,7 @@ import org.ast.findmaimaidx.utill.FindNearMarket;
 import org.w3c.dom.Text;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -48,6 +47,8 @@ public class PageActivity extends AppCompatActivity {
     private boolean isLike = false;
     private boolean isDis = false;
     private SharedPreferences sp ;
+    private SharedPreferences shoucang ;
+
     public static int id;
     @Override
     @SuppressLint({"MissingInflatedId", "Range"})
@@ -55,6 +56,9 @@ public class PageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         context = this;
         setContentView(R.layout.item2);
+        /**
+         * 基础内容加载
+         */
         String name = getIntent().getStringExtra("name").split(" ")[0];
         int id2 = getIntent().getIntExtra("id", 0);
         String address = getIntent().getStringExtra("address");
@@ -86,7 +90,9 @@ public class PageActivity extends AppCompatActivity {
         button.setText("导航");
         id = id2;
         Log.d("id", String.valueOf(id));
-
+        /**
+         * 获取附近商超
+         */
         Place place = new Place(id2, name, province, city, area, address, 1, x, y, count, good, bad);
         findnear(place);
 
@@ -96,7 +102,10 @@ public class PageActivity extends AppCompatActivity {
         t3 = findViewById(R.id.hor);
 
         sp = getSharedPreferences("like@dis", MODE_PRIVATE);
+        shoucang = getSharedPreferences("shoucang@", MODE_PRIVATE);
+
         SharedPreferences.Editor editor = sp.edit();
+        SharedPreferences.Editor editor2 = shoucang.edit();
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,7 +116,9 @@ public class PageActivity extends AppCompatActivity {
                 showNavigationOptions();
             }
         });
-
+        /**
+         * 添加点赞点踩效果
+         */
         likeButton = findViewById(R.id.likeButton);
         likeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -163,6 +174,82 @@ public class PageActivity extends AppCompatActivity {
                 isDis = true;
             }
         }
+
+        /**
+         * 添加收藏
+         */
+        Switch switch1 = findViewById(R.id.switch1);
+        if(shoucang.contains(id2 + "")) {
+            switch1.setChecked(true);
+        }
+        switch1.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                if(switch1.isChecked()) {
+                    editor2.putString(id2 + "","1");
+                }else {
+                    editor2.remove(id2 + "");
+                }
+                editor2.apply();
+            }
+        });
+        /**
+         * 添加商超
+         */
+        Button addMarket = findViewById(R.id.add);
+        addMarket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+// 创建对话框构建器
+                // 创建一个线性布局
+                LinearLayout layout = new LinearLayout(PageActivity.context);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.setPadding(16, 16, 16, 16);
+
+                // 创建店铺名称输入框
+                EditText etShopName = new EditText(PageActivity.context);
+                etShopName.setHint("请输入店铺名称");
+                layout.addView(etShopName);
+
+                // 创建机厅距离输入框
+                EditText etHallDistance = new EditText(PageActivity.context);
+                etHallDistance.setHint("请输入机厅距离(米)");
+                layout.addView(etHallDistance);
+
+                // 创建对话框构建器
+                AlertDialog.Builder builder = new AlertDialog.Builder(PageActivity.context);
+                // 设置自定义布局
+                builder.setView(layout);
+
+                // 添加确定按钮
+                builder.setPositiveButton("确定", (dialogInterface, i) -> {
+                    String shopName = etShopName.getText().toString();
+                    String hallDistance = etHallDistance.getText().toString();
+                    Market market = new Market();
+                    market.setMarketName(shopName);
+                    market.setParentId(id);
+                    DecimalFormat decimalFormat = new DecimalFormat("0.#");
+                    double distance = Double.parseDouble(decimalFormat.format(Double.parseDouble(hallDistance) / 1000));
+                    market.setDistance(distance);
+                    market.setType(1);
+                    market.setX(place.getX());
+                    market.setY(place.getY());
+                    new SendMarketRequestTask().execute(market);
+                    Log.d("body",market.toString());
+                    Toast.makeText(PageActivity.context, "已添加,等待审核", Toast.LENGTH_SHORT).show();
+                });
+
+                // 添加取消按钮
+                builder.setNegativeButton("取消", (dialogInterface, i) -> dialogInterface.dismiss());
+
+                // 创建对话框
+                AlertDialog dialog = builder.create();
+
+                // 显示对话框
+                dialog.show();
+            }
+        });
+
         WebView webView = findViewById(R.id.imageView1);
         String imageUrl = "https://img.shields.io/badge/recommend-" + good + "-green";
         webView.setBackgroundColor(0x00000000); // 设置背景为透明
@@ -230,7 +317,6 @@ public class PageActivity extends AppCompatActivity {
         // 高德地图
         Intent intent = new Intent("android.intent.action.VIEW", android.net.Uri.parse("androidamap://route?sourceApplication=appName&slat=&slon=&sname=我的位置&dlat=" + tagXY[1] +"&dlon="+ tagXY[0]+"&dname=" +tagplace + "&dev=0&t=2"));
         PageActivity.this.startActivity(intent);
-
     }
 
     private void startBaiduMaps() {
@@ -239,11 +325,9 @@ public class PageActivity extends AppCompatActivity {
         intent.setPackage("com.baidu.BaiduMap");
 
     }
-
     public static boolean isPackageInstalled(String packageName) {
         return new File("\\Android\\data\\" + packageName).exists();
     }
-
     private void showInstallAppDialog(String appName) {
         new AlertDialog.Builder(this)
                 .setTitle("应用未安装")
@@ -279,7 +363,6 @@ public class PageActivity extends AppCompatActivity {
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
                         .build();
-
                 try (Response response = client.newCall(request).execute()) {
                     if (((Response) response).isSuccessful()) {
                         return response.body().string();
@@ -309,8 +392,8 @@ public class PageActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(Void... voids) {
                 OkHttpClient client = new OkHttpClient();
-                String web = "http://www.godserver.cn:11451/getNear?x=" + place_centor.getX() +"&y=" + place_centor.getY();
-                System.out.println(web);
+                String web = "http://www.godserver.cn:11451/getNear?id=" + place_centor.getId();
+                Log.d("Web", web);
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
                         .build();
@@ -327,32 +410,38 @@ public class PageActivity extends AppCompatActivity {
                 }
             }
 
-            @SuppressLint("StaticFieldLeak")
+            @SuppressLint({"StaticFieldLeak", "SetTextI18n"})
             @Override
             protected void onPostExecute(String result) {
-                if (result.contains("address")) {
+                if (result.contains("[{")) {
                     marketList = parseJsonToPlaceList2(result);
+                    Toast.makeText(PageActivity.context, "数据获取成功"+ result, Toast.LENGTH_SHORT);
                     for (Market market : marketList) {
-                        Log.d("Market", market.getName());
+                        Log.d("Market", market.getMarketName());
                     }
                     for (int i = 0; i < marketList.size(); i++) {
                         TextView t = new TextView(PageActivity.context);
-                        double distance = DistanceCalculator.calculateDistance(Double.parseDouble(marketList.get(i).getLocation().split(",")[0]), Double.parseDouble(marketList.get(i).getLocation().split(",")[1]), place_centor.getX(), place_centor.getY());
+                        double distance = marketList.get(i).getDistance();
+                        int type = marketList.get(i).getType();
                         DecimalFormat decimalFormat = new DecimalFormat("0.#");
                         String formattedResult = decimalFormat.format(distance*1000);
-
-                        t.setText(marketList.get(i).getName() + " \n距离机厅:" + formattedResult + "米\n");
+                        if(type==1) {
+                            t.setTextColor(Color.rgb(255, 182, 193));
+                        }else if(type==2) {
+                            t.setTextColor(Color.rgb(144, 238, 144));
+                        }
+                        t.setText(marketList.get(i).getMarketName() + " \n距离机厅:" + distance + "米\n");
                         t.setTextSize(15.0F);
                         int finalI = i;
                         t.isTextSelectable();
                         t.isEnabled();
                         t.setOnClickListener(v -> {
-                            tagXY[0] = Double.parseDouble(marketList.get(finalI).getLocation().split(",")[0]);
-                            tagXY[1] = Double.parseDouble(marketList.get(finalI).getLocation().split(",")[1]);
+                            tagXY[0] = marketList.get(finalI).getX();
+                            tagXY[1] = marketList.get(finalI).getY();
 
-                            tagplace = marketList.get(finalI).getName().split(" ")[0];
+                            tagplace = marketList.get(finalI).getMarketName().split(" ")[0];
                             //导航
-                            Toast.makeText(PageActivity.context, "即将导航" + marketList.get(finalI).getName(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(PageActivity.context, "即将导航" + marketList.get(finalI).getMarketName(), Toast.LENGTH_SHORT).show();
                             showNavigationOptions();
                         });
                         textViews.add(t);
@@ -424,5 +513,47 @@ public class PageActivity extends AppCompatActivity {
 
         animatorSet.setDuration(300);
         animatorSet.start();
+    }
+
+    private class SendMarketRequestTask extends AsyncTask<Market, Void, String> {
+
+        @Override
+        protected String doInBackground(Market... markets) {
+            Market market = markets[0];
+
+            // 使用 Gson 将 Market 对象转换为 JSON 字符串
+            Gson gson = new Gson();
+            String json = gson.toJson(market);
+
+            // 创建 OkHttpClient 实例
+            OkHttpClient client = new OkHttpClient();
+
+            // 创建请求体
+            RequestBody body = RequestBody.create(json, MediaType.parse("application/json; charset=utf-8"));
+
+            // 创建请求
+            Request request = new Request.Builder()
+                    .url("http://www.godserver.cn:11451/addNear")
+                    .post(body)
+                    .build();
+
+            try {
+                // 发送请求
+                Response response = client.newCall(request).execute();
+                if (response.isSuccessful()) {
+                    return response.body().string();
+                } else {
+                    return "Request failed: " + response.code();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "Request failed: " + e.getMessage();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.d("TAG", "Response: " + result);
+        }
     }
 }

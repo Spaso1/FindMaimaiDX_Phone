@@ -3,9 +3,11 @@ package org.ast.findmaimaidx;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Person;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.location.*;
@@ -31,7 +33,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Place;
+import org.ast.findmaimaidx.been.Release;
 import org.ast.findmaimaidx.utill.AddressParser;
+import org.ast.findmaimaidx.utill.FetchLatestReleaseTask;
 import org.ast.findmaimaidx.utill.PlaceAdapter;
 
 import java.io.File;
@@ -42,7 +46,9 @@ import java.util.*;
 import static androidx.core.location.LocationManagerCompat.requestLocationUpdates;
 
 public class MainLaunch extends AppCompatActivity {
+
     public static final int LOCATION_CODE = 301;
+    public static final String version = "1.000.42";
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
 
     private LocationManager locationManager;
@@ -50,6 +56,7 @@ public class MainLaunch extends AppCompatActivity {
     private PlaceAdapter placeAdapter;
     private String locationProvider = null;
     private TextView addressTextView;
+    private static final String GITHUB_API_URL = "https://api.github.com/repos/owner/repo/releases/latest";
 
     private String tot;
     private String x;
@@ -64,12 +71,16 @@ public class MainLaunch extends AppCompatActivity {
     private double tagXY[] = new double[2];
     private String tagplace;
     private boolean isFlag = true;
+    private SharedPreferences shoucang ;
+    private SharedPreferences.Editor editor;
     @Override
     @SuppressLint({"MissingInflatedId", "Range"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mainlayout);
         String userInput = "";
+        shoucang = getSharedPreferences("shoucang@", MODE_PRIVATE);
+        editor = shoucang.edit();
         try {
             // 获取传递过来的数据
             Intent intent = getIntent();
@@ -82,7 +93,6 @@ public class MainLaunch extends AppCompatActivity {
             e.printStackTrace();
         }
         if(isFlag) {
-            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},0x123);
         }else {
             tot = userInput;
@@ -97,7 +107,7 @@ public class MainLaunch extends AppCompatActivity {
 
             // 创建一个AlertDialog.Builder对象
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            final CharSequence[] items = {"联系作者", "自动刷新定位", "手动选择定位"};
+            final CharSequence[] items = {"联系作者","b50", "自动刷新定位", "手动选择定位"};
 // 设置对话框标题
             builder.setTitle("选择");
 // 添加“确定”按钮
@@ -124,6 +134,10 @@ public class MainLaunch extends AppCompatActivity {
 
                         break;
                     case 1:
+                        Intent intent = new Intent(MainLaunch.this, b50.class);
+                        startActivity(intent);
+                        break;
+                    case 2:
                         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                             // TODO: Consider calling
                             //    ActivityCompat#requestPermissions
@@ -158,7 +172,7 @@ public class MainLaunch extends AppCompatActivity {
                             }
                         }
                         break;
-                    case 2:
+                    case 3:
                         // 创建一个AlertDialog.Builder
                         AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
                         final EditText input = new EditText(this);
@@ -194,100 +208,130 @@ public class MainLaunch extends AppCompatActivity {
 
     @SuppressLint("StaticFieldLeak")
     private void sendGetRequest() {
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            protected String doInBackground(Void... voids) {
-                OkHttpClient client = new OkHttpClient();
-                String web = "http://www.godserver.cn:11451/search?prompt1=" + city.split("市")[0] + "&status=市";
-                System.out.println(web);
-                @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
-                        .url(web)
-                        .build();
+        try {
+            new AsyncTask<Void, Void, String>() {
+                @Override
+                protected String doInBackground(Void... voids) {
+                    OkHttpClient client = new OkHttpClient();
+                    try {
+                        String web = "http://www.godserver.cn:11451/search?prompt1=" + city.split("市")[0] + "&status=市";
+                        System.out.println(web);
+                        @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
+                                .url(web)
+                                .build();
 
-                try (Response response = client.newCall(request).execute()) {
-                    if (((Response) response).isSuccessful()) {
-                        return response.body().string();
-                    } else {
-                        Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show();
+                        try (Response response = client.newCall(request).execute()) {
+                            if (((Response) response).isSuccessful()) {
+                                return response.body().string();
+                            } else {
+                                Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show();
 
-                        return "Error: " + response.code();
-                    }
-                } catch (Exception e) {
-                    Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show();
-                    Log.e("OkHttp", "Error: " + e.getMessage());
-                    return "Error: " + e.getMessage();
-                }
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                a.clear();
-                b.clear();
-                a = parseJsonToPlaceList(result);
-                // 设置适配器
-
-                for (Place p : a) {
-                    if (p.getIsUse() == 1) {
-                        b.add(p);
+                                return "Error: " + response.code();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show();
+                            Log.e("OkHttp", "Error: " + e.getMessage());
+                            return "Error: " + e.getMessage();
+                        }
+                    }catch (Exception e) {
+                        return "BedWeb";
                     }
                 }
-                a.clear();
-                TreeMap<Double, Place> treeMap = new TreeMap<>();
 
-                for (Place p : b) {
-                    if (isFlag) {
-                        double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
-                        p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
-                        treeMap.put(distance, p);
+                @Override
+                protected void onPostExecute(String result) {
+                    a.clear();
+                    b.clear();
+                    if (!result.equals("BedWeb")) {
+                        a = parseJsonToPlaceList(result);
+                        // 设置适配器
+
+                        for (Place p : a) {
+                            if (p.getIsUse() == 1) {
+                                b.add(p);
+                                System.out.println(p.getName());
+                            }
+                        }
+                        a.clear();
+                        TreeMap<Double, Place> treeMap = new TreeMap<>();
+
+                        for (Place p : b) {
+                            if (isFlag) {
+                                double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
+                                if(shoucang.contains(p.getId() + "")) {
+                                    p.setName(p.getName() + " 收藏" + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                                    treeMap.put(distance - 1000, p);
+
+                                }else {
+                                    p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                                    treeMap.put(distance, p);
+
+                                }
+                            }else {
+                                p.setName(p.getName());
+                                treeMap.put((double)p.getId(), p);
+                            }
+                        }
+                        for (Double key : treeMap.keySet()) {
+                            a.add(treeMap.get(key));
+                        }
+                        boolean flag2 = true;
+                        if(flag2) {
+                            adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(Place place) {
+                                    Intent intent = new Intent(MainLaunch.this, PageActivity.class);
+                                    intent.putExtra("id", place.getId());
+                                    intent.putExtra("name", place.getName());
+                                    intent.putExtra("address", place.getAddress());
+                                    intent.putExtra("province", place.getProvince());
+                                    intent.putExtra("city", place.getCity());
+                                    intent.putExtra("area", place.getArea());
+                                    intent.putExtra("x", place.getX());
+                                    intent.putExtra("y", place.getY());
+                                    intent.putExtra("count",place.getCount());
+                                    intent.putExtra("bad",place.getBad());
+                                    intent.putExtra("good",place.getGood());
+                                    startActivity(intent);
+                                }
+                            });
+                            recyclerView.setAdapter(adapter);
+                            // 设置Toolbar
+                            Toolbar toolbar = findViewById(R.id.toolbar);
+                            setSupportActionBar(toolbar);// 设置Toolbar标题
+
+                            if (getSupportActionBar() != null) {
+                                getSupportActionBar().setTitle("FindMaimaiDX - " + a.size() + " 店铺" + "\n" + tot);
+                            }
+
+                            for (Place p : a) {
+                                if (p.getX() == 0.0) {
+                                    //Log.i(p.getId() + "", p.getName() + "没有坐标");
+                                }
+                            }
+                        }
                     }else {
-                        p.setName(p.getName());
-                        treeMap.put((double)p.getId(), p);
+                        Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT).show();//最终实现处
 
                     }
-                }
-                for (Double key : treeMap.keySet()) {
-                    a.add(treeMap.get(key));
-                }
-                adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(Place place) {
-                        Intent intent = new Intent(MainLaunch.this, PageActivity.class);
-                        intent.putExtra("id", place.getId());
-                        intent.putExtra("name", place.getName());
-                        intent.putExtra("address", place.getAddress());
-                        intent.putExtra("province", place.getProvince());
-                        intent.putExtra("city", place.getCity());
-                        intent.putExtra("area", place.getArea());
-                        intent.putExtra("x", place.getX());
-                        intent.putExtra("y", place.getY());
-                        intent.putExtra("count",place.getCount());
-                        intent.putExtra("bad",place.getBad());
-                        intent.putExtra("good",place.getGood());
-                        startActivity(intent);
-                    }
-                });
-                recyclerView.setAdapter(adapter);
-                // 设置Toolbar
-                Toolbar toolbar = findViewById(R.id.toolbar);
-                setSupportActionBar(toolbar);// 设置Toolbar标题
 
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().setTitle("FindMaimaiDX - " + a.size() + " 店铺" + "\n" + tot);
                 }
+            }.execute();
+        }catch (Exception e) {
+            Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT).show();
 
-                for (Place p : a) {
-                    if (p.getX() == 0.0) {
-                        //Log.i(p.getId() + "", p.getName() + "没有坐标");
-                    }
-                }
-            }
-        }.execute();
+        }
+
     }
 
     private List<Place> parseJsonToPlaceList(String jsonString) {
         Gson gson = new Gson();
         Type placeListType = new TypeToken<List<Place>>() {
         }.getType();
+        if(jsonString.equals("BedWeb")) {
+            Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT);
+            return null;
+        }
         return gson.fromJson(jsonString, placeListType);
     }
     @SuppressLint("MissingPermission")
@@ -300,30 +344,50 @@ public class MainLaunch extends AppCompatActivity {
             //获取最新的定位信息
             Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             Log.d("Location", "onLocationChanged11111111111111111111");
+            try {
+                x = String.valueOf(lastKnownLocation.getLongitude());
+                y = String.valueOf(lastKnownLocation.getLatitude());
+                if (lastKnownLocation != null) {
+                    Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
+                    try {
+                        List<Address> addresses = geocoder.getFromLocation(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(), 1);
+                        if (addresses.size() > 0) {
+                            Address address = addresses.get(0);
+                            String detail = address.getAddressLine(0);
+                            addressTextView.setText(detail);
+                            tot = detail;
+                            province = address.getAdminArea();
+                            city = address.getLocality();
+                            extracted();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.d("Location","定位失败");
+                        x = String.valueOf(116.3912757);
+                        y = String.valueOf(39.906217);
 
-            x = String.valueOf(lastKnownLocation.getLongitude());
-            y = String.valueOf(lastKnownLocation.getLatitude());
-            if (lastKnownLocation != null) {
-                Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
-                try {
-                    List<Address> addresses = geocoder.getFromLocation(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(), 1);
-                    if (addresses.size() > 0) {
-                        Address address = addresses.get(0);
-                        String detail = address.getAddressLine(0);
-                        addressTextView.setText(detail);
-                        tot = detail;
-                        province = address.getAdminArea();
-                        city = address.getLocality();
+                        addressTextView.setText("未知定位,默认设置北京市");
+                        tot = "北京市";
+                        province ="北京市";
+                        city = "北京市";
                         extracted();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    addressTextView.setText("Error getting address");
                 }
+            }catch (Exception e) {
+                Log.d("Location","定位失败");
+                x = String.valueOf(39.906217);
+                y = String.valueOf(116.3912757);
+                addressTextView.setText("未知定位,默认设置北京市");
+                tot = "北京市";
+                province ="北京市";
+                city = "北京市";
+                extracted();
             }
+
+
         }
             //每隔三秒获取一次GPS信息
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 6000, 8f, new LocationListener() {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 12000, 16f, new LocationListener() {
                 @Override
                 public void onLocationChanged(@NonNull Location location) {
                     Log.d("Location", "onLocationChanged11111111111111111111");
@@ -346,7 +410,14 @@ public class MainLaunch extends AppCompatActivity {
                                 }
                             } catch (IOException e) {
                                 e.printStackTrace();
-                                addressTextView.setText("Error getting address");
+                                Log.d("Location","GPS定位失败");
+                                x = String.valueOf(39.906217);
+                                y = String.valueOf(116.3912757);
+                                addressTextView.setText("未知定位,默认设置北京市");
+                                tot = "北京市";
+                                province ="北京市";
+                                city = "北京市";
+                                extracted();
                             }
                         }
                         Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
@@ -371,6 +442,7 @@ public class MainLaunch extends AppCompatActivity {
         System.out.println(tot);
         System.out.println(city);
         sendGetRequest();
+
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainLaunch.this));
 
@@ -381,5 +453,4 @@ public class MainLaunch extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
     }
-
 }

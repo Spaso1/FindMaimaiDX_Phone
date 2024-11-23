@@ -23,12 +23,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp" />
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" >
+        <TextView
+                android:id="@+id/areaTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp" />
+        <Switch
+                android:text="收藏"
+                android:layout_width="match_parent"
+                android:layout_marginLeft="40mm"
+                android:layout_height="wrap_content" android:id="@+id/switch1"/>
+    </LinearLayout>
 
-    <TextView
-            android:id="@+id/areaTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp" />
     <WebView android:layout_width="wrap_content" android:layout_height="wrap_content"
              android:background="@android:color/transparent"
              android:id="@+id/imageView1"/>
@@ -68,11 +75,16 @@
             android:layout_width="227dp"
             android:layout_marginLeft="20mm"
             android:layout_height="wrap_content" android:id="@+id/button"/>
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="60dp"
+                  android:orientation="horizontal">
+        <TextView
+                android:text="TextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/textView2"/>
+        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/add" android:layout_marginLeft="30mm"
+                android:text="录入商超"/>
+    </LinearLayout>
 
-    <TextView
-            android:text="TextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/textView2"/>
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">

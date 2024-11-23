@@ -1,5 +1,6 @@
 package org.ast.findmaimaidx.utill;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +38,11 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     @Override
     public void onBindViewHolder(@NonNull PlaceViewHolder holder, int position) {
         Place place = placeList.get(position);
-        holder.nameTextView.setText(place.getName());
+        if(place.getName().contains("收藏")) {
+            holder.nameTextView.setText(place.getName() + "♥");
+        }else {
+            holder.nameTextView.setText(place.getName());
+        }
         holder.provinceTextView.setText(place.getProvince());
         holder.cityTextView.setText(place.getCity());
         holder.areaTextView.setText(place.getArea());
