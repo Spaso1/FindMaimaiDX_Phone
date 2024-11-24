@@ -404,6 +404,15 @@ public class UpdateActivity extends AppCompatActivity implements
         DataContext.ProxyPort = proxyPort;
         DataContext.ProxyHost = proxyHost;
         DataContext.WebHost = webHost;
+
+        Button button2 = findViewById(R.id.button2);
+        button2.setOnClickListener(v -> {
+            Toast.makeText(this, "正在跳转至水鱼查分器官网", Toast.LENGTH_SHORT).show();
+            String url = "https://www.diving-fish.com/maimaidx/prober/";
+            Uri uri = Uri.parse(url);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
+        });
     }
 
     private void saveContextData() {

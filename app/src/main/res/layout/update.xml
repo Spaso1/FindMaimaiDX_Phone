@@ -137,13 +137,21 @@
             android:text="Re:Mas"
             android:textSize="12sp" />
     </LinearLayout>
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+        <Button
+                android:id="@+id/button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="saveText"
+                android:text="Save" />
+        <Button
+                android:id="@+id/button2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="saveText"
+                android:text="注册水鱼账号" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="saveText"
-        android:text="Save" />
 
     <TextView
         android:id="@+id/textViewLog"
