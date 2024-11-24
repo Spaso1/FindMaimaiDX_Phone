@@ -163,7 +163,6 @@ public class WechatCrawler {
     }
 
     public void fetchAndUploadData(String username, String password, Set<Integer> difficulties, String wechatAuthUrl) throws IOException {
-        Toast.makeText(context, "正在获取数据，请稍后...", Toast.LENGTH_SHORT).show();
         if (wechatAuthUrl.startsWith("http"))
             wechatAuthUrl = wechatAuthUrl.replaceFirst("http", "https");
 
