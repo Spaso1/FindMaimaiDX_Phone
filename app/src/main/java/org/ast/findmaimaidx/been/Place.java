@@ -1,7 +1,11 @@
 package org.ast.findmaimaidx.been;
 
-public class Place {
-    int id;
+import android.os.Parcel;
+import android.os.Parcelable;
+import androidx.annotation.NonNull;
+
+public class Place implements Parcelable {
+    private int id;
     private String name;
     private String province;
     private String city;
@@ -13,7 +17,8 @@ public class Place {
     private int count;
     private int good;
     private int bad;
-    public Place(int id, String name, String province, String city, String area, String address, int isUse, double x, double y, int count,int good,int bad) {
+
+    public Place(int id, String name, String province, String city, String area, String address, int isUse, double x, double y, int count, int good, int bad) {
         this.id = id;
         this.name = name;
         this.province = province;
@@ -28,29 +33,32 @@ public class Place {
         this.bad = bad;
     }
 
-    public int getCount() {
-        return count;
+    protected Place(Parcel in) {
+        id = in.readInt();
+        name = in.readString();
+        province = in.readString();
+        city = in.readString();
+        area = in.readString();
+        address = in.readString();
+        isUse = in.readInt();
+        x = in.readDouble();
+        y = in.readDouble();
+        count = in.readInt();
+        good = in.readInt();
+        bad = in.readInt();
     }
 
-    public void setCount(int count) {
-        this.count = count;
-    }
+    public static final Creator<Place> CREATOR = new Creator<Place>() {
+        @Override
+        public Place createFromParcel(Parcel in) {
+            return new Place(in);
+        }
 
-    public int getGood() {
-        return good;
-    }
-
-    public void setGood(int good) {
-        this.good = good;
-    }
-
-    public int getBad() {
-        return bad;
-    }
-
-    public void setBad(int bad) {
-        this.bad = bad;
-    }
+        @Override
+        public Place[] newArray(int size) {
+            return new Place[size];
+        }
+    };
 
     public int getId() {
         return id;
@@ -58,14 +66,6 @@ public class Place {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 
     public String getName() {
@@ -100,6 +100,14 @@ public class Place {
         this.area = area;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public int getIsUse() {
         return isUse;
     }
@@ -122,5 +130,50 @@ public class Place {
 
     public void setY(double y) {
         this.y = y;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public int getGood() {
+        return good;
+    }
+
+    public void setGood(int good) {
+        this.good = good;
+    }
+
+    public int getBad() {
+        return bad;
+    }
+
+    public void setBad(int bad) {
+        this.bad = bad;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(name);
+        dest.writeString(province);
+        dest.writeString(city);
+        dest.writeString(area);
+        dest.writeString(address);
+        dest.writeInt(isUse);
+        dest.writeDouble(x);
+        dest.writeDouble(y);
+        dest.writeInt(count);
+        dest.writeInt(good);
+        dest.writeInt(bad);
     }
 }

@@ -3,19 +3,18 @@ package org.ast.findmaimaidx;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Person;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.location.*;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
-import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,22 +22,24 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.ast.findmaimaidx.been.DistanceCalculator;
+import org.ast.findmaimaidx.been.Geocode;
 import org.ast.findmaimaidx.been.Place;
-import org.ast.findmaimaidx.been.Release;
+import org.ast.findmaimaidx.map2d.BasicMapActivity;
 import org.ast.findmaimaidx.utill.AddressParser;
-import org.ast.findmaimaidx.utill.FetchLatestReleaseTask;
 import org.ast.findmaimaidx.utill.PlaceAdapter;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -46,7 +47,7 @@ import java.util.*;
 import static androidx.core.location.LocationManagerCompat.requestLocationUpdates;
 
 public class MainLaunch extends AppCompatActivity {
-
+    private Handler handler = new Handler(Looper.getMainLooper());
     public static final int LOCATION_CODE = 301;
     public static final String version = "1.000.42";
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
@@ -86,8 +87,9 @@ public class MainLaunch extends AppCompatActivity {
             Intent intent = getIntent();
             userInput = intent.getStringExtra("address");
             if(!userInput.isEmpty()) {
+                Log.d("MainLaunch", "userInput: " + userInput);
+                tagplace = userInput;
                 isFlag = false;
-
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -95,19 +97,19 @@ public class MainLaunch extends AppCompatActivity {
         if(isFlag) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},0x123);
         }else {
-            tot = userInput;
             extracted();
         }
 
         addressTextView = findViewById(R.id.textView);
 
         TextView textView = findViewById(R.id.textView);
-        textView.setOnClickListener(v -> {
+        FloatingActionButton button2 = findViewById(R.id.fab);
+        button2.setOnClickListener(v -> {
             //刷新定位
 
             // 创建一个AlertDialog.Builder对象
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            final CharSequence[] items = {"联系作者","b50", "自动刷新定位", "手动选择定位"};
+            final CharSequence[] items = {"联系作者","b50", "自动刷新定位", "手动选择定位","地图"};
 // 设置对话框标题
             builder.setTitle("选择");
 // 添加“确定”按钮
@@ -176,7 +178,7 @@ public class MainLaunch extends AppCompatActivity {
                         // 创建一个AlertDialog.Builder
                         AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
                         final EditText input = new EditText(this);
-                        builder2.setTitle("请输入地址(省份+城市 如:湖北省武汉市)")
+                        builder2.setTitle("请输入完整地址")
                                 .setView(input)
                                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                     @Override
@@ -184,9 +186,24 @@ public class MainLaunch extends AppCompatActivity {
                                         // 获取用户输入的数据
                                         String userInput = input.getText().toString();
                                         // 在这里处理用户输入的数据
-                                        Intent intent = new Intent(MainLaunch.this, MainLaunch.class);
-                                        intent.putExtra("address", userInput);
-                                        startActivity(intent);
+                                        //
+                                        //
+
+                                        new Thread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                String result = userInput;
+                                                handler.post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        Intent intent = new Intent(MainLaunch.this, MainLaunch.class);
+                                                        intent.putExtra("address", result);
+                                                        startActivity(intent);
+                                                    }
+                                                });
+                                            }
+                                        }).start();
+                                        //
                                     }
                                 })
                                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -200,6 +217,14 @@ public class MainLaunch extends AppCompatActivity {
                         AlertDialog dialog2 = builder2.create();
                         dialog2.show();
                         break;
+                    case 4:
+                        Intent intent2 = new Intent(MainLaunch.this, BasicMapActivity.class);
+                        intent2.putExtra("x", x);
+                        intent2.putExtra("y", y);
+                        ArrayList<Place> aL = new ArrayList<>(a);
+
+                        intent2.putParcelableArrayListExtra("place_list_key", aL);
+                        startActivity(intent2);
                 }
             }).show();
 
@@ -215,6 +240,9 @@ public class MainLaunch extends AppCompatActivity {
                     OkHttpClient client = new OkHttpClient();
                     try {
                         String web = "http://www.godserver.cn:11451/search?prompt1=" + city.split("市")[0] + "&status=市";
+                        if(!isFlag) {
+                            web = "http://www.godserver.cn:11451/search?data_place=" + tagplace;
+                        }
                         System.out.println(web);
                         @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                                 .url(web)
@@ -247,29 +275,35 @@ public class MainLaunch extends AppCompatActivity {
                         // 设置适配器
 
                         for (Place p : a) {
-                            if (p.getIsUse() == 1) {
-                                b.add(p);
-                                System.out.println(p.getName());
+                            try {
+                                if(p.getName().equals("个人位置")) {
+                                    x = p.getX() + "";
+                                    y = p.getY() + "";
+                                    tot = p.getAddress();
+                                    city = p.getCity();
+                                    province = p.getProvince();
+                                }
+                                if (p.getIsUse() == 1) {
+                                    b.add(p);
+                                    System.out.println(p.getName());
+                                }
+                            }catch (Exception e) {
+
                             }
                         }
                         a.clear();
                         TreeMap<Double, Place> treeMap = new TreeMap<>();
 
                         for (Place p : b) {
-                            if (isFlag) {
-                                double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
-                                if(shoucang.contains(p.getId() + "")) {
-                                    p.setName(p.getName() + " 收藏" + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
-                                    treeMap.put(distance - 1000, p);
+                            double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
+                            if(shoucang.contains(p.getId() + "")) {
+                                p.setName(p.getName() + " 收藏" + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                                treeMap.put(distance - 1000, p);
 
-                                }else {
-                                    p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
-                                    treeMap.put(distance, p);
-
-                                }
                             }else {
-                                p.setName(p.getName());
-                                treeMap.put((double)p.getId(), p);
+                                p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                                treeMap.put(distance, p);
+
                             }
                         }
                         for (Double key : treeMap.keySet()) {
@@ -432,23 +466,45 @@ public class MainLaunch extends AppCompatActivity {
         //tot = tot.split("\"")[1];
         Log.i("TAG", "x=" + x + ";y=" + y);
         //tot = "天津市东丽区民航大学";
-        try {
-            AddressParser.parseAddress(tot);
+        if(!isFlag) {
 
-        } catch (Exception e) {
-            Toast.makeText(MainLaunch.this, "错误", Toast.LENGTH_SHORT);
+        }else {
+            try {
+                AddressParser.parseAddress(tot);
+            } catch (Exception e) {
+                Toast.makeText(MainLaunch.this, "错误", Toast.LENGTH_SHORT);
 
+            }
         }
-        System.out.println(tot);
-        System.out.println(city);
         sendGetRequest();
-
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainLaunch.this));
 
     }
-
-
+    public static List<Geocode> parseJsonToGeocodeList(String jsonString) {
+        Gson gson = new Gson();
+        JsonArray jsonArray = gson.fromJson(jsonString, JsonArray.class);
+        List<Geocode> Geocodes = new ArrayList<>();
+        for (JsonElement jsonElement : jsonArray) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            Geocode geocode = new Geocode();
+            // 获取 marketName
+            String formatted_address = jsonObject.get("formatted_address").getAsString();
+            geocode.setFormatted_address(formatted_address);
+            geocode.setProvince(jsonObject.get("province").getAsString());
+            geocode.setCity(jsonObject.get("city").getAsString());
+            geocode.setDistrict(jsonObject.get("district").getAsString());
+            geocode.setCountry(jsonObject.get("country").getAsString());
+            geocode.setLevel(jsonObject.get("level").getAsString());
+            geocode.setCitycode(jsonObject.get("citycode").getAsString());
+            // 获取 x, y
+            String location = jsonObject.get("location").getAsString();
+            String[] coordinates = location.split(",");
+            geocode.setLocation(location);
+            Geocodes.add(geocode);
+        }
+        return Geocodes;
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();

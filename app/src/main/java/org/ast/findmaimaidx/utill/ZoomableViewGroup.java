@@ -3,6 +3,8 @@ package org.ast.findmaimaidx.utill;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -15,6 +17,9 @@ public class ZoomableViewGroup extends FrameLayout {
     private Matrix matrix = new Matrix();
     private float scaleFactor = 1.0f;
     public static float lastX, lastY;
+    private static final long REFRESH_RATE = 11; // 11ms 对应大约 90fps
+    private Handler mHandler;
+    private Runnable mRefreshRunnable;
 
     public ZoomableViewGroup(Context context) {
         super(context);
@@ -34,6 +39,15 @@ public class ZoomableViewGroup extends FrameLayout {
     private void init(Context context) {
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
         gestureDetector = new GestureDetector(context, new GestureListener());
+        mHandler = new Handler(Looper.getMainLooper());
+        mRefreshRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // 在这里执行刷新操作
+                invalidate(); // 重新绘制视图
+                mHandler.postDelayed(this, REFRESH_RATE);
+            }
+        };
     }
 
     @Override
@@ -86,5 +100,25 @@ public class ZoomableViewGroup extends FrameLayout {
         canvas.concat(matrix);
         super.dispatchDraw(canvas);
         canvas.restore();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        startRefreshing();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        stopRefreshing();
+    }
+
+    private void startRefreshing() {
+        mHandler.post(mRefreshRunnable);
+    }
+
+    private void stopRefreshing() {
+        mHandler.removeCallbacks(mRefreshRunnable);
     }
 }
