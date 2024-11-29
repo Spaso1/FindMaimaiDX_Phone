@@ -407,7 +407,7 @@ public class UpdateActivity extends AppCompatActivity implements
 
         Button button2 = findViewById(R.id.button2);
         button2.setOnClickListener(v -> {
-            Toast.makeText(this, "正在跳转至水鱼查分器官网", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "正在跳转至水鱼查分器官网kkkkkkkkkkkkkkkkkk", Toast.LENGTH_SHORT).show();
             String url = "https://www.diving-fish.com/maimaidx/prober/";
             Uri uri = Uri.parse(url);
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);

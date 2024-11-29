@@ -86,7 +86,7 @@ public class MainLaunch extends AppCompatActivity {
             // 获取传递过来的数据
             Intent intent = getIntent();
             userInput = intent.getStringExtra("address");
-            if(!userInput.isEmpty()) {
+            if(intent.getStringExtra("address") != null) {
                 Log.d("MainLaunch", "userInput: " + userInput);
                 tagplace = userInput;
                 isFlag = false;

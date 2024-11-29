@@ -14,6 +14,7 @@ public class Place implements Parcelable {
     private int isUse;
     private double x;
     private double y;
+    private int number;
     private int count;
     private int good;
     private int bad;
