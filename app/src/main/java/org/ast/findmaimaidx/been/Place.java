@@ -14,10 +14,10 @@ public class Place implements Parcelable {
     private int isUse;
     private double x;
     private double y;
-    private int number;
     private int count;
     private int good;
     private int bad;
+    public int num;
 
     public Place(int id, String name, String province, String city, String area, String address, int isUse, double x, double y, int count, int good, int bad) {
         this.id = id;
@@ -47,6 +47,14 @@ public class Place implements Parcelable {
         count = in.readInt();
         good = in.readInt();
         bad = in.readInt();
+    }
+
+    public int getNum() {
+        return num;
+    }
+
+    public void setNum(int num) {
+        this.num = num;
     }
 
     public static final Creator<Place> CREATOR = new Creator<Place>() {
@@ -156,7 +164,6 @@ public class Place implements Parcelable {
     public void setBad(int bad) {
         this.bad = bad;
     }
-
     @Override
     public int describeContents() {
         return 0;

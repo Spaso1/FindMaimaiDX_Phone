@@ -70,6 +70,7 @@ public class PageActivity extends AppCompatActivity {
         int count = getIntent().getIntExtra("count", 0);
         int good = getIntent().getIntExtra("good", 0);
         int bad = getIntent().getIntExtra("bad", 0);
+        int num = getIntent().getIntExtra("num",0);
         TextView textView = findViewById(R.id.nameTextView);
         textView.setText(name);
         TextView textView2 = findViewById(R.id.addressTextView);
@@ -80,6 +81,8 @@ public class PageActivity extends AppCompatActivity {
         textView4.setText(city);
         TextView textView5 = findViewById(R.id.areaTextView);
         textView5.setText(area);
+        TextView t1 = findViewById(R.id.num5);
+        t1.setText("舞萌机台 " + num + "");
         TextView x2 = findViewById(R.id.x);
         x2.setText("经度 " + String.valueOf(x));
         TextView y2 = findViewById(R.id.y);
@@ -249,7 +252,25 @@ public class PageActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
+        Button back = findViewById(R.id.updateButton);
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //创建一个可以输入数量的弹窗,在点击确定后执行指定操作
+                AlertDialog.Builder builder = new AlertDialog.Builder(PageActivity.context);
+                EditText editText = new EditText(PageActivity.context);
+                builder.setTitle("输入数量")
+                        .setView(editText)
+                        .setPositiveButton("确定", (dialog, which) -> {
+                            String input = editText.getText().toString();
+                            Log.d("输入的数量是：", input);
+                            sendUpdateNum(id,Integer.parseInt(input));
+                        })
+                        .setNegativeButton("取消", null)
+                        .show();
 
+            }
+        });
         WebView webView = findViewById(R.id.imageView1);
         String imageUrl = "https://img.shields.io/badge/recommend-" + good + "-green";
         webView.setBackgroundColor(0x00000000); // 设置背景为透明
@@ -283,7 +304,6 @@ public class PageActivity extends AppCompatActivity {
         });
 
         webView2.loadUrl(imageUrl2); // 加载网页
-
     }
     private void showNavigationOptions() {
         final CharSequence[] items = {"Google Maps", "高德地图", "百度地图"};
@@ -451,6 +471,53 @@ public class PageActivity extends AppCompatActivity {
                     TextView ttt =new TextView(PageActivity.context);
                     ttt.setText("暂时关闭");
                     t3.addView(ttt);
+                }
+            }
+        }.execute();
+    }
+    @SuppressLint("StaticFieldLeak")
+    private void sendUpdateNum(int id,int num) {
+        AsyncTask<Void, Void, String> asyncTask = new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... voids) {
+                OkHttpClient client = new OkHttpClient();
+                String web = "http://www.godserver.cn:11451/updateNum?id=" + id + "&num=" + num;
+                @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
+                        .url(web)
+                        .build();
+                try (Response response = client.newCall(request).execute()) {
+                    if (((Response) response).isSuccessful()) {
+                        return response.body().string();
+                    } else {
+                        return "Error: " + response.code();
+                    }
+                } catch (Exception e) {
+                    Log.e("OkHttp", "Error: " + e.getMessage());
+                    Toast.makeText(PageActivity.this, "上传失败!", Toast.LENGTH_SHORT).show();
+                    return "Error: " + e.getMessage();
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                if(result.equals("1")) {
+                    Toast.makeText(PageActivity.this, "上传成功!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PageActivity.this, "机厅数据更新,重启软件后即可在主界面生效", Toast.LENGTH_SHORT).show();
+                    TextView num1 = findViewById(R.id.num5);
+                    num1.setText("舞萌机台 "+num);
+                    AlertDialog.Builder ne = new AlertDialog.Builder(PageActivity.this);
+                    ne.setTitle("重启软件即可生效")
+                            .setPositiveButton("重启", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            })
+                            .setNegativeButton("不重启", null)
+                            .show();
                 }
             }
         }.execute();

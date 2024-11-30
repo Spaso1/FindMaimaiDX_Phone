@@ -66,8 +66,8 @@ public class MainLaunch extends AppCompatActivity {
     private PlaceAdapter adapter;
     public static String province;
     public static String city;
-    List<Place> a = new ArrayList<>();
-    List<Place> b = new ArrayList<>();
+    public static List<Place> a = new ArrayList<>();
+    public static List<Place> b = new ArrayList<>();
     private boolean flag = true;
     private double tagXY[] = new double[2];
     private String tagplace;
@@ -119,7 +119,6 @@ public class MainLaunch extends AppCompatActivity {
 // 创建一个Intent对象，指定动作和数据类型
                         Intent emailIntent = new Intent(Intent.ACTION_SEND);
                         emailIntent.setType("message/rfc822"); // 设置数据类型为邮件
-
 // 设置邮件的基本信息
                         String[] recipients = {"astralpath@163.com"}; // 收件人邮箱地址
                         emailIntent.putExtra(Intent.EXTRA_EMAIL, "astralpath@163.com");
@@ -326,6 +325,7 @@ public class MainLaunch extends AppCompatActivity {
                                     intent.putExtra("count",place.getCount());
                                     intent.putExtra("bad",place.getBad());
                                     intent.putExtra("good",place.getGood());
+                                    intent.putExtra("num",place.getNum());
                                     startActivity(intent);
                                 }
                             });

@@ -11,12 +11,17 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold" />
-
-    <TextView
-            android:id="@+id/provinceTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp" />
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+        <TextView
+                android:id="@+id/provinceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                  android:paddingLeft="15mm"
+                  android:id="@+id/num5"
+                  android:textSize="16sp"/>
+    </LinearLayout>
 
     <TextView
             android:id="@+id/cityTextView"
@@ -69,12 +74,15 @@
                 android:layout_marginLeft="15mm"
                 android:layout_centerInParent="true"/>
     </LinearLayout>
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="机厅数据更新" android:id="@+id/updateButton"/>
+        <Button
+                android:text="导航"
+                android:layout_width="227dp"
+                android:layout_marginLeft="1mm"
+                android:layout_height="wrap_content" android:id="@+id/button"/>
+    </LinearLayout>
 
-    <Button
-            android:text="导航"
-            android:layout_width="227dp"
-            android:layout_marginLeft="20mm"
-            android:layout_height="wrap_content" android:id="@+id/button"/>
     <LinearLayout android:layout_width="wrap_content" android:layout_height="60dp"
                   android:orientation="horizontal">
         <TextView

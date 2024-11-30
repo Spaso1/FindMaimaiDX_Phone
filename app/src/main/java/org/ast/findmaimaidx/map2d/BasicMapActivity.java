@@ -56,7 +56,6 @@ public class BasicMapActivity extends AppCompatActivity {
         // 添加独特样式的标记
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo); // 自定义图标资源
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 200, 130, true); // 缩放到 100x100 像素
-
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)
                 .title("舞萌痴位置")
