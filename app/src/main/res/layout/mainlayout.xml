@@ -17,6 +17,7 @@
         <TextView
                 android:text="卡在这个页面打开定位权限并且关闭夜间模式"
                 android:layout_width="match_parent"
+                android:lines="1"
                 android:layout_height="wrap_content" android:id="@+id/textView"/>
 
     </com.google.android.material.appbar.AppBarLayout>

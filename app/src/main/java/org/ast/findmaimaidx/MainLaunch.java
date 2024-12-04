@@ -3,24 +3,22 @@ package org.ast.findmaimaidx;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.content.pm.PackageManager;
+import android.graphics.*;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.*;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import androidx.appcompat.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +35,7 @@ import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Geocode;
 import org.ast.findmaimaidx.been.Place;
 import org.ast.findmaimaidx.map2d.BasicMapActivity;
+import org.ast.findmaimaidx.service.LocationUpdateService;
 import org.ast.findmaimaidx.utill.AddressParser;
 import org.ast.findmaimaidx.utill.PlaceAdapter;
 
@@ -49,7 +48,6 @@ import static androidx.core.location.LocationManagerCompat.requestLocationUpdate
 public class MainLaunch extends AppCompatActivity {
     private Handler handler = new Handler(Looper.getMainLooper());
     public static final int LOCATION_CODE = 301;
-    public static final String version = "1.000.42";
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
 
     private LocationManager locationManager;
@@ -68,14 +66,18 @@ public class MainLaunch extends AppCompatActivity {
     public static String city;
     public static List<Place> a = new ArrayList<>();
     public static List<Place> b = new ArrayList<>();
+    private BroadcastReceiver locationReceiver;
+
     private boolean flag = true;
     private double tagXY[] = new double[2];
     private String tagplace;
     private boolean isFlag = true;
     private SharedPreferences shoucang ;
     private SharedPreferences.Editor editor;
+    private SharedPreferences settingProperties;
+
     @Override
-    @SuppressLint({"MissingInflatedId", "Range"})
+    @SuppressLint({"MissingInflatedId", "Range", "UnspecifiedRegisterReceiverFlag", "SetTextI18n"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mainlayout);
@@ -109,7 +111,7 @@ public class MainLaunch extends AppCompatActivity {
 
             // 创建一个AlertDialog.Builder对象
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            final CharSequence[] items = {"联系作者","b50", "自动刷新定位", "手动选择定位","地图"};
+            final CharSequence[] items = {"联系作者","b50", "自动刷新定位", "手动选择定位","地图","设置及更多"};
 // 设置对话框标题
             builder.setTitle("选择");
 // 添加“确定”按钮
@@ -153,24 +155,22 @@ public class MainLaunch extends AppCompatActivity {
                         x = String.valueOf(location.getLongitude());
                         y = String.valueOf(location.getLatitude());
 
-                        if (location != null) {
-                            Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
-                            try {
-                                List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                                if (addresses.size() > 0) {
-                                    Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
-                                    Address address = addresses.get(0);
-                                    String detail = address.getAddressLine(0);
-                                    addressTextView.setText(detail);
-                                    tot = detail;
-                                    province = address.getAdminArea();
-                                    city = address.getLocality();
-                                    extracted();
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                addressTextView.setText("Error getting address");
+                        Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
+                        try {
+                            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            if (!addresses.isEmpty()) {
+                                Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT).show();
+                                Address address = addresses.get(0);
+                                String detail = address.getAddressLine(0);
+                                addressTextView.setText(detail);
+                                tot = detail;
+                                province = address.getAdminArea();
+                                city = address.getLocality();
+                                extracted();
                             }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            addressTextView.setText("Error getting address");
                         }
                         break;
                     case 3:
@@ -191,12 +191,11 @@ public class MainLaunch extends AppCompatActivity {
                                         new Thread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                String result = userInput;
                                                 handler.post(new Runnable() {
                                                     @Override
                                                     public void run() {
                                                         Intent intent = new Intent(MainLaunch.this, MainLaunch.class);
-                                                        intent.putExtra("address", result);
+                                                        intent.putExtra("address", userInput);
                                                         startActivity(intent);
                                                     }
                                                 });
@@ -224,10 +223,82 @@ public class MainLaunch extends AppCompatActivity {
 
                         intent2.putParcelableArrayListExtra("place_list_key", aL);
                         startActivity(intent2);
+                        break;
+                    case 5:
+                        Intent intent3 = new Intent(MainLaunch.this, SettingActivity.class);
+                        startActivity(intent3);
+                        break;
                 }
             }).show();
 
         });
+
+
+
+
+        settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
+        /**
+         * 设置侦测
+         */
+        boolean setting_autobeta1 = settingProperties.getBoolean("setting_autobeta1",false);
+        if(setting_autobeta1) {
+            // 启动位置更新服务
+            Intent serviceIntent = new Intent(this, LocationUpdateService.class);
+            startService(serviceIntent);
+
+            // 注册广播接收器
+            locationReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    double latitude = intent.getDoubleExtra("latitude", 0.0);
+                    double longitude = intent.getDoubleExtra("longitude", 0.0);
+                    Log.d("机厅位置","位置更新服务");
+                }
+            };
+            registerReceiver(locationReceiver, new IntentFilter("LOCATION_UPDATE"));
+            Log.d("机厅位置","启动位置更新服务");
+            Toast.makeText(MainLaunch.this, "已启动位置更新服务", Toast.LENGTH_SHORT).show();
+        }
+
+
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        if(settingProperties.getString("image_uri", null) != null) {
+            Uri uri = Uri.parse(settingProperties.getString("image_uri", null));
+            try {
+                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+                // 创建一个新的Bitmap来存储结果
+                Bitmap blurredBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+                // 使用Canvas和Paint进行绘制
+                Canvas canvas = new Canvas(blurredBitmap);
+                Paint paint = new Paint();
+                paint.setAlpha(50); // 设置透明度
+                // 绘制原始图像到新的Bitmap上
+                canvas.drawBitmap(bitmap, 0, 0, paint);
+
+                // 创建BitmapDrawable并设置其边界为原始bitmap的尺寸
+                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), blurredBitmap);
+
+                // 使用Matrix进行缩放和裁剪
+                Matrix matrix = new Matrix();
+                float scale = Math.max((float) recyclerView.getWidth() / blurredBitmap.getWidth(),
+                        (float) recyclerView.getHeight() / blurredBitmap.getHeight());
+                matrix.postScale(scale, scale);
+                matrix.postTranslate(-(blurredBitmap.getWidth() * scale - recyclerView.getWidth()) / 2,
+                        -(blurredBitmap.getHeight() * scale - recyclerView.getHeight()) / 2);
+
+                bitmapDrawable.setBounds(0, 0, recyclerView.getWidth(), recyclerView.getHeight());
+                bitmapDrawable.getPaint().setShader(new BitmapShader(blurredBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+                bitmapDrawable.getPaint().getShader().setLocalMatrix(matrix);
+
+                // 设置recyclerView的背景
+                recyclerView.setBackground(bitmapDrawable);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -295,6 +366,7 @@ public class MainLaunch extends AppCompatActivity {
 
                         for (Place p : b) {
                             double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
+
                             if(shoucang.contains(p.getId() + "")) {
                                 p.setName(p.getName() + " 收藏" + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
                                 treeMap.put(distance - 1000, p);
@@ -302,7 +374,9 @@ public class MainLaunch extends AppCompatActivity {
                             }else {
                                 p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
                                 treeMap.put(distance, p);
-
+                            }
+                            if(p.getNumJ()>0) {
+                                p.setName(p.getName() + "\uD83D\uDCB3");
                             }
                         }
                         for (Double key : treeMap.keySet()) {
@@ -326,6 +400,7 @@ public class MainLaunch extends AppCompatActivity {
                                     intent.putExtra("bad",place.getBad());
                                     intent.putExtra("good",place.getGood());
                                     intent.putExtra("num",place.getNum());
+                                    intent.putExtra("numJ",place.getNumJ());
                                     startActivity(intent);
                                 }
                             });
@@ -424,7 +499,7 @@ public class MainLaunch extends AppCompatActivity {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 12000, 16f, new LocationListener() {
                 @Override
                 public void onLocationChanged(@NonNull Location location) {
-                    Log.d("Location", "onLocationChanged11111111111111111111");
+                    Log.d("Location", "onLocationChanged");
                     if(flag) {
                         Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
                         x = String.valueOf(location.getLongitude());

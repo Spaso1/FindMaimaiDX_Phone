@@ -20,5 +20,12 @@
     <string name="disconnected">Disconnected</string>
     <string name="username">查分器账号</string>
     <string name="password">查分器密码</string>
-
+    <string name="settings">设置</string>
+    <string name="notifications">通知</string>
+    <string name="profile_name">用户名</string>
+    <string name="save_settings">保存设置</string>
+    <string name="beta">实时机厅人数测算 (BETA)</string>
+    <string name="shuiyu_option">水鱼</string>
+    <string name="lx_option">落雪</string>
+    <string name="settin_body">项目地址:https://github.com/Spaso1/FindMaimaiDX_Phone/ 个人开发,欢迎合作或者提意见!遵从MIT 协议,您可以在随意修改软件源码.</string>
 </resources>

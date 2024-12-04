@@ -20,11 +20,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.*;
-import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Market;
 import org.ast.findmaimaidx.been.Place;
-import org.ast.findmaimaidx.utill.FindNearMarket;
-import org.w3c.dom.Text;
+import org.ast.findmaimaidx.service.LocationUpdateService;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +36,7 @@ public class PageActivity extends AppCompatActivity {
     private String tagplace;
     public static  TextView t2 ;
     public static List<Market> marketList = new ArrayList<>();
-    public static LinearLayout t3 ;
+    public static LinearLayout t31 ;
     public static Context context;
     public static String key = "";
     public static List<TextView> textViews = new ArrayList<>();
@@ -48,10 +46,9 @@ public class PageActivity extends AppCompatActivity {
     private boolean isDis = false;
     private SharedPreferences sp ;
     private SharedPreferences shoucang ;
-
     public static int id;
     @Override
-    @SuppressLint({"MissingInflatedId", "Range"})
+    @SuppressLint({"MissingInflatedId", "Range", "SetTextI18n", "UnspecifiedRegisterReceiverFlag"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
@@ -71,6 +68,7 @@ public class PageActivity extends AppCompatActivity {
         int good = getIntent().getIntExtra("good", 0);
         int bad = getIntent().getIntExtra("bad", 0);
         int num = getIntent().getIntExtra("num",0);
+        int numJ = getIntent().getIntExtra("numJ",0);
         TextView textView = findViewById(R.id.nameTextView);
         textView.setText(name);
         TextView textView2 = findViewById(R.id.addressTextView);
@@ -82,7 +80,11 @@ public class PageActivity extends AppCompatActivity {
         TextView textView5 = findViewById(R.id.areaTextView);
         textView5.setText(area);
         TextView t1 = findViewById(R.id.num5);
-        t1.setText("舞萌机台 " + num + "");
+        t1.setText("舞萌总机台 " + (num + numJ));
+        TextView t2 = findViewById(R.id.num6);
+        t2.setText("国机 " + num);
+        TextView t3 = findViewById(R.id.num7);
+        t3.setText("日机 " + numJ);
         TextView x2 = findViewById(R.id.x);
         x2.setText("经度 " + String.valueOf(x));
         TextView y2 = findViewById(R.id.y);
@@ -97,12 +99,14 @@ public class PageActivity extends AppCompatActivity {
          * 获取附近商超
          */
         Place place = new Place(id2, name, province, city, area, address, 1, x, y, count, good, bad);
+        place.setNumJ(numJ);
+        place.setNum(num);
         findnear(place);
 
-        t2 = findViewById(R.id.textView2);
-        t2.setText("\n附近商超");
-        t2.setTextSize(20.0F);
-        t3 = findViewById(R.id.hor);
+        TextView tor2 = findViewById(R.id.textView2);
+        tor2.setText("\n附近商超");
+        tor2.setTextSize(20.0F);
+        t31 = findViewById(R.id.hor);
 
         sp = getSharedPreferences("like@dis", MODE_PRIVATE);
         shoucang = getSharedPreferences("shoucang@", MODE_PRIVATE);
@@ -258,13 +262,26 @@ public class PageActivity extends AppCompatActivity {
             public void onClick(View view) {
                 //创建一个可以输入数量的弹窗,在点击确定后执行指定操作
                 AlertDialog.Builder builder = new AlertDialog.Builder(PageActivity.context);
+                LinearLayout layout = new LinearLayout(PageActivity.context);
+                layout.setOrientation(LinearLayout.VERTICAL);
                 EditText editText = new EditText(PageActivity.context);
+                editText.setHint("这是国框数量 目前是" + place.getNum() + "个");
+                EditText editTextJ = new EditText(PageActivity.context);
+                editTextJ.setHint("这是日框数量 目前是" + place.getNumJ() + "个");
+                layout.addView(editText);
+                layout.addView(editTextJ);
                 builder.setTitle("输入数量")
-                        .setView(editText)
+                        .setView(layout)
                         .setPositiveButton("确定", (dialog, which) -> {
                             String input = editText.getText().toString();
                             Log.d("输入的数量是：", input);
-                            sendUpdateNum(id,Integer.parseInt(input));
+                            try {
+                                int inputNum = Integer.parseInt(input);
+                                int inputJ = Integer.parseInt(editTextJ.getText().toString());
+                                sendUpdateNum(id,Integer.parseInt(input),inputJ);
+                            }catch (Exception e) {
+                                Toast.makeText(PageActivity.context, "请输入数字", Toast.LENGTH_SHORT).show();
+                            }
                         })
                         .setNegativeButton("取消", null)
                         .show();
@@ -304,9 +321,10 @@ public class PageActivity extends AppCompatActivity {
         });
 
         webView2.loadUrl(imageUrl2); // 加载网页
+
     }
     private void showNavigationOptions() {
-        final CharSequence[] items = {"Google Maps", "高德地图", "百度地图"};
+        final CharSequence[] items = {"Google Maps", "高德地图", "百度地图(暂时不可用)"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("选择导航应用")
@@ -327,7 +345,7 @@ public class PageActivity extends AppCompatActivity {
     }
 
     private void startGoogleMaps() {
-        String uri = "google.navigation:q=" + tagXY[0] + "," + tagXY[1]; // 北京市经纬度
+        String uri = "google.navigation:q=" + tagXY[0] + "," + tagXY[1];
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
         intent.setPackage("com.google.android.apps.maps");
         startActivity(intent);
@@ -340,10 +358,10 @@ public class PageActivity extends AppCompatActivity {
     }
 
     private void startBaiduMaps() {
-        String uri = "baidumap://map/direction?destination=" + tagXY[0] + "," + tagXY[1] +"&mode=driving&src=appName";
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-        intent.setPackage("com.baidu.BaiduMap");
-
+        Toast.makeText(PageActivity.context, "111", Toast.LENGTH_SHORT).show();
+        String uri = "baidumap://map/direction?destination=latlng:" + tagXY[0] + "," + tagXY[1] +"&mode=driving&src=appName";
+        Intent intent = new Intent("com.baidu.tieba",  android.net.Uri.parse(uri));
+        startActivity(intent);
     }
     public static boolean isPackageInstalled(String packageName) {
         return new File("\\Android\\data\\" + packageName).exists();
@@ -465,23 +483,24 @@ public class PageActivity extends AppCompatActivity {
                             showNavigationOptions();
                         });
                         textViews.add(t);
-                        t3.addView(t);
+                        t31.addView(t);
                     }
                 }else {
                     TextView ttt =new TextView(PageActivity.context);
                     ttt.setText("暂时关闭");
-                    t3.addView(ttt);
+                    t31.addView(ttt);
                 }
             }
         }.execute();
     }
     @SuppressLint("StaticFieldLeak")
-    private void sendUpdateNum(int id,int num) {
+    private void sendUpdateNum(int id,int num,int numJ) {
         AsyncTask<Void, Void, String> asyncTask = new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... voids) {
                 OkHttpClient client = new OkHttpClient();
-                String web = "http://www.godserver.cn:11451/updateNum?id=" + id + "&num=" + num;
+                String web = "http://www.godserver.cn:11451/updateNum?id=" + id + "&num=" + num + "&numJ=" + numJ;
+                Log.d("Web", numJ + "");
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
                         .build();

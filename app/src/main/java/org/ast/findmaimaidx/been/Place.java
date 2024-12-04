@@ -18,6 +18,15 @@ public class Place implements Parcelable {
     private int good;
     private int bad;
     public int num;
+    public int numJ;
+
+    public int getNumJ() {
+        return numJ;
+    }
+
+    public void setNumJ(int numJ) {
+        this.numJ = numJ;
+    }
 
     public Place(int id, String name, String province, String city, String area, String address, int isUse, double x, double y, int count, int good, int bad) {
         this.id = id;

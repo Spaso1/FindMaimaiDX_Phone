@@ -14,10 +14,10 @@ import android.widget.FrameLayout;
 public class ZoomableViewGroup extends FrameLayout {
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
-    private Matrix matrix = new Matrix();
+    private final Matrix matrix = new Matrix();
     private float scaleFactor = 1.0f;
     public static float lastX, lastY;
-    private static final long REFRESH_RATE = 11; // 11ms 对应大约 90fps
+    private static final long REFRESH_RATE = 5; // 11ms 对应大约 90fps
     private Handler mHandler;
     private Runnable mRefreshRunnable;
 
@@ -43,7 +43,6 @@ public class ZoomableViewGroup extends FrameLayout {
         mRefreshRunnable = new Runnable() {
             @Override
             public void run() {
-                // 在这里执行刷新操作
                 invalidate(); // 重新绘制视图
                 mHandler.postDelayed(this, REFRESH_RATE);
             }
@@ -63,9 +62,7 @@ public class ZoomableViewGroup extends FrameLayout {
             scaleFactor *= detector.getScaleFactor();
             scaleFactor = Math.max(0.1f, Math.min(scaleFactor, 5.0f)); // 限制缩放范围
 
-            matrix.reset();
-            matrix.postScale(scaleFactor, scaleFactor, detector.getFocusX(), detector.getFocusY());
-            invalidate(); // 重新绘制
+            matrix.postScale(detector.getScaleFactor(), detector.getScaleFactor(), detector.getFocusX(), detector.getFocusY());
 
             return true;
         }
@@ -74,11 +71,8 @@ public class ZoomableViewGroup extends FrameLayout {
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            float dx = e2.getX() - lastX;
-            float dy = e2.getY() - lastY;
-
-            matrix.postTranslate(dx, dy);
-            invalidate(); // 重新绘制
+            // 取反 distanceX 和 distanceY
+            matrix.postTranslate(-distanceX, -distanceY);
 
             lastX = e2.getX();
             lastY = e2.getY();

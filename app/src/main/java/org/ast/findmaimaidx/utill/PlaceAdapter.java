@@ -1,5 +1,6 @@
 package org.ast.findmaimaidx.utill;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,9 +36,11 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         return new PlaceViewHolder(itemView);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull PlaceViewHolder holder, int position) {
         Place place = placeList.get(position);
+
         if(place.getName().contains("收藏")) {
             holder.nameTextView.setText(place.getName() + "♥");
         }else {

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                   xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+                                                   android:layout_height="match_parent">
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal"
+                  tools:ignore="MissingConstraints" android:padding="16dp">
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:paddingLeft="8dp">
+            <ImageView android:layout_width="128dp" android:layout_height="128dp" android:id="@+id/photo"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/uid"/>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:paddingLeft="8dp">
+            <TextView android:id="@+id/song_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=""
+                      android:textSize="16sp"/>
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/dividerVertical"
+                    android:layout_marginTop="16dp"/>
+            <LinearLayout android:layout_width="200dp" android:layout_height="wrap_content" android:orientation="horizontal" android:id="@+id/red">
+                <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:text="EXPERT"/>
+                <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:id="@+id/red_level_value"/>
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content" android:paddingLeft="8dp" android:layout_height="wrap_content" android:id="@+id/red_note_designer"/>
+
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/dividerVertical"
+                    android:layout_marginTop="16dp"/>
+            <LinearLayout android:layout_width="200dp" android:layout_height="wrap_content" android:orientation="horizontal" android:id="@+id/pink">
+                <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:text="MASTER"/>
+                <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:id="@+id/pink_level_value"/>
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content" android:paddingLeft="8dp" android:layout_height="wrap_content" android:id="@+id/pink_note_designer"/>
+
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/dividerVertical"
+                    android:layout_marginTop="16dp"/>
+            <LinearLayout android:layout_width="200dp" android:layout_height="wrap_content" android:orientation="horizontal" android:id="@+id/white">
+                <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:text="RE:MASTER"/>
+                <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:id="@+id/white_level_value"/>
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content" android:paddingLeft="8dp" android:layout_height="wrap_content" android:id="@+id/white_note_designer"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

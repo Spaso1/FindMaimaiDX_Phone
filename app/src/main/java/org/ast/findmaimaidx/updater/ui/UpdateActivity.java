@@ -375,6 +375,17 @@ public class UpdateActivity extends AppCompatActivity implements
         String webHost = mContextSp.getString("webHost","");
         int proxyPort = mContextSp.getInt("porxyPort",2569);
 
+        SharedPreferences settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editorSetting = settingProperties.edit();
+        SharedPreferences.Editor editorM = mContextSp.edit();
+        if(settingProperties.contains("shuiyu_username")) {
+            username = settingProperties.getString("shuiyu_username","");
+            editorM.putString("username",username);
+            editorM.apply();
+        }else if(username != null){
+            editorSetting.putString("shuiyu_username",username);
+            editorSetting.apply();
+        }
 
         ((TextView) findViewById(R.id.username)).setText(username);
         ((TextView) findViewById(R.id.password)).setText(password);
@@ -407,7 +418,7 @@ public class UpdateActivity extends AppCompatActivity implements
 
         Button button2 = findViewById(R.id.button2);
         button2.setOnClickListener(v -> {
-            Toast.makeText(this, "正在跳转至水鱼查分器官网kkkkkkkkkkkkkkkkkk", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "正在跳转至水鱼查分器官网", Toast.LENGTH_SHORT).show();
             String url = "https://www.diving-fish.com/maimaidx/prober/";
             Uri uri = Uri.parse(url);
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
