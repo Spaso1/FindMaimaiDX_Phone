@@ -376,6 +376,9 @@ public class UpdateActivity extends AppCompatActivity implements
         int proxyPort = mContextSp.getInt("porxyPort",2569);
 
         SharedPreferences settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
+        if(settingProperties.getInt("use_",0)==1) {
+            Toast.makeText(this, "此查分器不兼容落雪!未来将会提供支持喵~", Toast.LENGTH_LONG).show();
+        }
         SharedPreferences.Editor editorSetting = settingProperties.edit();
         SharedPreferences.Editor editorM = mContextSp.edit();
         if(settingProperties.contains("shuiyu_username")) {
