@@ -1,7 +1,6 @@
 package org.ast.findmaimaidx.map2d;
 
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,12 +19,10 @@ import com.amap.api.maps2d.model.BitmapDescriptorFactory;
 import com.amap.api.maps2d.model.LatLng;
 import com.amap.api.maps2d.model.Marker;
 import com.amap.api.maps2d.model.MarkerOptions;
-import org.ast.findmaimaidx.PageActivity;
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.been.Place;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class BasicMapActivity extends AppCompatActivity {
 

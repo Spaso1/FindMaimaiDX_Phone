@@ -23,7 +23,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import android.widget.Toast;
 import okhttp3.Call;
 import okhttp3.ConnectionSpec;
 import okhttp3.Interceptor;
@@ -35,7 +34,6 @@ import okhttp3.Response;
 import okhttp3.TlsVersion;
 import org.ast.findmaimaidx.updater.notification.NotificationUtil;
 
-import static org.ast.findmaimaidx.b50.context;
 import static org.ast.findmaimaidx.updater.crawler.CrawlerCaller.writeLog;
 
 public class WechatCrawler {
@@ -67,7 +65,7 @@ public class WechatCrawler {
 
     private static void uploadData(Integer diff, String data, Integer retryCount) {
         Request request = new Request.Builder().url("https://www.diving-fish.com/api/pageparser/page").addHeader("content-type", "text/plain").post(RequestBody.create(data, TEXT)).build();
-
+        //Log.d("Crawler", "Uploading data to server" + "\n" + data);
         Call call = client.newCall((request));
 
         try {

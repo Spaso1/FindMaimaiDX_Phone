@@ -1,52 +1,59 @@
 package org.ast.findmaimaidx.service;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
+import android.graphics.Bitmap;
+import android.location.*;
+import android.location.Address;
+import android.os.*;
+import android.provider.Settings;
 import android.util.Log;
 
-import android.widget.Toast;
+import android.widget.*;
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.Toolbar;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
+import com.google.android.material.card.MaterialCardView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.ast.findmaimaidx.MainLaunch;
-import org.ast.findmaimaidx.PageActivity;
+import okhttp3.*;
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.been.DistanceCalculator;
+import org.ast.findmaimaidx.been.Lx_chart;
+import org.ast.findmaimaidx.been.Lx_data_scores;
 import org.ast.findmaimaidx.been.Place;
-import org.ast.findmaimaidx.utill.PlaceAdapter;
+import org.ast.findmaimaidx.ui.Scores;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.TreeMap;
+import java.util.*;
 
 public class LocationUpdateService extends Service {
 
     private static final String TAG = "LocationUpdateService";
-    private static final long UPDATE_INTERVAL = 3000; // 30 seconds
-
-    private FusedLocationProviderClient fusedLocationClient;
-    private LocationCallback locationCallback;
+    private static final long UPDATE_INTERVAL = 30000; // 30 seconds
+    private static final int NOTIFICATION_ID = 1;
+    private static final String CHANNEL_ID = "location_channel";
+    private Context context = this;
+    private LocationManager locationManager = null;
+    private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
+    private static LocationListener locationListener = null;
     private Handler handler;
     private Runnable runnable;
     public static List<Place> a = new ArrayList<>();
@@ -54,29 +61,54 @@ public class LocationUpdateService extends Service {
     public static String city;
     private String x;
     private String y;
+
     @Override
+    @SuppressLint("MissingPermission")
     public void onCreate() {
         super.onCreate();
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        Log.d("服务","后台定位服务启动");
-        locationCallback = new LocationCallback() {
+        Log.d("服务", "后台定位服务启动");
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationListener = new LocationListener() {
             @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
+            public void onLocationChanged(Location location) {
                 Log.d("服务", "Location updated");
-                if (locationResult == null) {
-                    return;
+                Log.d(TAG, "Location updated: " + location.getLatitude() + ", " + location.getLongitude());
+                // 输出地址日志
+                Log.d(TAG, "Address: Latitude=" + location.getLatitude() + ", Longitude=" + location.getLongitude());
+                // 发送广播
+                Intent broadcastIntent = new Intent("LOCATION_UPDATE");
+                broadcastIntent.putExtra("latitude", location.getLatitude());
+                broadcastIntent.putExtra("longitude", location.getLongitude());
+                x = String.valueOf(location.getLatitude());
+                y = String.valueOf(location.getLongitude());
+                Geocoder geocoder = new Geocoder(LocationUpdateService.this, Locale.getDefault());
+                try {
+                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                    if (addresses.size() > 0) {
+                        Address address = addresses.get(0);
+                        String detail = address.getAddressLine(0);
+                        city = address.getLocality();
+
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-                for (Location location : locationResult.getLocations()) {
-                    Log.d(TAG, "Location updated: " + location.getLatitude() + ", " + location.getLongitude());
-                    // 发送广播
-                    Intent broadcastIntent = new Intent("LOCATION_UPDATE");
-                    broadcastIntent.putExtra("latitude", location.getLatitude());
-                    broadcastIntent.putExtra("longitude", location.getLongitude());
-                    x = String.valueOf(location.getLatitude());
-                    y = String.valueOf(location.getLongitude());
-                    sendGetRequest();
-                    sendBroadcast(broadcastIntent);
-                }
+                sendGetRequest();
+                sendBroadcast(broadcastIntent);
+            }
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+                Log.d(TAG, "Status changed: " + provider + ", " + status);
+            }
+
+            @Override
+            public void onProviderEnabled(@NonNull String provider) {
+                Log.d(TAG, "Provider enabled: " + provider);
+            }
+
+            @Override
+            public void onProviderDisabled(@NonNull String provider) {
+                Log.d(TAG, "Provider disabled: " + provider);
             }
         };
 
@@ -84,12 +116,67 @@ public class LocationUpdateService extends Service {
         runnable = new Runnable() {
             @Override
             public void run() {
-                requestLocationUpdates();
+                //requestLocationUpdates();
                 handler.postDelayed(this, UPDATE_INTERVAL);
             }
         };
-    }
+        createNotificationChannel();
+        startForeground(NOTIFICATION_ID, createNotification());
+        //requestLocationUpdates();
+        Log.d("服务", "服务已启动");
+        // 检查位置服务是否启用
+        if (!isLocationEnabled()) {
+            Log.e(TAG, "Location services are not enabled");
+            // 提示用户启用位置服务
+        }
+        SharedPreferences settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
+        String gpsapi;
+        if(settingProperties.contains("gpsapi")) {
+            gpsapi = settingProperties.getString("gpsapi", "");
+        }else {
+            String originalString = new Random(11111).toString();
+            settingProperties.edit().putString("gpsapi", Base64.getEncoder().encodeToString(originalString.getBytes())).apply();
+            gpsapi = Base64.getEncoder().encodeToString(originalString.getBytes());
+        }
+        new Thread(()->{
+            try {
+                while (true) {
+                    Thread.sleep(UPDATE_INTERVAL);
+                    requestSingleUpdate();
 
+                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    x = String.valueOf(location.getLatitude());
+                    y = String.valueOf(location.getLongitude());
+                    OkHttpClient client = new OkHttpClient();
+                    // 创建 RequestBody
+                    // 创建 Request
+                    Request request = new Request.Builder()
+                            .url("http://www.godserver.cn:11451/api/ago/update?key=" + gpsapi +"&x=" + x + "&y=" + y)
+                            .build();
+
+                    // 使用 AsyncTask 发送请求
+                    new SendRequestTask(client, request).execute();
+                    Geocoder geocoder = new Geocoder(LocationUpdateService.this, Locale.getDefault());
+                    try {
+                        List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        if (addresses.size() > 0) {
+                            Address address = addresses.get(0);
+                            city = address.getLocality();
+
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    sendGetRequest();}
+            }catch (Exception ignored) {
+                ignored.printStackTrace();
+            }
+        }).start();
+    }
+    private boolean isLocationEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         handler.post(runnable);
@@ -100,21 +187,32 @@ public class LocationUpdateService extends Service {
     public void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(runnable);
-        fusedLocationClient.removeLocationUpdates(locationCallback);
+        stopForeground(true);
     }
 
     private void requestLocationUpdates() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(UPDATE_INTERVAL);
-        locationRequest.setFastestInterval(UPDATE_INTERVAL);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        String provider = LocationManager.GPS_PROVIDER; // 或 LocationManager.NETWORK_PROVIDER
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // 处理权限未授予的情况
             return;
         }
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+
+        locationManager.requestLocationUpdates(provider, UPDATE_INTERVAL, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
     }
+    private void requestSingleUpdate() {
+        String provider = LocationManager.GPS_PROVIDER;
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // 处理权限未授予的情况
+            return;
+        }
+
+        locationManager.requestSingleUpdate(provider, locationListener, Looper.getMainLooper());
+    }
+
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -129,7 +227,7 @@ public class LocationUpdateService extends Service {
                 protected String doInBackground(Void... voids) {
                     OkHttpClient client = new OkHttpClient();
                     try {
-                        String web = "http://www.godserver.cn:11451/search?prompt1=" + city.split("市")[0] + "&status=市";
+                        String web = "http://www.godserver.cn:11451/api/mai/v1/search?prompt1=" + city.split("市")[0] + "&status=市";
                         @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                                 .url(web)
                                 .build();
@@ -145,6 +243,7 @@ public class LocationUpdateService extends Service {
                             return "Error: " + e.getMessage();
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
                         return "BedWeb";
                     }
                 }
@@ -164,7 +263,6 @@ public class LocationUpdateService extends Service {
                                 }
                                 if (p.getIsUse() == 1) {
                                     b.add(p);
-                                    System.out.println(p.getName());
                                 }
                             } catch (Exception e) {
 
@@ -181,24 +279,29 @@ public class LocationUpdateService extends Service {
                             a.add(treeMap.get(key));
                         }
                         boolean flag2 = true;
-                        sendUpdateJiTing(b.get(0));
+                        double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), b.get(0).getX(), b.get(0).getY());
+                        if(distance < 0.3) {
+                            Log.d("distance",b.get(0).getName() + "可能有人");
+                            sendUpdateJiTing(b.get(0));
+
+                        }
                     }
                 }
             }.execute();
-        }catch (Exception e ){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     private List<Place> parseJsonToPlaceList(String jsonString) {
         Gson gson = new Gson();
         Type placeListType = new TypeToken<List<Place>>() {
         }.getType();
-        if(jsonString.equals("BedWeb")) {
+        if (jsonString.equals("BedWeb")) {
             return null;
         }
         return gson.fromJson(jsonString, placeListType);
     }
-
 
     @SuppressLint("StaticFieldLeak")
     private void sendUpdateJiTing(Place place) {
@@ -208,9 +311,17 @@ public class LocationUpdateService extends Service {
                 protected String doInBackground(Void... voids) {
                     OkHttpClient client = new OkHttpClient();
                     try {
-                        String web = "http://www.godserver.cn:11451/updatePeo?place=" + place.getId();
+                        String web = "http://www.godserver.cn:11451/api/mai/v1/placePeo?";
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("id", place.getId());
+                        jsonObject.put("hashid", getStableUUID(context));
+
+                        // 将JSON对象转换为RequestBody
+                        MediaType JSON = MediaType.get("application/json; charset=utf-8");
+                        RequestBody body = RequestBody.create(jsonObject.toString(), JSON);
                         @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                                 .url(web)
+                                .post(body)
                                 .build();
 
                         try (Response response = client.newCall(request).execute()) {
@@ -227,13 +338,79 @@ public class LocationUpdateService extends Service {
                         return "BedWeb";
                     }
                 }
+
                 @Override
                 protected void onPostExecute(String result) {
 
                 }
             }.execute();
-        }catch (Exception e ){
+        } catch (Exception e) {
 
+        }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Location Update Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
+        }
+    }
+
+    private Notification createNotification() {
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Location Update Service")
+                .setContentText("Updating location every 3 seconds")
+                .setSmallIcon(R.drawable.ic_launcher) // 替换为您的通知图标资源
+                .build();
+    }
+    public static String getStableUUID(Context context) {
+        // 获取设备的Android ID
+        String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        // 使用Android ID生成UUID
+        UUID deviceUuid = new UUID(androidId.hashCode(), ((long) androidId.hashCode() << 32));
+
+        return deviceUuid.toString();
+    }
+
+
+    private class SendRequestTask extends AsyncTask<Void, Void, String> {
+        private OkHttpClient client;
+        private Request request;
+
+        public SendRequestTask(OkHttpClient client, Request request) {
+            this.client = client;
+            this.request = request;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            try (Response response = client.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    return response.body().string();
+                } else {
+                    return null;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @SuppressLint({"SetTextI18n", "ResourceAsColor"})
+        @Override
+        protected void onPostExecute(String result) {
+            if (result == null) {
+                Toast.makeText(context, "请求失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Log.d("Scores", result);
         }
     }
 }

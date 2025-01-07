@@ -44,7 +44,7 @@
 
         <activity
                 android:hardwareAccelerated="true"
-                android:name=".MainLaunch"
+                android:name=".ui.MainLaunch"
                 android:exported="true"
                 android:label="@string/app_name"
                 android:allowTaskReparenting="false"
@@ -58,7 +58,7 @@
         </activity>
         <activity
                 android:hardwareAccelerated="true"
-                android:name=".b50"
+                android:name=".ui.b50"
                 android:exported="true"
 
                 android:theme="@style/Theme.FindMaimaiDX2" tools:ignore="WrongManifestParent">
@@ -66,9 +66,21 @@
         </activity>
         <activity
                 android:hardwareAccelerated="true"
-                android:name=".PageActivity"
+                android:name=".ui.PageActivity"
                 android:exported="true"
-                android:theme="@style/Theme.FindMaimaiDX" tools:ignore="WrongManifestParent">
+                android:theme="@style/FindMaimaiDX2" tools:ignore="WrongManifestParent">
+        </activity>
+        <activity
+                android:hardwareAccelerated="true"
+                android:name=".ui.Scores"
+                android:theme="@style/NewTheme"
+                android:exported="true" tools:ignore="WrongManifestParent">
+        </activity>
+
+        <activity android:name=".ui.ChunActivity"
+                  android:theme="@style/FindMaimaiDX2"
+                  android:hardwareAccelerated="true"
+                  android:exported="true">
         </activity>
         <activity
                 android:hardwareAccelerated="true"
@@ -82,10 +94,13 @@
                 android:screenOrientation="fullSensor"
                 android:hardwareAccelerated="true"
         />
-        <activity android:name=".SettingActivity"
-                android:theme="@style/SettingTheme"/>
-
-
+        <activity android:name=".ui.SettingActivity"
+                  android:hardwareAccelerated="true"
+                  android:theme="@style/NewTheme"/>
+        <activity android:name=".ui.FindFri"
+                  android:theme="@style/NewTheme"
+                  android:hardwareAccelerated="true" android:exported="true">
+        </activity>
         <service
                 android:hardwareAccelerated="true"
                 android:name=".updater.vpn.core.LocalVpnService"

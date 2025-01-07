@@ -1,7 +1,6 @@
 package org.ast.findmaimaidx.utill;
 
-import android.util.Log;
-import org.ast.findmaimaidx.MainLaunch;
+import org.ast.findmaimaidx.ui.MainLaunch;
 
 import java.util.ArrayList;
 import java.util.List;

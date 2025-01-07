@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.*;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -16,7 +17,12 @@ import android.widget.*;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonWriter;
+import okhttp3.*;
 import org.ast.findmaimaidx.R;
+import org.ast.findmaimaidx.been.Lx_chart;
+import org.ast.findmaimaidx.been.PlayerData;
 import org.ast.findmaimaidx.updater.crawler.Callback;
 import org.ast.findmaimaidx.updater.crawler.CrawlerCaller;
 import org.ast.findmaimaidx.updater.notification.NotificationUtil;
@@ -25,8 +31,13 @@ import org.ast.findmaimaidx.updater.server.HttpServerService;
 import org.ast.findmaimaidx.updater.vpn.core.Constant;
 import org.ast.findmaimaidx.updater.vpn.core.LocalVpnService;
 import org.ast.findmaimaidx.updater.vpn.core.ProxyConfig;
+import org.ast.findmaimaidx.utill.Shuiyu2Luoxue;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 
 import static org.ast.findmaimaidx.updater.Util.copyText;
@@ -46,7 +57,7 @@ public class UpdateActivity extends AppCompatActivity implements
     private Calendar mCalendar;
 
     private SharedPreferences mContextSp;
-
+    private Context context = this;
     private void updateTilte() {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -59,6 +70,7 @@ public class UpdateActivity extends AppCompatActivity implements
     }
 
     @Override
+    @SuppressLint("MissingInflatedId")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.update);
@@ -82,8 +94,106 @@ public class UpdateActivity extends AppCompatActivity implements
         CrawlerCaller.listener = this;
 
         loadContextData();
-    }
 
+        Button sy2lx = findViewById(R.id.sy2lx);
+        sy2lx.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 创建 OkHttpClient 实例
+                OkHttpClient client = new OkHttpClient();
+                SharedPreferences sp = getSharedPreferences("setting", Context.MODE_PRIVATE);
+                // 原始数据
+                String rawData = "{\"username\":\"" + sp.getString("shuiyu_username", "") + "\",\"b50\":true}";
+                RequestBody body = RequestBody.create(rawData, MediaType.get("application/json; charset=utf-8"));
+                // 创建 Request
+                Request request = new Request.Builder()
+                        .url("https://www.diving-fish.com/api/maimaidxprober/query/player")
+                        .post(body)
+                        .build();
+                // 使用 AsyncTask 发送请求
+                new SendRequestTask(client, request,0).execute();
+            }
+        });
+    }
+    private class SendRequestTask extends AsyncTask<Void, Void, String> {
+        private OkHttpClient client;
+        private Request request;
+        private int t;
+
+        public SendRequestTask(OkHttpClient client, Request request,int t) {
+            this.client = client;
+            this.request = request;
+            this.t =t;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            try (Response response = client.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    return response.body().string();
+                } else {
+                    return null;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @SuppressLint("SetTextI18n")
+        @Override
+        protected void onPostExecute(String result) {
+            if (result == null) {
+                Toast.makeText(context, "请求失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if(this.t==0) {
+                // 使用Gson进行反序列化
+                Gson gson = new Gson();
+                PlayerData playerData = gson.fromJson(result, PlayerData.class);
+                ArrayList<Lx_chart> lx_charts = Shuiyu2Luoxue.shuiyu2luoxue(playerData);
+                // 分割 lx_charts 列表
+
+                // 分割 lx_charts 列表成五个部分
+                int size = lx_charts.size();
+                int partSize = (int) Math.ceil(size / 2.0);
+
+                List<List<Lx_chart>> parts = new ArrayList<>();
+                for (int i = 0; i < 2; i++) {
+                    int fromIndex = i * partSize;
+                    int toIndex = Math.min(fromIndex + partSize, size);
+                    parts.add(lx_charts.subList(fromIndex, toIndex));
+                }
+
+                try {
+                    // 处理每个部分
+                    for (int i = 0; i < parts.size(); i++) {
+                        String rawPart = serializeToJson(gson, parts.get(i));
+                        rawPart = "{\"scores\":" + rawPart + "}";
+                        Log.d("rawPart", rawPart);
+                        OkHttpClient client = new OkHttpClient();
+                        RequestBody body = RequestBody.create(rawPart, MediaType.get("application/json; charset=utf-8"));
+                        String code = getSharedPreferences("setting", Context.MODE_PRIVATE).getString("luoxue_username","");
+                        // 创建 Request
+                        Request request = new Request.Builder()
+                                .url("https://maimai.lxns.net/api/v0/user/maimai/player/scores")
+                                .header("X-User-Token",code) // 添加认证头
+                                .post(body)
+                                .build();
+                        // 使用 AsyncTask 发送请求
+                        new SendRequestTask(client, request,1).execute();
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if(this.t==1) {
+                Log.d("out",result);
+                Toast.makeText(context, "上传成功,数据已从水鱼传到落雪~", Toast.LENGTH_SHORT).show();
+            }
+            // 这里raw是发送给落雪查分器的数据,代表着上传歌曲信息
+        }
+    }
     private void inputAddress() {
 //        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 //        builder.setTitle("Http com.bakapiano.maimai.com.bakapiano.maimai.proxy server");
@@ -150,7 +260,23 @@ public class UpdateActivity extends AppCompatActivity implements
         updateTilte();
         Toast.makeText(this, status, Toast.LENGTH_SHORT).show();
     }
+    private static String serializeToJson(Gson gson, List<Lx_chart> charts) throws IOException {
+        StringWriter stringWriter = new StringWriter();
+        JsonWriter jsonWriter = gson.newJsonWriter(stringWriter);
 
+        try {
+            jsonWriter.beginArray();
+            for (Lx_chart chart : charts) {
+                gson.toJson(chart, Lx_chart.class, jsonWriter);
+            }
+            jsonWriter.endArray();
+            jsonWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return stringWriter.toString();
+    }
     private final Object switchLock = new Object();
 
     @Override
@@ -376,9 +502,7 @@ public class UpdateActivity extends AppCompatActivity implements
         int proxyPort = mContextSp.getInt("porxyPort",2569);
 
         SharedPreferences settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
-        if(settingProperties.getInt("use_",0)==1) {
-            Toast.makeText(this, "此查分器不兼容落雪!未来将会提供支持喵~", Toast.LENGTH_LONG).show();
-        }
+
         SharedPreferences.Editor editorSetting = settingProperties.edit();
         SharedPreferences.Editor editorM = mContextSp.edit();
         if(settingProperties.contains("shuiyu_username")) {

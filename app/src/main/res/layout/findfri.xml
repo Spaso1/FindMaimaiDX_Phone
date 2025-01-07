@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                   xmlns:tools="http://schemas.android.com/tools"
+                                                   android:layout_width="match_parent"
+                                                   android:layout_height="match_parent"
+                                                   tools:context=".ui.FindFri">
+
+    <org.ast.findmaimaidx.been.CompassView
+            android:id="@+id/compassView"
+            android:layout_width="60mm"
+            android:layout_height="60mm"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:padding="16dp"
+            android:paddingTop="18dp"
+            android:paddingEnd="18dp"
+            app:layout_constraintVertical_chainStyle="packed" tools:ignore="NotSibling"/>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/compassView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                app:hintEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/your"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="你的API"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                app:hintEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/target"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="目标API"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="保存并启动寻找"
+                android:id="@+id/save_sub"
+                tools:ignore="MissingConstraints"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

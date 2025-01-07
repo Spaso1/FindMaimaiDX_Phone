@@ -16,7 +16,7 @@ public class Chart {
     @SerializedName("level")
     private String level;
     @SerializedName("level_index")
-    private int levelIndex;
+    private int level_index;
     @SerializedName("level_label")
     private String levelLabel;
     @SerializedName("ra")
@@ -78,12 +78,12 @@ public class Chart {
         this.level = level;
     }
 
-    public int getLevelIndex() {
-        return levelIndex;
+    public int getLevel_index() {
+        return level_index;
     }
 
-    public void setLevelIndex(int levelIndex) {
-        this.levelIndex = levelIndex;
+    public void setLevel_index(int level_index) {
+        this.level_index = level_index;
     }
 
     public String getLevelLabel() {

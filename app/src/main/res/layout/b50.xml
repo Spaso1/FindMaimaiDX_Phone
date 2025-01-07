@@ -4,7 +4,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/main"
-                tools:context=".b50">
+                tools:context=".ui.b50">
     <!-- 顶部用户信息区域 -->
     <LinearLayout
             android:id="@+id/top_info_layout"
@@ -240,11 +240,18 @@
                 android:paddingTop="8dp" />
         <Button android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20mm"
-                android:text="save" android:id="@+id/saveButton" tools:ignore="DuplicateIds">
+                android:layout_marginLeft="5mm"
+                android:textSize="10sp"
+                android:text="scores" android:id="@+id/scores" tools:ignore="DuplicateIds">
         </Button>
         <Button android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:text="Save" android:id="@+id/saveButton" tools:ignore="DuplicateIds">
+        </Button>
+        <Button android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
                 android:text="Update" android:id="@+id/updateButton" tools:ignore="DuplicateIds">
         </Button>
     </LinearLayout>

@@ -150,6 +150,12 @@
                 android:layout_height="wrap_content"
                 android:onClick="saveText"
                 android:text="注册水鱼账号" />
+        <Button
+                android:id="@+id/sy2lx"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="saveText"
+                android:text="水鱼数据迁移到落雪" />
     </LinearLayout>
 
 
