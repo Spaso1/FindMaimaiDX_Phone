@@ -2,12 +2,15 @@ package org.ast.findmaimaidx.utill;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -36,7 +39,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         return new PlaceViewHolder(itemView);
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "UseCompatLoadingForDrawables"})
     @Override
     public void onBindViewHolder(@NonNull PlaceViewHolder holder, int position) {
         Place place = placeList.get(position);
@@ -50,7 +53,21 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         holder.cityTextView.setText(place.getCity());
         holder.areaTextView.setText(place.getArea());
         holder.addressTextView.setText(place.getAddress());
-
+        double rating = (double) ((place.getNum() + place.getNumJ()) * (place.getGood() + 1)) / (place.getGood() + place.getBad() + 1);
+        Log.i("rating",rating + "");
+        if(rating >= 3) {
+            holder.imageView.setImageDrawable(ContextCompat.getDrawable(holder.itemView.getContext(), R.drawable.rank_sssp));
+        }else if (rating < 3 && rating >= 2){
+            holder.imageView.setImageDrawable(ContextCompat.getDrawable(holder.itemView.getContext(), R.drawable.rank_sss));
+        }else if (rating < 2 && rating >= 1){
+            holder.imageView.setImageDrawable(ContextCompat.getDrawable(holder.itemView.getContext(), R.drawable.rank_ss));
+        }else if (rating < 1 && rating >= 0.5){
+            holder.imageView.setImageDrawable(ContextCompat.getDrawable(holder.itemView.getContext(), R.drawable.rank_s));
+        }else if (rating < 0.5 && rating >= 0){
+            holder.imageView.setImageDrawable(ContextCompat.getDrawable(holder.itemView.getContext(), R.drawable.rank_s));
+        }else {
+            holder.imageView.setImageDrawable(ContextCompat.getDrawable(holder.itemView.getContext(), R.drawable.rank_a));
+        }
         // 设置点击监听器
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -70,7 +87,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         TextView cityTextView;
         TextView areaTextView;
         TextView addressTextView;
-
+        ImageView imageView;
         PlaceViewHolder(@NonNull View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
@@ -78,6 +95,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
             cityTextView = itemView.findViewById(R.id.cityTextView);
             areaTextView = itemView.findViewById(R.id.areaTextView);
             addressTextView = itemView.findViewById(R.id.addressTextView);
+            imageView = itemView.findViewById(R.id.photoId);
         }
     }
 }

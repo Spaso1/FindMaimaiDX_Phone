@@ -1,8 +1,8 @@
-package org.ast.findmaimaidx.been;
+package org.ast.findmaimaidx.been.lx;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Lx_data_scores {
+public class Lx_res {
     @SerializedName("success")
     private boolean success;
 
@@ -10,8 +10,9 @@ public class Lx_data_scores {
     private int code;
 
     @SerializedName("data")
-    private Lx_chart[] data;
+    private Lx_data data;
 
+    // Getters and Setters
     public boolean isSuccess() {
         return success;
     }
@@ -28,11 +29,11 @@ public class Lx_data_scores {
         this.code = code;
     }
 
-    public Lx_chart[] getData() {
+    public Lx_data getData() {
         return data;
     }
 
-    public void setData(Lx_chart[] data) {
+    public void setData(Lx_data data) {
         this.data = data;
     }
 }

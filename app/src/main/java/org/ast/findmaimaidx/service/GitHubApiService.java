@@ -1,5 +1,6 @@
-package org.ast.findmaimaidx.been;
+package org.ast.findmaimaidx.service;
 
+import org.ast.findmaimaidx.been.Release;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;

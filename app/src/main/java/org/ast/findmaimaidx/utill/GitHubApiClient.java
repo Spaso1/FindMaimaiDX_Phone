@@ -1,6 +1,6 @@
 package org.ast.findmaimaidx.utill;
 
-import org.ast.findmaimaidx.been.GitHubApiService;
+import org.ast.findmaimaidx.service.GitHubApiService;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 

@@ -1,4 +1,4 @@
-package org.ast.findmaimaidx.been;
+package org.ast.findmaimaidx.been.lx;
 
 public class Lx_chart {
     private int id;

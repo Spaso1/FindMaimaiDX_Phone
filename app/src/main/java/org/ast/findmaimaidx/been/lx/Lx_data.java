@@ -1,4 +1,4 @@
-package org.ast.findmaimaidx.been;
+package org.ast.findmaimaidx.been.lx;
 
 import com.google.gson.annotations.SerializedName;
 
