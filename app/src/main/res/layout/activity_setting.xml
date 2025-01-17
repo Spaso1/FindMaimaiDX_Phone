@@ -97,6 +97,7 @@
                 android:textColor="@android:color/white"
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"/>
+
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
             <com.google.android.material.button.MaterialButton
                     android:id="@+id/save_settings_button"

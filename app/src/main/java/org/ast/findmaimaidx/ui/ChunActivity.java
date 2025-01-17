@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 
-public class ChunActivity extends AppCompatActivity {
+public class  ChunActivity extends AppCompatActivity {
     private String tot;
     private String x;
     private String y;

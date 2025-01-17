@@ -24,6 +24,8 @@ import com.google.gson.Gson;
 import okhttp3.*;
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.been.*;
+import org.ast.findmaimaidx.been.lx.Lx_playerInfo;
+import org.ast.findmaimaidx.been.lx.Lx_res;
 import org.ast.findmaimaidx.updater.ui.UpdateActivity;
 
 import java.io.IOException;
@@ -515,7 +517,15 @@ public class b50 extends AppCompatActivity {
                 LinearLayout songCard = (LinearLayout) inflater.inflate(R.layout.song_card, null);
                 // 设置卡片的具体内容（例如歌名、得分等）
                 TextView songTitle = songCard.findViewById(R.id.song_title);
-                Chart chart = playerData.getCharts().getDx().get(i);
+                Chart chart = new Chart();
+
+                try {
+                    chart = playerData.getCharts().getDx().get(i);
+                }catch (Exception e) {
+                    Toast.makeText(context, "dx没有数据", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(context, UpdateActivity.class);
+                    startActivity(intent);
+                }
                 b15 = b15+chart.getRa();
                 LinearLayout master = songCard.findViewById(R.id.lay);
 
@@ -617,13 +627,14 @@ public class b50 extends AppCompatActivity {
                 if(use==1) {
                     ra.setText(chart.getLevel() + " -> " + chart.getRa()+"");
                 }
+                Chart finalChart = chart;
                 songIcon.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if(chart.getType().equals("DX")) {
-                            new SongHttp(chart.getSongId() - 10000,1,0).execute();
+                        if(finalChart.getType().equals("DX")) {
+                            new SongHttp(finalChart.getSongId() - 10000,1,0).execute();
                         }else {
-                            new SongHttp(chart.getSongId() - 10000,1,0).execute();
+                            new SongHttp(finalChart.getSongId() - 10000,1,0).execute();
                         }
                     }
                 });

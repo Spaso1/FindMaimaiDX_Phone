@@ -18,8 +18,8 @@
     <string name="config_url_hint">URL or local file path</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
-    <string name="username">查分器账号</string>
-    <string name="password">查分器密码</string>
+    <string name="username">水鱼查分器账号</string>
+    <string name="password">水鱼查分器密码</string>
     <string name="settings">设置</string>
     <string name="notifications">通知</string>
     <string name="profile_name">用户名</string>

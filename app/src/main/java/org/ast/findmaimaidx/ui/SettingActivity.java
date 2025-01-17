@@ -18,7 +18,7 @@ import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import org.ast.findmaimaidx.R;
-import org.ast.findmaimaidx.been.GitHubApiService;
+import org.ast.findmaimaidx.service.GitHubApiService;
 import org.ast.findmaimaidx.been.Release;
 import org.ast.findmaimaidx.utill.GitHubApiClient;
 import retrofit2.Call;
@@ -71,6 +71,7 @@ public class SettingActivity extends AppCompatActivity {
             Intent intent = new Intent(SettingActivity.this, FindFri.class);
             startActivity(intent);
         });
+
         TextView vits = findViewById(R.id.vits);
         vits.setText("App version:" + getAppVersionName()+"\nLatest version:" );
         getLatestRelease();

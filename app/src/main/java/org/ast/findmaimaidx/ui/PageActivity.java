@@ -23,6 +23,7 @@ import okhttp3.*;
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.been.Market;
 import org.ast.findmaimaidx.been.Place;
+import org.ast.findmaimaidx.message.ApiResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +36,7 @@ public class PageActivity extends AppCompatActivity {
     private double[] tagXY;
     private String tagplace;
     public static  TextView t2 ;
+    private String type_code = "mai";
     public static List<Market> marketList = new ArrayList<>();
     public static LinearLayout t31 ;
     public static Context context;
@@ -46,6 +48,8 @@ public class PageActivity extends AppCompatActivity {
     private boolean isDis = false;
     private SharedPreferences sp ;
     private SharedPreferences shoucang ;
+    private TextView numberPeo;
+
     public static int id;
     @Override
     @SuppressLint({"MissingInflatedId", "Range", "SetTextI18n", "UnspecifiedRegisterReceiverFlag"})
@@ -69,7 +73,7 @@ public class PageActivity extends AppCompatActivity {
         int bad = getIntent().getIntExtra("bad", 0);
         int num = getIntent().getIntExtra("num",0);
         int numJ = getIntent().getIntExtra("numJ",0);
-
+        numberPeo = findViewById(R.id.numberPeo);
         TextView textView = findViewById(R.id.nameTextView);
         textView.setText(name);
         TextView textView2 = findViewById(R.id.addressTextView);
@@ -84,6 +88,7 @@ public class PageActivity extends AppCompatActivity {
         t1.setText("舞萌总机台 " + (num + numJ));
         if(getIntent().hasExtra("type")) {
             String type = getIntent().getStringExtra("type");
+            type_code = "chu";
             t1.setText("中二总机台 " + (num + numJ));
         }
         TextView t2 = findViewById(R.id.num6);
@@ -115,7 +120,7 @@ public class PageActivity extends AppCompatActivity {
 
         sp = getSharedPreferences("like@dis", MODE_PRIVATE);
         shoucang = getSharedPreferences("shoucang@", MODE_PRIVATE);
-
+        getNumberPeo();
         SharedPreferences.Editor editor = sp.edit();
         SharedPreferences.Editor editor2 = shoucang.edit();
         button.setOnClickListener(new View.OnClickListener() {
@@ -396,12 +401,59 @@ public class PageActivity extends AppCompatActivity {
         }
     }
     @SuppressLint("StaticFieldLeak")
+    private void getNumberPeo() {
+        try {
+            new AsyncTask<Void, Void, String>() {
+                @Override
+                protected String doInBackground(Void... voids) {
+                    OkHttpClient client = new OkHttpClient();
+                    try {
+                        String web = "http://www.godserver.cn:11451/api/mai/v1/placePeo?";
+                        // 将JSON对象转换为RequestBody
+                        MediaType JSON = MediaType.get("application/json; charset=utf-8");
+                        @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
+                                .url(web + "id=" + id)
+                                .build();
+
+                        try (Response response = client.newCall(request).execute()) {
+                            if (((Response) response).isSuccessful()) {
+                                return response.body().string();
+                            } else {
+                                return "Error: " + response.code();
+                            }
+                        } catch (Exception e) {
+                            Log.e("OkHttp", "Error: " + e.getMessage());
+                            return "Error: " + e.getMessage();
+                        }
+                    } catch (Exception e) {
+                        return "BedWeb";
+                    }
+                }
+
+                @Override
+                protected void onPostExecute(String result) {
+                    try {
+                        ApiResponse apiResponse = new Gson().fromJson(result, ApiResponse.class);
+                        if (apiResponse.getStatus() == 200) {
+                            numberPeo.setText("机厅预计人数:" + apiResponse.getMessage());
+                        }
+                    }catch (Exception e) {
+                        numberPeo.setText("无法预计");
+                    }
+
+                }
+            }.execute();
+        } catch (Exception e) {
+            Log.e("OkHttp", "Error: " + e.getMessage());
+        }
+    }
+    @SuppressLint("StaticFieldLeak")
     private void sendGetRequest(int type) {
         AsyncTask<Void, Void, String> asyncTask = new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... voids) {
                 OkHttpClient client = new OkHttpClient();
-                String web = "http://mai.godserver.cn:11451/api/mai/v1/place?id=" + id + "&type=" + type;
+                String web = "http://mai.godserver.cn:11451/api/" + type_code + "/v1/place?id=" + id + "&type=" + type;
                 System.out.println(web);
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
@@ -435,7 +487,7 @@ public class PageActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(Void... voids) {
                 OkHttpClient client = new OkHttpClient();
-                String web = "http://mai.godserver.cn:11451/api/mai/v1/near?id=" + place_centor.getId();
+                String web = "http://mai.godserver.cn:11451/api/" + type_code + "/v1/near?id=" + place_centor.getId();
                 Log.d("Web", web);
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
@@ -504,7 +556,7 @@ public class PageActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(Void... voids) {
                 OkHttpClient client = new OkHttpClient();
-                String web = "http://mai.godserver.cn:11451/api/mai/v1/num?id=" + id + "&num=" + num + "&numJ=" + numJ;
+                String web = "http://mai.godserver.cn:11451/api/" + type_code + "/v1/num?id=" + id + "&num=" + num + "&numJ=" + numJ;
                 Log.d("Web", numJ + "");
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
@@ -624,7 +676,7 @@ public class PageActivity extends AppCompatActivity {
 
             // 创建请求
             Request request = new Request.Builder()
-                    .url("http://mai.godserver.cn:11451/api/mai/v1/near")
+                    .url("http://mai.godserver.cn:11451/api/" + type_code + "/v1/near")
                     .post(body)
                     .build();
 

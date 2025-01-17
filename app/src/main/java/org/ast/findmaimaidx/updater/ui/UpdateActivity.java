@@ -21,7 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 import okhttp3.*;
 import org.ast.findmaimaidx.R;
-import org.ast.findmaimaidx.been.Lx_chart;
+import org.ast.findmaimaidx.been.lx.Lx_chart;
 import org.ast.findmaimaidx.been.PlayerData;
 import org.ast.findmaimaidx.updater.crawler.Callback;
 import org.ast.findmaimaidx.updater.crawler.CrawlerCaller;
@@ -101,7 +101,7 @@ public class UpdateActivity extends AppCompatActivity implements
             public void onClick(View view) {
                 // 创建 OkHttpClient 实例
                 OkHttpClient client = new OkHttpClient();
-                SharedPreferences sp = getSharedPreferences("setting", Context.MODE_PRIVATE);
+                final SharedPreferences sp = getSharedPreferences("setting", Context.MODE_PRIVATE);
                 // 原始数据
                 String rawData = "{\"username\":\"" + sp.getString("shuiyu_username", "") + "\",\"b50\":true}";
                 RequestBody body = RequestBody.create(rawData, MediaType.get("application/json; charset=utf-8"));
@@ -413,6 +413,13 @@ public class UpdateActivity extends AppCompatActivity implements
                             .setMessage("查分器账户保存成功")
                             .setPositiveButton(R.string.btn_ok, null)
                             .show();
+                    SharedPreferences sp = getSharedPreferences("setting", Context.MODE_PRIVATE);
+                    @SuppressLint("CommitPrefEdits") SharedPreferences.Editor editor = sp.edit();
+                    TextView password = findViewById(R.id.password);
+                    TextView username = findViewById(R.id.username);
+                    editor.putString("shuiyu_password", password.getText().toString());
+                    editor.putString("shuiyu_username", username.getText().toString());
+                    editor.commit();
                 });
             }
         });
