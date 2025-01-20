@@ -1,0 +1,18 @@
+<!-- res/drawable/vertical_line_glow.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 背景 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#000000" />
+        </shape>
+    </item>
+    <!-- 发光效果 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                    android:startColor="#80FFFFFF"
+                    android:endColor="#00FFFFFF"
+                    android:angle="270" />
+        </shape>
+    </item>
+</layer-list>
