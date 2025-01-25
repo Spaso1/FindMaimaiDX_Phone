@@ -172,7 +172,7 @@ public class  ChunActivity extends AppCompatActivity {
 
                         break;
                     case 1:
-                        Intent intent = new Intent(ChunActivity.this, b50.class);
+                        Intent intent = new Intent(ChunActivity.this, B50.class);
                         startActivity(intent);
                         break;
                     case 2:

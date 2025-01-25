@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebSettings;
@@ -49,7 +50,9 @@ public class PageActivity extends AppCompatActivity {
     private SharedPreferences sp ;
     private SharedPreferences shoucang ;
     private TextView numberPeo;
-
+    private Button adminIt;
+    private OkHttpClient client;
+    private Place place;
     public static int id;
     @Override
     @SuppressLint({"MissingInflatedId", "Range", "SetTextI18n", "UnspecifiedRegisterReceiverFlag"})
@@ -57,6 +60,7 @@ public class PageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         context = this;
         setContentView(R.layout.item2);
+        client = new OkHttpClient();
         /**
          * 基础内容加载
          */
@@ -85,6 +89,7 @@ public class PageActivity extends AppCompatActivity {
         TextView textView5 = findViewById(R.id.areaTextView);
         textView5.setText(area);
         TextView t1 = findViewById(R.id.num5);
+        adminIt = findViewById(R.id.admin);
         t1.setText("舞萌总机台 " + (num + numJ));
         if(getIntent().hasExtra("type")) {
             String type = getIntent().getStringExtra("type");
@@ -108,7 +113,7 @@ public class PageActivity extends AppCompatActivity {
         /**
          * 获取附近商超
          */
-        Place place = new Place(id2, name, province, city, area, address, 1, x, y, count, good, bad);
+        place = new Place(id2, name, province, city, area, address, 1, x, y, count, good, bad);
         place.setNumJ(numJ);
         place.setNum(num);
         findnear(place);
@@ -329,9 +334,186 @@ public class PageActivity extends AppCompatActivity {
                         "})()");
             }
         });
-
+        checkAndIntial();
         webView2.loadUrl(imageUrl2); // 加载网页
+    }
 
+    private void checkAndIntial() {
+        String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        String url = "http://mai.godserver.cn:11451/api/mai/v1/check?androidId=" + androidId;
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        adminIt.setOnClickListener(v -> {
+            // 创建一个可以输入数量的弹窗,在点击确定后执行指定操作
+            AlertDialog.Builder builder = new AlertDialog.Builder(PageActivity.this);
+            LinearLayout layout = new LinearLayout(PageActivity.this);
+            layout.setOrientation(LinearLayout.VERTICAL);
+            layout.setPadding(16, 16, 16, 16);
+
+            // 创建店铺名称输入框及其标签
+            TextView textNameLabel = new TextView(PageActivity.this);
+            textNameLabel.setText("店铺名称:");
+            EditText textName = new EditText(PageActivity.this);
+            textName.setHint("请输入店铺名称");
+            textName.setText(place.getName());
+            layout.addView(textNameLabel);
+            layout.addView(textName);
+
+            // 创建省份输入框及其标签
+            TextView textProvinceLabel = new TextView(PageActivity.this);
+            textProvinceLabel.setText("省份:");
+            EditText textProvince = new EditText(PageActivity.this);
+            textProvince.setHint("请输入省份");
+            textProvince.setText(place.getProvince());
+            layout.addView(textProvinceLabel);
+            layout.addView(textProvince);
+
+            // 创建城市输入框及其标签
+            TextView textCityLabel = new TextView(PageActivity.this);
+            textCityLabel.setText("城市:");
+            EditText textCity = new EditText(PageActivity.this);
+            textCity.setHint("请输入城市");
+            textCity.setText(place.getCity());
+            layout.addView(textCityLabel);
+            layout.addView(textCity);
+
+            // 创建地区输入框及其标签
+            TextView textAreaLabel = new TextView(PageActivity.this);
+            textAreaLabel.setText("地区:");
+            EditText textArea = new EditText(PageActivity.this);
+            textArea.setHint("请输入地区");
+            textArea.setText(place.getArea());
+            layout.addView(textAreaLabel);
+            layout.addView(textArea);
+
+            // 创建地址输入框及其标签
+            TextView textAddressLabel = new TextView(PageActivity.this);
+            textAddressLabel.setText("地址:");
+            EditText textAddress = new EditText(PageActivity.this);
+            textAddress.setHint("请输入地址");
+            textAddress.setText(place.getAddress());
+            layout.addView(textAddressLabel);
+            layout.addView(textAddress);
+
+            // 创建经度输入框及其标签
+            TextView textXLabel = new TextView(PageActivity.this);
+            textXLabel.setText("经度:");
+            EditText textX = new EditText(PageActivity.this);
+            textX.setHint("请输入经度");
+            textX.setText(String.valueOf(place.getX()));
+            layout.addView(textXLabel);
+            layout.addView(textX);
+
+            // 创建纬度输入框及其标签
+            TextView textYLabel = new TextView(PageActivity.this);
+            textYLabel.setText("纬度:");
+            EditText textY = new EditText(PageActivity.this);
+            textY.setHint("请输入纬度");
+            textY.setText(String.valueOf(place.getY()));
+            layout.addView(textYLabel);
+            layout.addView(textY);
+
+            // 创建国机数量输入框及其标签
+            TextView textNumLabel = new TextView(PageActivity.this);
+            textNumLabel.setText("国机数量:");
+            EditText textNum = new EditText(PageActivity.this);
+            textNum.setHint("请输入国机数量");
+            textNum.setText(String.valueOf(place.getNum()));
+            layout.addView(textNumLabel);
+            layout.addView(textNum);
+
+            // 创建币数量输入框及其标签
+            TextView textNumJLabel = new TextView(PageActivity.this);
+            textNumJLabel.setText("日机数量:");
+            EditText textNumJ = new EditText(PageActivity.this);
+            textNumJ.setHint("请输入日机数量");
+            textNumJ.setText(String.valueOf(place.getNumJ()));
+            layout.addView(textNumJLabel);
+            layout.addView(textNumJ);
+
+            // 创建是否使用输入框及其标签
+            TextView textIsUseLabel = new TextView(PageActivity.this);
+            textIsUseLabel.setText("是否使用:");
+            EditText textIsUse = new EditText(PageActivity.this);
+            textIsUse.setHint("请输入是否使用");
+            textIsUse.setText(String.valueOf(place.getIsUse()));
+            layout.addView(textIsUseLabel);
+            layout.addView(textIsUse);
+
+            builder.setTitle("编辑店铺信息")
+                    .setView(layout)
+                    .setPositiveButton("确定", (dialog, which) -> {
+                        // 获取输入框的值并更新 place 对象
+                        place.setName(textName.getText().toString());
+                        place.setProvince(textProvince.getText().toString());
+                        place.setCity(textCity.getText().toString());
+                        place.setArea(textArea.getText().toString());
+                        place.setAddress(textAddress.getText().toString());
+                        place.setX(Double.parseDouble(textX.getText().toString()));
+                        place.setY(Double.parseDouble(textY.getText().toString()));
+                        place.setNum(Integer.parseInt(textNum.getText().toString()));
+                        place.setNumJ(Integer.parseInt(textNumJ.getText().toString()));
+                        place.setIsUse(Integer.parseInt(textIsUse.getText().toString()));
+                        // 调用 sendUpdateNum 方法上传更新
+                        update(place);
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
+        });
+
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                adminIt.setVisibility(View.GONE);
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    final String responseData = response.body().string();
+                    runOnUiThread(() -> {
+                        if(!responseData.equals("1")) {
+                            adminIt.setVisibility(View.GONE);
+                        }
+                        Toast.makeText(PageActivity.this, "管理员", Toast.LENGTH_LONG).show();
+                        Log.d("TAG", "Response: " + responseData);
+                    });
+                } else {
+                    adminIt.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+    public void update(Place place) {
+        String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        String url = "http://mai.godserver.cn:11451/api/mai/v1/place?androidId=" + androidId;
+        String json = new Gson().toJson(place);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), json);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(PageActivity.this, "Request failed", Toast.LENGTH_SHORT).show());
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    final String responseData = response.body().string();
+                    runOnUiThread(() -> {
+                        Log.d("TAG", "Response: " + responseData);
+                        Toast.makeText(PageActivity.this, "更改成功", Toast.LENGTH_SHORT).show();
+                    });
+                }
+                runOnUiThread(() -> {
+                });
+            }
+        });
     }
     private void showNavigationOptions() {
         final CharSequence[] items = {"Google Maps", "高德地图", "百度地图(暂时不可用)"};

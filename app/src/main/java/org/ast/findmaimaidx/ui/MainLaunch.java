@@ -166,7 +166,7 @@ public class MainLaunch extends AppCompatActivity {
                         dialog23.show();
                         break;
                     case 1:
-                        Intent intent = new Intent(MainLaunch.this, b50.class);
+                        Intent intent = new Intent(MainLaunch.this, B50.class);
                         startActivity(intent);
                         break;
                     case 2:

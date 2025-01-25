@@ -33,7 +33,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class b50 extends AppCompatActivity {
+public class B50 extends AppCompatActivity {
     public static Context context;
     private static final int REQUEST_WRITE_STORAGE = 112;
     private RelativeLayout mainLayout;
@@ -50,8 +50,8 @@ public class b50 extends AppCompatActivity {
         String luoxue_username = setting.getString("luoxue_username", null);
         if(shuiyu_username == null) {
             if(luoxue_username == null) {
-                Toast.makeText(b50.this, "请先绑定水鱼账号", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(b50.this, UpdateActivity.class);
+                Toast.makeText(B50.this, "请先绑定水鱼账号", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(B50.this, UpdateActivity.class);
                 startActivity(intent);
             }
         }else {
@@ -70,23 +70,23 @@ public class b50 extends AppCompatActivity {
         Button updateButton = findViewById(R.id.updateButton);
 
         updateButton.setOnClickListener(v -> {
-            Intent intent = new Intent(b50.this, UpdateActivity.class);
+            Intent intent = new Intent(B50.this, UpdateActivity.class);
             startActivity(intent);
         });
         TextView textView = findViewById(R.id.user_score);
         textView.setOnClickListener(v -> {
             int use_ = setting.getInt("use_", 0);
             if(use_==1) {
-                Intent intent = new Intent(b50.this, b50.class);
+                Intent intent = new Intent(B50.this, B50.class);
                 startActivity(intent);
                 finish();
             }else {
-                Toast.makeText(b50.this, "此为落雪账号独特功能", Toast.LENGTH_SHORT).show();
+                Toast.makeText(B50.this, "此为落雪账号独特功能", Toast.LENGTH_SHORT).show();
             }
         });
         Button scores = findViewById(R.id.scores);
         scores.setOnClickListener(v -> {
-            Intent intent = new Intent(b50.this, Scores.class);
+            Intent intent = new Intent(B50.this, Scores.class);
             startActivity(intent);
         });
     }
@@ -282,7 +282,7 @@ public class b50 extends AppCompatActivity {
             user_name.setText(response.getData().getName());
             ImageView user_icon = findViewById(R.id.user_avatar);
             String url = "https://assets2.lxns.net/maimai/icon/" + response.getData().getIcon().getId() + ".png";
-            Glide.with(b50.this)
+            Glide.with(B50.this)
                     .load(url)
                     .into(user_icon);
         }
@@ -328,7 +328,7 @@ public class b50 extends AppCompatActivity {
                 Gson gson = new Gson();
                 Song song = gson.fromJson(result, Song.class);
                 Log.d("LuoxueUserOkhttpRequest", "Response: " + song.getTitle());
-                AlertDialog.Builder builder = new AlertDialog.Builder(b50.this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(B50.this);
                 AlertDialog dialog = builder.create();
                 // 获取布局Inflater
                 LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -388,13 +388,13 @@ public class b50 extends AppCompatActivity {
                         }
                     }
                 }
-                Glide.with(b50.this)
+                Glide.with(B50.this)
                         .load("https://assets2.lxns.net/maimai/jacket/" + song.getId() + ".png")
                         .into(song_img);
                 dialog.setView(dialogView);
                 dialog.show();
             }catch (Exception e) {
-                Toast.makeText(b50.this, "慢点点击嘛~", Toast.LENGTH_SHORT).show();
+                Toast.makeText(B50.this, "慢点点击嘛~", Toast.LENGTH_SHORT).show();
                 if(count <3) {
                     new SongHttp(code - 10000,type,count).execute();
                 }

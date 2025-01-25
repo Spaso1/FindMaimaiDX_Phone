@@ -51,7 +51,20 @@
                 android:background="?android:attr/dividerVertical"
                 android:layout_marginTop="16dp"/>
 
-        <!-- 文本输入框示例 -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/userId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="UserId"
+                android:inputType="textPersonName"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
         <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -89,10 +102,10 @@
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"/>
         <com.google.android.material.button.MaterialButton
-                android:id="@+id/frifind_button"
+                android:id="@+id/getUserid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="打开罗盘"
+                android:text="获取UserId"
                 android:backgroundTint="?attr/colorPrimary"
                 android:textColor="@android:color/white"
                 android:paddingTop="16dp"
@@ -110,6 +123,10 @@
                     android:paddingBottom="16dp"/>
         </LinearLayout>
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/settin_body"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/uuid"/>
         <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"

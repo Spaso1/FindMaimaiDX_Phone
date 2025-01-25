@@ -2,6 +2,8 @@ package org.ast.findmaimaidx.ui;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +11,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -33,6 +36,9 @@ public class SettingActivity extends AppCompatActivity {
     private SharedPreferences settingProperties;
     private static final int PICK_IMAGE_REQUEST = 1;
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
+    private TextInputEditText shuiyuEditText;
+    private TextInputEditText luoxueEditText;
+    private TextInputEditText userId;
     @SuppressLint({"SetTextI18n","MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,23 +61,34 @@ public class SettingActivity extends AppCompatActivity {
             editor.apply();
         });
 
-        TextInputEditText shuiyu = findViewById(R.id.shuiyu);
-        TextInputEditText luoxue = findViewById(R.id.luoxue);
+        shuiyuEditText = findViewById(R.id.shuiyu);
+        luoxueEditText = findViewById(R.id.luoxue);
+        userId = findViewById(R.id.userId);
 
         MaterialButton saveButton = findViewById(R.id.save_settings_button);
         saveButton.setOnClickListener(v -> {
-            saveSettings(switchMaterial.isChecked(), shuiyu.getText().toString(), luoxue.getText().toString());
+            saveSettings(switchMaterial.isChecked(), shuiyuEditText.getText().toString(), luoxueEditText.getText().toString(),userId.getText().toString());
         });
         MaterialButton changeButton = findViewById(R.id.changePhoto);
         changeButton.setOnClickListener(v -> openFileChooser());
 
 
-        MaterialButton frifind = findViewById(R.id.frifind_button);
+        MaterialButton frifind = findViewById(R.id.getUserid);
         frifind.setOnClickListener(v -> {
-            Intent intent = new Intent(SettingActivity.this, FindFri.class);
+            Intent intent = new Intent(SettingActivity.this, HackGetUserId.class);
             startActivity(intent);
         });
-
+        TextView uuid = findViewById(R.id.uuid);
+        @SuppressLint("HardwareIds") String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        uuid.setText("Android ID:" + androidId);
+        uuid.setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+// 创建一个ClipData对象
+            ClipData clip = ClipData.newPlainText("label", androidId);
+// 将ClipData对象设置到剪贴板中
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(this, "Android ID已复制到剪贴板", Toast.LENGTH_SHORT).show();
+        });
         TextView vits = findViewById(R.id.vits);
         vits.setText("App version:" + getAppVersionName()+"\nLatest version:" );
         getLatestRelease();
@@ -116,12 +133,13 @@ public class SettingActivity extends AppCompatActivity {
             Toast.makeText(this, "图片已保存", Toast.LENGTH_SHORT).show();
         }
     }
-    private void saveSettings(boolean betaEnabled, String shuiyuUsername, String luoxueUsername) {
+    private void saveSettings(boolean betaEnabled, String shuiyuUsername, String luoxueUsername,String userId) {
         SharedPreferences.Editor editor = settingProperties.edit();
         MaterialRadioButton materialRadioButton = findViewById(R.id.radioButton1);
         editor.putBoolean("setting_autobeta1", betaEnabled);
         editor.putString("shuiyu_username", shuiyuUsername);
         editor.putString("luoxue_username", luoxueUsername);
+        editor.putString("userId", userId);
         editor.putInt("use_", materialRadioButton.isChecked()?0:1);
         editor.apply();
         Toast.makeText(this, "设置已保存,部分设置需要重启软件生效", Toast.LENGTH_SHORT).show();
@@ -129,8 +147,8 @@ public class SettingActivity extends AppCompatActivity {
 
     private void loadSettings() {
         SwitchMaterial switchMaterial = findViewById(R.id.switchBeta1);
-        TextInputEditText shuiyuEditText = findViewById(R.id.shuiyu);
-        TextInputEditText luoxueEditText = findViewById(R.id.luoxue);
+        shuiyuEditText = findViewById(R.id.shuiyu);
+        luoxueEditText = findViewById(R.id.luoxue);
         MaterialRadioButton materialRadioButton = findViewById(R.id.radioButton1);
         MaterialRadioButton materialRadioButton2 = findViewById(R.id.radioButton2);
 

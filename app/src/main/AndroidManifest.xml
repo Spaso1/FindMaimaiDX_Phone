@@ -71,7 +71,7 @@
         </activity>
         <activity
                 android:hardwareAccelerated="true"
-                android:name=".ui.b50"
+                android:name=".ui.B50"
                 android:exported="true"
 
                 android:theme="@style/Theme.FindMaimaiDX2" tools:ignore="WrongManifestParent">
@@ -123,6 +123,12 @@
                   android:theme="@style/FindMaimaiDX2"
                   android:hardwareAccelerated="true" android:exported="true">
         </activity>
+        <activity android:name=".ui.HackGetUserId"
+                  android:theme="@style/NewTheme"
+                  android:hardwareAccelerated="true" android:exported="true">
+        </activity>
+
+
         <service
                 android:hardwareAccelerated="true"
                 android:name=".updater.vpn.core.LocalVpnService"
