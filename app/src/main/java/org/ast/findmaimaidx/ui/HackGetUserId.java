@@ -30,7 +30,7 @@ import java.io.IOException;
 public class HackGetUserId extends AppCompatActivity {
 
     private static final int REQUEST_IMAGE_PICK = 1;
-    private ImageView imageView;
+    private TextInputEditText userId;
     private OkHttpClient client;
     private SharedPreferences sp;
     @Override
@@ -39,7 +39,7 @@ public class HackGetUserId extends AppCompatActivity {
         setContentView(R.layout.activity_hack_get_user_id);
         sp = getSharedPreferences("setting",MODE_PRIVATE);
         Button button = findViewById(R.id.button);
-        TextInputEditText userId = findViewById(R.id.userId);
+        userId = findViewById(R.id.userId);
 
         userId.setText(sp.getString("userId",""));
 
@@ -59,7 +59,6 @@ public class HackGetUserId extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK && data != null) {
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
-                imageView.setImageBitmap(bitmap);
                 String qrCode = decodeQRCode(bitmap);
                 if (qrCode != null) {
                     Toast.makeText(this, "QR Code: " + qrCode, Toast.LENGTH_LONG).show();
@@ -91,7 +90,7 @@ public class HackGetUserId extends AppCompatActivity {
     }
 
     private void sendApiRequest(String qrCode) {
-        String url = "http://mai.godserver.cn:11451/api/getUserId?qrCode=" + qrCode;
+        String url = "http://mai.godserver.cn:11451/api/hacker/getUserId?qr=" + qrCode;
         Request request = new Request.Builder()
                 .url(url)
                 .build();
@@ -110,6 +109,10 @@ public class HackGetUserId extends AppCompatActivity {
                     runOnUiThread(() -> {
                         Toast.makeText(HackGetUserId.this, "Response: " + responseData, Toast.LENGTH_LONG).show();
                         Log.d("TAG", "Response: " + responseData);
+                        userId.setText(responseData);
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.putString("userId",responseData);
+                        editor.commit();
                     });
                 } else {
                     runOnUiThread(() -> Toast.makeText(HackGetUserId.this, "Request not successful", Toast.LENGTH_SHORT).show());

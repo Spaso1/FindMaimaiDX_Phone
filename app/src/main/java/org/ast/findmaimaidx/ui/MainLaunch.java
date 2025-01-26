@@ -12,7 +12,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.location.*;
 import android.net.Uri;
 import android.os.*;
+import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.*;
 import androidx.appcompat.widget.Toolbar;
 import androidx.annotation.NonNull;
@@ -26,8 +29,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.been.DistanceCalculator;
@@ -102,19 +110,16 @@ public class MainLaunch extends AppCompatActivity {
         }
 
         addressTextView = findViewById(R.id.textView);
-
-        TextView textView = findViewById(R.id.textView);
         FloatingActionButton button2 = findViewById(R.id.fab);
-        button2.setOnClickListener(v -> {
-            //刷新定位
+        final CharSequence[][] items = {{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "设置及更多"}};
 
-            // 创建一个AlertDialog.Builder对象
+        button2.setOnClickListener(v -> {
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            final CharSequence[] items = {"联系作者","b50", "自动刷新定位", "手动选择定位","地图","切换到中二","设置及更多"};
 // 设置对话框标题
             builder.setTitle("选择");
-// 添加“确定”按钮
-            builder.setItems(items, (dialog, item) -> {
+            System.out.println(Arrays.toString(items[0]));
+            builder.setItems(items[0], (dialog, item) -> {
                 switch (item) {
                     case 0:
                         AlertDialog.Builder builder23 = new AlertDialog.Builder(this);
@@ -171,13 +176,6 @@ public class MainLaunch extends AppCompatActivity {
                         break;
                     case 2:
                         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            // TODO: Consider calling
-                            //    ActivityCompat#requestPermissions
-                            // here to request the missing permissions, and then overriding
-                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                            //                                          int[] grantResults)
-                            // to handle the case where the user grants the permission. See the documentation
-                            // for ActivityCompat#requestPermissions for more details.
                             return;
                         }
                         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -262,13 +260,59 @@ public class MainLaunch extends AppCompatActivity {
                         Intent intent3 = new Intent(MainLaunch.this, SettingActivity.class);
                         startActivity(intent3);
                         break;
+                    case 7:
+                        AlertDialog.Builder builder_addplace = new AlertDialog.Builder(this);
+                        builder_addplace.setTitle("添加机厅");
+
+// Inflate the custom layout
+                        LayoutInflater inflater = getLayoutInflater();
+                        View dialogView = inflater.inflate(R.layout.dialog_add_place, null);
+                        builder_addplace.setView(dialogView);
+
+// Add the positive button
+                        builder_addplace.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Get the input values
+                                EditText editTextName = dialogView.findViewById(R.id.editTextName);
+                                EditText editTextProvince = dialogView.findViewById(R.id.editTextProvince);
+                                EditText editTextCity = dialogView.findViewById(R.id.editTextCity);
+                                EditText editTextArea = dialogView.findViewById(R.id.editTextArea);
+                                EditText editTextAddress = dialogView.findViewById(R.id.editTextAddress);
+                                EditText editTextX = dialogView.findViewById(R.id.editTextX);
+                                EditText editTextY = dialogView.findViewById(R.id.editTextY);
+
+                                String name = editTextName.getText().toString();
+                                String province = editTextProvince.getText().toString();
+                                String city = editTextCity.getText().toString();
+                                String area = editTextArea.getText().toString();
+                                String address = editTextAddress.getText().toString();
+                                double x = Double.parseDouble(editTextX.getText().toString());
+                                double y = Double.parseDouble(editTextY.getText().toString());
+
+                                // Create a new Place object with the input values
+                                Place newPlace = new Place(0, name, province, city, area, address, 1, x, y, 0, 0, 0);
+                                addPlace(newPlace);
+                                // Here you can add the newPlace to your data source or perform other actions
+                            }
+                        });
+
+// Add the negative button
+                        builder_addplace.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+// Create and show the AlertDialog
+                        AlertDialog alertDialog = builder_addplace.create();
+                        alertDialog.show();
+
+
                 }
             }).show();
-
         });
-
-
-
 
         settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
         /**
@@ -293,8 +337,6 @@ public class MainLaunch extends AppCompatActivity {
             Log.d("机厅位置","启动位置更新服务");
             Toast.makeText(MainLaunch.this, "已启动位置更新服务", Toast.LENGTH_SHORT).show();
         }
-
-
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         if(settingProperties.getString("image_uri", null) != null) {
             Uri uri = Uri.parse(settingProperties.getString("image_uri", null));
@@ -333,6 +375,32 @@ public class MainLaunch extends AppCompatActivity {
                 Toast.makeText(this, "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
             }
         }
+
+        String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        String url = "http://mai.godserver.cn:11451/api/mai/v1/check?androidId=" + androidId;
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        OkHttpClient client = new OkHttpClient();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("MainLaunch", "onFailure: " + e.getMessage());
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    assert response.body() != null;
+                    String res = response.body().string();
+                    if(res.equals("1")) {
+                        System.out.println("1");
+                        items[0] = new CharSequence[]{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "设置及更多","添加机厅"};
+                    }
+                    System.out.println(res);
+                }
+            }
+        });
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -453,7 +521,6 @@ public class MainLaunch extends AppCompatActivity {
                         }
                     }else {
                         Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT).show();//最终实现处
-
                     }
 
                 }
@@ -640,6 +707,35 @@ public class MainLaunch extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(context, "未安装QQ", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void addPlace(Place place) {
+        String url = "http://mai.godserver.cn:11451/api/mai/v1/place";
+        String body = new Gson().toJson(place,Place.class);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), body);
+        Request request = new Request.Builder()
+                .url(url)
+                .put(requestBody)
+                .build();
+        OkHttpClient client = new OkHttpClient();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Toast.makeText(MainLaunch.this, "添加失败", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    final String responseData = response.body().string();
+                    runOnUiThread(() -> {
+                        Toast.makeText(MainLaunch.this, "添加成功", Toast.LENGTH_SHORT).show();
+                    });
+                }else {
+                    Toast.makeText(MainLaunch.this, "添加失败", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
     @Override
     protected void onDestroy() {

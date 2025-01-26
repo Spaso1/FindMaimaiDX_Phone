@@ -1,4 +1,6 @@
-package org.ast.findmaimaidx.been;
+package org.ast.findmaimaidx.been.lx;
+
+import org.ast.findmaimaidx.been.Difficulty;
 
 import java.util.Map;
 

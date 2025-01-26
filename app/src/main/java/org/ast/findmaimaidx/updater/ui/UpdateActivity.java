@@ -17,12 +17,18 @@ import android.widget.*;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+
+import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 import okhttp3.*;
 import org.ast.findmaimaidx.R;
+import org.ast.findmaimaidx.been.faker.UserScore;
 import org.ast.findmaimaidx.been.lx.Lx_chart;
 import org.ast.findmaimaidx.been.PlayerData;
+import org.ast.findmaimaidx.been.lx.Lx_data;
+import org.ast.findmaimaidx.been.lx.Lx_res;
+import org.ast.findmaimaidx.ui.B50;
 import org.ast.findmaimaidx.updater.crawler.Callback;
 import org.ast.findmaimaidx.updater.crawler.CrawlerCaller;
 import org.ast.findmaimaidx.updater.notification.NotificationUtil;
@@ -39,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.ast.findmaimaidx.updater.Util.copyText;
 import static org.ast.findmaimaidx.updater.Util.getDifficulties;
@@ -83,7 +91,7 @@ public class UpdateActivity extends AppCompatActivity implements
         assert textViewLog != null;
         textViewLog.setText(GL_HISTORY_LOGS);
         textViewLog.setMovementMethod(ScrollingMovementMethod.getInstance());
-
+        orgUpdateLx();
         mCalendar = Calendar.getInstance();
         LocalVpnService.addOnStatusChangedListener(this);
 
@@ -113,6 +121,129 @@ public class UpdateActivity extends AppCompatActivity implements
                 // 使用 AsyncTask 发送请求
                 new SendRequestTask(client, request,0).execute();
             }
+        });
+    }
+    private void orgUpdateLx() {
+        Button button = findViewById(R.id.lx_prof);
+        button.setOnClickListener(v -> {
+            OkHttpClient client = new OkHttpClient();
+            SharedPreferences setting = getSharedPreferences("setting", MODE_PRIVATE);
+            int userId = Integer.parseInt(setting.getString("userId", null).replace("\"","").trim());
+            String url = "http://mai.godserver.cn:11451/api/hacker/getUserScore?userId=" + userId;
+            System.out.println(url);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            client.newCall(request).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(() -> Toast.makeText(UpdateActivity.this, "Request failed", Toast.LENGTH_SHORT).show());
+                }
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        final String responseData = response.body().string();
+                        try {
+                            UserScore userScore = new Gson().fromJson(responseData, UserScore.class);
+                            Log.d("TAG", "onResponse: " + responseData);
+                            Lx_res lx_res = new Lx_res();
+                            lx_res.setCode(200);
+                            Lx_data lx_data = new Lx_data();
+                            List<Lx_chart> standard = new ArrayList<>();
+                            int old_rating =0;
+
+                            for (int i = 0; i < userScore.getUserRating().getRatingList().size(); i++){
+                                Lx_chart lx_chart = new Lx_chart();
+                                lx_chart.setId(userScore.getUserRating().getRatingList().get(i).getMusicId());
+                                lx_chart.setSong_name(userScore.getUserRating().getRatingList().get(i).getMusicName());
+                                lx_chart.setAchievements((double) userScore.getUserRating().getRatingList().get(i).getAchievement() / 10000);
+                                lx_chart.setDx_rating(userScore.getUserRating().getRatingList().get(i).getRating());
+                                lx_chart.setLevel_index(userScore.getUserRating().getRatingList().get(i).getLevel());
+                                lx_chart.setDx_score(userScore.getUserRating().getRatingList().get(i).getRating());
+                                if (userScore.getUserRating().getRatingList().get(i).getType().equals("dx")) {
+                                    lx_chart.setId(userScore.getUserRating().getRatingList().get(i).getMusicId()-10000);
+                                }
+                                if(lx_chart.getAchievements() >= 100.5){
+                                    lx_chart.setRate("sssp");
+                                }else if(lx_chart.getAchievements() >= 100.0){
+                                    lx_chart.setRate("sss");
+                                }else if(lx_chart.getAchievements() >= 99.5){
+                                    lx_chart.setRate("ssp");
+                                }else if(lx_chart.getAchievements() >= 99.0){
+                                    lx_chart.setRate("ss");
+                                }else if(lx_chart.getAchievements() >= 98.0){
+                                    lx_chart.setRate("sp");
+                                }else if(lx_chart.getAchievements() >= 97){
+                                    lx_chart.setRate("s");
+                                }
+                                lx_chart.setLevel(userScore.getUserRating().getRatingList().get(i).getLevel_info()+"");
+                                lx_chart.setType(userScore.getUserRating().getRatingList().get(i).getType());
+
+                                old_rating = old_rating + userScore.getUserRating().getRatingList().get(i).getRating();
+                                standard.add(lx_chart);
+                            }
+                            lx_data.setStandardTotal(old_rating);
+                            lx_data.setStandard(standard);
+                            List<Lx_chart> dx = new ArrayList<>();
+                            int new_rating = 0;
+                            for (int i = 0; i < userScore.getUserRating().getNewRatingList().size(); i++){
+                                Lx_chart lx_chart = new Lx_chart();
+                                lx_chart.setId(userScore.getUserRating().getNewRatingList().get(i).getMusicId() - 10000);
+                                lx_chart.setSong_name(userScore.getUserRating().getNewRatingList().get(i).getMusicName());
+                                lx_chart.setAchievements((double) userScore.getUserRating().getNewRatingList().get(i).getAchievement() / 10000);
+                                lx_chart.setDx_rating(userScore.getUserRating().getNewRatingList().get(i).getRating());
+                                lx_chart.setLevel_index(userScore.getUserRating().getNewRatingList().get(i).getLevel());
+                                lx_chart.setDx_score(userScore.getUserRating().getNewRatingList().get(i).getRating());
+                                if(lx_chart.getAchievements() >= 100.5){
+                                    lx_chart.setRate("sssp");
+                                }else if(lx_chart.getAchievements() >= 100.0){
+                                    lx_chart.setRate("sss");
+                                }else if(lx_chart.getAchievements() >= 99.5){
+                                    lx_chart.setRate("ssp");
+                                }else if(lx_chart.getAchievements() >= 99.0){
+                                    lx_chart.setRate("ss");
+                                }else if(lx_chart.getAchievements() >= 98.0){
+                                    lx_chart.setRate("sp");
+                                }else if(lx_chart.getAchievements() >= 97){
+                                    lx_chart.setRate("s");
+                                }
+                                lx_chart.setLevel(userScore.getUserRating().getNewRatingList().get(i).getLevel_info()+"");
+                                lx_chart.setType(userScore.getUserRating().getNewRatingList().get(i).getType());
+                                new_rating = new_rating + userScore.getUserRating().getNewRatingList().get(i).getRating();
+                                dx.add(lx_chart);
+                            }
+                            lx_data.setDx(dx);
+                            lx_res.setData(lx_data);
+                            lx_data.setStandardTotal(new_rating);
+                            String data = new Gson().toJson(Stream.concat(lx_data.getDx().stream(), lx_data.getStandard().stream())
+                                    .collect(Collectors.toList()));
+                            Log.d("OkHtt2222", "ResponseData: " + data);
+                            data = "{\"scores\":" + data + "}";
+
+                            RequestBody body = RequestBody.create(data, MediaType.get("application/json; charset=utf-8"));
+                            String code = getSharedPreferences("setting", Context.MODE_PRIVATE).getString("luoxue_username","");
+                            Request requestNext = new Request.Builder()
+                                    .url("https://maimai.lxns.net/api/v0/user/maimai/player/scores")
+                                    .header("X-User-Token",code) // 添加认证头
+                                    .post(body)
+                                    .build();
+                            OkHttpClient clientNext = new OkHttpClient();
+                            try {
+                                try (Response responseNext = clientNext.newCall(requestNext).execute()) {
+                                    Log.d("OkHtt2222", "Response: " + responseNext.body().string());
+                                    Toast.makeText(UpdateActivity.this, "更新成功", Toast.LENGTH_SHORT).show();
+                                }catch (Exception e ) {}
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            });
         });
     }
     private class SendRequestTask extends AsyncTask<Void, Void, String> {
@@ -494,7 +625,6 @@ public class UpdateActivity extends AppCompatActivity implements
     private void loadContextData() {
         String username = mContextSp.getString("username", null);
         String password = mContextSp.getString("password", null);
-
         boolean copyUrl = mContextSp.getBoolean("copyUrl", true);
         boolean autoLaunch = mContextSp.getBoolean("autoLaunch", true);
 

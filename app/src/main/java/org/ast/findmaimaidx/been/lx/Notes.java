@@ -1,4 +1,4 @@
-package org.ast.findmaimaidx.been;
+package org.ast.findmaimaidx.been.lx;
 
 public class Notes {
     private int total;

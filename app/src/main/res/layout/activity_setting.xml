@@ -32,6 +32,12 @@
                       android:textSize="20sp"
                       android:text="查分器"/>
             <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/org"
+                android:checked="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/org" />
+            <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/radioButton1"
                     android:checked="true"
                     android:layout_width="wrap_content"
@@ -55,6 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="16dp"
+            app:endIconMode="password_toggle"
             android:paddingBottom="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -62,9 +69,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="UserId"
-                android:inputType="textPersonName"/>
+                android:inputType="textPassword"/>  <!-- 修改为 textPassword -->
 
         </com.google.android.material.textfield.TextInputLayout>
+
+
         <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -103,6 +112,7 @@
                 android:paddingBottom="16dp"/>
         <com.google.android.material.button.MaterialButton
                 android:id="@+id/getUserid"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="获取UserId"

@@ -46,8 +46,6 @@ public class SettingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setting);
 
         settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
-
-        loadSettings();
         SwitchMaterial switchMaterial = findViewById(R.id.switchBeta1);
         switchMaterial.setChecked(settingProperties.getBoolean("setting_autobeta1", false));
         switchMaterial.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -64,6 +62,7 @@ public class SettingActivity extends AppCompatActivity {
         shuiyuEditText = findViewById(R.id.shuiyu);
         luoxueEditText = findViewById(R.id.luoxue);
         userId = findViewById(R.id.userId);
+        loadSettings();
 
         MaterialButton saveButton = findViewById(R.id.save_settings_button);
         saveButton.setOnClickListener(v -> {
@@ -136,11 +135,21 @@ public class SettingActivity extends AppCompatActivity {
     private void saveSettings(boolean betaEnabled, String shuiyuUsername, String luoxueUsername,String userId) {
         SharedPreferences.Editor editor = settingProperties.edit();
         MaterialRadioButton materialRadioButton = findViewById(R.id.radioButton1);
+        MaterialRadioButton org = findViewById(R.id.org);
+        int use = 0;
+        if(org.isChecked()) {
+            use = 0;
+        }
+        else if (materialRadioButton.isChecked()) {
+            use = 1;
+        }else {
+            use = 2;
+        }
+        editor.putInt("use_", use);
         editor.putBoolean("setting_autobeta1", betaEnabled);
         editor.putString("shuiyu_username", shuiyuUsername);
         editor.putString("luoxue_username", luoxueUsername);
         editor.putString("userId", userId);
-        editor.putInt("use_", materialRadioButton.isChecked()?0:1);
         editor.apply();
         Toast.makeText(this, "设置已保存,部分设置需要重启软件生效", Toast.LENGTH_SHORT).show();
     }
@@ -151,14 +160,18 @@ public class SettingActivity extends AppCompatActivity {
         luoxueEditText = findViewById(R.id.luoxue);
         MaterialRadioButton materialRadioButton = findViewById(R.id.radioButton1);
         MaterialRadioButton materialRadioButton2 = findViewById(R.id.radioButton2);
-
+        MaterialRadioButton org = findViewById(R.id.org);
         switchMaterial.setChecked(settingProperties.getBoolean("setting_autobeta1", false));
         shuiyuEditText.setText(settingProperties.getString("shuiyu_username", ""));
         luoxueEditText.setText(settingProperties.getString("luoxue_username", ""));
+        userId.setText(settingProperties.getString("userId", ""));
+
         int use_ = settingProperties.getInt("use_", 0);
         if(use_==0) {
+            org.setChecked(true);
+        }else if (use_==1){
             materialRadioButton.setChecked(true);
-        }else {
+        }else if(use_==2) {
             materialRadioButton2.setChecked(true);
         }
         SharedPreferences mContextSp = this.getSharedPreferences(

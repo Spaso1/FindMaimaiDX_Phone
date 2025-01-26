@@ -28,4 +28,6 @@
     <string name="shuiyu_option">水鱼</string>
     <string name="lx_option">落雪</string>
     <string name="settin_body">项目地址:https://github.com/Spaso1/FindMaimaiDX_Phone/ 个人开发,欢迎合作或者提意见!遵从MIT 协议,您可以在随意修改软件源码.</string>
+    <string name="org">原生</string>
+
 </resources>

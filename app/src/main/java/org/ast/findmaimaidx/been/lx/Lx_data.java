@@ -17,6 +17,16 @@ public class Lx_data {
     @SerializedName("dx")
     private List<Lx_chart> dx;
 
+    @Override
+    public String toString() {
+        return "Lx_data{" +
+                "standardTotal=" + standardTotal +
+                ", dxTotal=" + dxTotal +
+                ", standard=" + standard +
+                ", dx=" + dx +
+                '}';
+    }
+
     // Getters and Setters
     public int getStandardTotal() {
         return standardTotal;

@@ -1,6 +1,4 @@
-package org.ast.findmaimaidx.been;
-
-import org.ast.findmaimaidx.been.lx.Notes;
+package org.ast.findmaimaidx.been.lx;
 
 public class Difficulty {
     private String type;
