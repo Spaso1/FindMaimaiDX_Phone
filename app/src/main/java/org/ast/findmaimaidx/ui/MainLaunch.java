@@ -44,7 +44,7 @@ import org.ast.findmaimaidx.been.Place;
 import org.ast.findmaimaidx.map2d.BasicMapActivity;
 import org.ast.findmaimaidx.service.LocationUpdateService;
 import org.ast.findmaimaidx.utill.AddressParser;
-import org.ast.findmaimaidx.utill.PlaceAdapter;
+import org.ast.findmaimaidx.adapter.PlaceAdapter;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -63,7 +63,7 @@ public class MainLaunch extends AppCompatActivity {
     private String locationProvider = null;
     private TextView addressTextView;
     private static final String GITHUB_API_URL = "https://api.github.com/repos/owner/repo/releases/latest";
-
+    private boolean isAdmin;
     private String tot;
     private String x;
     private String y;
@@ -281,7 +281,8 @@ public class MainLaunch extends AppCompatActivity {
                                 EditText editTextAddress = dialogView.findViewById(R.id.editTextAddress);
                                 EditText editTextX = dialogView.findViewById(R.id.editTextX);
                                 EditText editTextY = dialogView.findViewById(R.id.editTextY);
-
+                                EditText num = dialogView.findViewById(R.id.num);
+                                EditText numJ = dialogView.findViewById(R.id.numJ);
                                 String name = editTextName.getText().toString();
                                 String province = editTextProvince.getText().toString();
                                 String city = editTextCity.getText().toString();
@@ -289,9 +290,13 @@ public class MainLaunch extends AppCompatActivity {
                                 String address = editTextAddress.getText().toString();
                                 double x = Double.parseDouble(editTextX.getText().toString());
                                 double y = Double.parseDouble(editTextY.getText().toString());
+                                int num1 = Integer.parseInt(num.getText().toString());
+                                int num2 = Integer.parseInt(numJ.getText().toString());
 
                                 // Create a new Place object with the input values
                                 Place newPlace = new Place(0, name, province, city, area, address, 1, x, y, 0, 0, 0);
+                                newPlace.setNum(num1);
+                                newPlace.setNumJ(num2);
                                 addPlace(newPlace);
                                 // Here you can add the newPlace to your data source or perform other actions
                             }
@@ -395,6 +400,7 @@ public class MainLaunch extends AppCompatActivity {
                     String res = response.body().string();
                     if(res.equals("1")) {
                         System.out.println("1");
+                        isAdmin = true;
                         items[0] = new CharSequence[]{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "设置及更多","添加机厅"};
                     }
                     System.out.println(res);
@@ -455,6 +461,9 @@ public class MainLaunch extends AppCompatActivity {
                                     province = p.getProvince();
                                 }
                                 if (p.getIsUse() == 1) {
+                                    b.add(p);
+                                }else if(isAdmin) {
+                                    p.setName("已弃用-"+p.getName());
                                     b.add(p);
                                 }
                             }catch (Exception e) {
@@ -730,6 +739,8 @@ public class MainLaunch extends AppCompatActivity {
                     final String responseData = response.body().string();
                     runOnUiThread(() -> {
                         Toast.makeText(MainLaunch.this, "添加成功", Toast.LENGTH_SHORT).show();
+                        a.add(place);
+                        placeAdapter.notifyDataSetChanged();
                     });
                 }else {
                     Toast.makeText(MainLaunch.this, "添加失败", Toast.LENGTH_SHORT).show();

@@ -1,4 +1,4 @@
-package org.ast.findmaimaidx.utill;
+package org.ast.findmaimaidx.adapter;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
@@ -44,7 +44,9 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     @Override
     public void onBindViewHolder(@NonNull PlaceViewHolder holder, int position) {
         Place place = placeList.get(position);
-
+        if (place.getIsUse()==0) {
+            holder.nameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.red));
+        }
         if (place.getName().contains("收藏")) {
             holder.nameTextView.setText(place.getName() + "♥");
         } else {

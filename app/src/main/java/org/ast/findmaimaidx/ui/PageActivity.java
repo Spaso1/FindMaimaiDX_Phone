@@ -12,19 +12,25 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.*;
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.been.Market;
 import org.ast.findmaimaidx.been.Place;
+import org.ast.findmaimaidx.been.PlaceContent;
 import org.ast.findmaimaidx.message.ApiResponse;
+import org.ast.findmaimaidx.adapter.ReviewAdapter;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +38,7 @@ import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class PageActivity extends AppCompatActivity {
     private double[] tagXY;
@@ -334,9 +341,129 @@ public class PageActivity extends AppCompatActivity {
                         "})()");
             }
         });
+
         checkAndIntial();
+        getContent();
+
         webView2.loadUrl(imageUrl2); // 加载网页
     }
+    @SuppressLint("MissingInflatedId")
+    private void getContent() {
+        Button button = findViewById(R.id.list);
+        button.setOnClickListener(v -> {
+            // 创建弹窗
+            AlertDialog.Builder builder = new AlertDialog.Builder(PageActivity.this);
+            LayoutInflater inflater = getLayoutInflater();
+            View dialogView = inflater.inflate(R.layout.dialog_reviews, null);
+            builder.setView(dialogView);
+
+            // 获取弹窗中的视图
+            RecyclerView recyclerViewReviews = dialogView.findViewById(R.id.recyclerViewReviews);
+            EditText editTextComment = dialogView.findViewById(R.id.editTextComment);
+            EditText usrName = dialogView.findViewById(R.id.userName);
+            Button buttonSubmit = dialogView.findViewById(R.id.buttonSubmit);
+
+            // 获取评价数据
+            fetchReviewsFromApi(reviews -> {
+                // 设置RecyclerView的适配器
+                ReviewAdapter adapter = new ReviewAdapter(reviews);
+                recyclerViewReviews.setLayoutManager(new LinearLayoutManager(PageActivity.this));
+                recyclerViewReviews.setAdapter(adapter);
+
+                // 设置发表评论按钮的点击事件
+                buttonSubmit.setOnClickListener(v1 -> {
+                    String comment = editTextComment.getText().toString().trim();
+                    String userName = usrName.getText().toString().trim();
+                    if (!comment.isEmpty()) {
+                        PlaceContent newReview = new PlaceContent();
+                        newReview.setUser_name(userName); // 可以替换为当前用户的名字
+                        newReview.setUser_content(comment);
+                        newReview.setPlace_id(id); // 设置关联的place_id
+                        newReview.setUsed(true); // 设置是否使用
+                        adapter.addReview(newReview);
+                        editTextComment.setText("");
+                        sendReviewToServer(newReview);
+                        // 可以在这里添加发送评论到服务器的逻辑
+                    }
+                });
+
+                // 显示弹窗
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            });
+        });
+    }
+
+    private void sendReviewToServer(PlaceContent review) {
+        OkHttpClient client = new OkHttpClient();
+        Gson gson = new Gson();
+        String json = gson.toJson(review);
+        RequestBody body = RequestBody.create(json, MediaType.parse("application/json; charset=utf-8"));
+
+        Request request = new Request.Builder()
+                .url("http://mai.godserver.cn:11451/api/mai/v1/placeContent")
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(PageActivity.this, "发送评论失败", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(PageActivity.this, "评论发送成功", Toast.LENGTH_SHORT).show();
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        Toast.makeText(PageActivity.this, "发送评论失败", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }
+        });
+    }
+
+    private void fetchReviewsFromApi(Consumer<List<PlaceContent>> callback) {
+        OkHttpClient client = new OkHttpClient();
+        Log.d("TAG", "fetchReviewsFromApi: " + id);
+        Request request = new Request.Builder()
+                .url("http://mai.godserver.cn:11451/api/mai/v1/placeContent?id=" + id)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(PageActivity.this, "获取评价失败", Toast.LENGTH_SHORT).show();
+                    callback.accept(new ArrayList<>());
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseData = response.body().string();
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<List<PlaceContent>>() {}.getType();
+                    List<PlaceContent> reviews = gson.fromJson(responseData, listType);
+                    runOnUiThread(() -> callback.accept(reviews));
+                } else {
+                    runOnUiThread(() -> {
+                        Toast.makeText(PageActivity.this, "获取评价失败", Toast.LENGTH_SHORT).show();
+                        callback.accept(new ArrayList<>());
+                    });
+                }
+            }
+        });
+    }
+
 
     private void checkAndIntial() {
         String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -351,7 +478,11 @@ public class PageActivity extends AppCompatActivity {
             layout.setOrientation(LinearLayout.VERTICAL);
             layout.setPadding(16, 16, 16, 16);
 
-            // 创建店铺名称输入框及其标签
+// 创建一个 ScrollView 并将 LinearLayout 添加到其中
+            ScrollView scrollView = new ScrollView(PageActivity.this);
+            scrollView.addView(layout);
+
+// 创建店铺名称输入框及其标签
             TextView textNameLabel = new TextView(PageActivity.this);
             textNameLabel.setText("店铺名称:");
             EditText textName = new EditText(PageActivity.this);
@@ -360,7 +491,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textNameLabel);
             layout.addView(textName);
 
-            // 创建省份输入框及其标签
+// 创建省份输入框及其标签
             TextView textProvinceLabel = new TextView(PageActivity.this);
             textProvinceLabel.setText("省份:");
             EditText textProvince = new EditText(PageActivity.this);
@@ -369,7 +500,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textProvinceLabel);
             layout.addView(textProvince);
 
-            // 创建城市输入框及其标签
+// 创建城市输入框及其标签
             TextView textCityLabel = new TextView(PageActivity.this);
             textCityLabel.setText("城市:");
             EditText textCity = new EditText(PageActivity.this);
@@ -378,7 +509,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textCityLabel);
             layout.addView(textCity);
 
-            // 创建地区输入框及其标签
+// 创建地区输入框及其标签
             TextView textAreaLabel = new TextView(PageActivity.this);
             textAreaLabel.setText("地区:");
             EditText textArea = new EditText(PageActivity.this);
@@ -387,7 +518,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textAreaLabel);
             layout.addView(textArea);
 
-            // 创建地址输入框及其标签
+// 创建地址输入框及其标签
             TextView textAddressLabel = new TextView(PageActivity.this);
             textAddressLabel.setText("地址:");
             EditText textAddress = new EditText(PageActivity.this);
@@ -396,7 +527,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textAddressLabel);
             layout.addView(textAddress);
 
-            // 创建经度输入框及其标签
+// 创建经度输入框及其标签
             TextView textXLabel = new TextView(PageActivity.this);
             textXLabel.setText("经度:");
             EditText textX = new EditText(PageActivity.this);
@@ -405,7 +536,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textXLabel);
             layout.addView(textX);
 
-            // 创建纬度输入框及其标签
+// 创建纬度输入框及其标签
             TextView textYLabel = new TextView(PageActivity.this);
             textYLabel.setText("纬度:");
             EditText textY = new EditText(PageActivity.this);
@@ -414,7 +545,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textYLabel);
             layout.addView(textY);
 
-            // 创建国机数量输入框及其标签
+// 创建国机数量输入框及其标签
             TextView textNumLabel = new TextView(PageActivity.this);
             textNumLabel.setText("国机数量:");
             EditText textNum = new EditText(PageActivity.this);
@@ -423,7 +554,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textNumLabel);
             layout.addView(textNum);
 
-            // 创建币数量输入框及其标签
+// 创建币数量输入框及其标签
             TextView textNumJLabel = new TextView(PageActivity.this);
             textNumJLabel.setText("日机数量:");
             EditText textNumJ = new EditText(PageActivity.this);
@@ -432,7 +563,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textNumJLabel);
             layout.addView(textNumJ);
 
-            // 创建是否使用输入框及其标签
+// 创建是否使用输入框及其标签
             TextView textIsUseLabel = new TextView(PageActivity.this);
             textIsUseLabel.setText("是否使用:");
             EditText textIsUse = new EditText(PageActivity.this);
@@ -442,7 +573,7 @@ public class PageActivity extends AppCompatActivity {
             layout.addView(textIsUse);
 
             builder.setTitle("编辑店铺信息")
-                    .setView(layout)
+                    .setView(scrollView) // 设置 ScrollView 作为对话框的内容视图
                     .setPositiveButton("确定", (dialog, which) -> {
                         // 获取输入框的值并更新 place 对象
                         place.setName(textName.getText().toString());
@@ -460,6 +591,7 @@ public class PageActivity extends AppCompatActivity {
                     })
                     .setNegativeButton("取消", null)
                     .show();
+
         });
 
 

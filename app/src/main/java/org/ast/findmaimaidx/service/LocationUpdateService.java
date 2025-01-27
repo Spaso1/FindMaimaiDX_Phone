@@ -137,6 +137,7 @@ public class LocationUpdateService extends Service {
                         } else {
                             Log.e(TAG, "Request failed: " + response.code());
                         }
+                        ;
                     }
                 });
             }

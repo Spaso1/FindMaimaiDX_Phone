@@ -34,7 +34,7 @@ import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Place;
 import org.ast.findmaimaidx.map2d.BasicMapActivity;
 import org.ast.findmaimaidx.utill.AddressParser;
-import org.ast.findmaimaidx.utill.PlaceAdapter;
+import org.ast.findmaimaidx.adapter.PlaceAdapter;
 
 import java.io.IOException;
 import java.lang.reflect.Type;

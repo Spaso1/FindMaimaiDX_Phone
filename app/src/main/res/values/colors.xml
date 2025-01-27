@@ -23,4 +23,5 @@
     <color name="colorOnSecondary">#000000</color>
     <color name="lineBaseGreen">#1DF687</color>
     <color name="VlineBaseGreen">#C2F6C4</color>
+    <color name="red">#F44336</color>
 </resources>

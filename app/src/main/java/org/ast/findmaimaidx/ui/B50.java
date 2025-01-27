@@ -58,7 +58,12 @@ public class B50 extends AppCompatActivity {
         mainLayout = findViewById(R.id.main);
         String shuiyu_username = setting.getString("shuiyu_username", null);
         String luoxue_username = setting.getString("luoxue_username", null);
-        int userId = Integer.parseInt(setting.getString("userId", null).replace("\"","").trim());
+        int userId = 0;
+        try {
+            userId = Integer.parseInt(setting.getString("userId", null).replace("\"", "").trim());
+        } catch (NumberFormatException e) {
+            Log.d("TAG", "没有userId");
+        }
         if(shuiyu_username == null) {
             if(luoxue_username == null) {
                 Toast.makeText(B50.this, "请先绑定水鱼账号", Toast.LENGTH_SHORT).show();
@@ -68,16 +73,23 @@ public class B50 extends AppCompatActivity {
         }else {
             int use_ = setting.getInt("use_", 0);
             if(use_ ==0) {
-                LocalTime currentTime = LocalTime.now();
-                int currentHour = currentTime.getHour();
-                if(currentHour >= 3 && currentHour < 7) {
-                    Toast.makeText(B50.this, "当前时间段不进行查询", Toast.LENGTH_SHORT).show();
+                Toast.makeText(B50.this, "模式：原生", Toast.LENGTH_SHORT).show();
+                if(userId==0) {
+                    Toast.makeText(B50.this, "userId不存在！", Toast.LENGTH_SHORT).show();
                 }else {
-                    org_b50(userId);
+                    LocalTime currentTime = LocalTime.now();
+                    int currentHour = currentTime.getHour();
+                    if(currentHour >= 3 && currentHour < 7) {
+                        Toast.makeText(B50.this, "当前时间段不进行查询", Toast.LENGTH_SHORT).show();
+                    }else {
+                        org_b50(userId);
+                    }
                 }
             } else if(use_ ==1) {
+                Toast.makeText(B50.this, "模式：水鱼", Toast.LENGTH_SHORT).show();
                 sendRawData(shuiyu_username);
             } else if (use_ ==2){
+                Toast.makeText(B50.this, "模式：落雪", Toast.LENGTH_SHORT).show();
                 Log.d("TAG", "sendRawData: " + luoxue_username);
                 new LuoxueOkhttpRequest(luoxue_username).execute();
                 new LuoxueUserOkhttpRequest(luoxue_username).execute();

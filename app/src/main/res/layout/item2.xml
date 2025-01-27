@@ -78,15 +78,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="赞"
-                android:layout_marginLeft="5mm"
+                android:layout_marginLeft="2mm"
                 android:layout_centerInParent="true"/>
         <Button
                 android:id="@+id/disButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="踩"
-                android:layout_marginLeft="15mm"
+                android:layout_marginLeft="2mm"
                 android:layout_centerInParent="true"/>
+        <Button
+            android:id="@+id/list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="大众评价"
+            android:layout_marginLeft="2mm"
+            android:layout_centerInParent="true"/>
     </LinearLayout>
     <Button
         android:layout_width="match_parent"
