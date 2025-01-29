@@ -1,0 +1,6 @@
+<!-- res/drawable/bot_message_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#03A9F4" />
+    <corners android:radius="8dp" />
+</shape>

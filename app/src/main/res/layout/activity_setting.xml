@@ -120,7 +120,15 @@
                 android:textColor="@android:color/white"
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"/>
-
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/openAi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="打开AI"
+            android:backgroundTint="?attr/colorPrimary"
+            android:textColor="@android:color/white"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"/>
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
             <com.google.android.material.button.MaterialButton
                     android:id="@+id/save_settings_button"
@@ -131,6 +139,7 @@
                     android:textColor="@android:color/white"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"/>
+
         </LinearLayout>
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/settin_body"/>
         <TextView

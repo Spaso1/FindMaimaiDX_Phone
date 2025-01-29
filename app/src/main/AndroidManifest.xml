@@ -127,6 +127,10 @@
                   android:theme="@style/NewTheme"
                   android:hardwareAccelerated="true" android:exported="true">
         </activity>
+        <activity android:name=".ui.AiActivity"
+            android:exported="true"
+            android:hardwareAccelerated="true">
+        </activity>
 
 
         <service

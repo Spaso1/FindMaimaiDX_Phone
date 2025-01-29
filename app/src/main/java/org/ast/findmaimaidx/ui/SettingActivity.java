@@ -89,6 +89,11 @@ public class SettingActivity extends AppCompatActivity {
             Toast.makeText(this, "Android ID已复制到剪贴板", Toast.LENGTH_SHORT).show();
         });
         TextView vits = findViewById(R.id.vits);
+        MaterialButton openAI = findViewById(R.id.openAi);
+        openAI.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingActivity.this, AiActivity.class);
+            startActivity(intent);
+        });
         vits.setText("App version:" + getAppVersionName()+"\nLatest version:" );
         getLatestRelease();
     }
