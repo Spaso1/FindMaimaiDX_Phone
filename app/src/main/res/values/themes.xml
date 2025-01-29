@@ -24,7 +24,6 @@
         <item name="colorOnSecondary">@color/colorPrimary</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">#FFFFFF</item>
-        <!-- Customize your theme here. -->
     </style>
     <style name="FindMaimaiDX2" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>

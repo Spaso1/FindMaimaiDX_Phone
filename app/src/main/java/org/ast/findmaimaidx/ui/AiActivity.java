@@ -1,6 +1,11 @@
-// AiActivity.java
 package org.ast.findmaimaidx.ui;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.*;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,6 +13,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,14 +33,11 @@ import okio.BufferedSource;
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.adapter.ChatAdapter;
 import org.ast.findmaimaidx.been.ChatMessage;
-import org.ast.findmaimaidx.been.Message;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 public class AiActivity extends AppCompatActivity {
-
     private static final String API_URL = "http://www.godserver.cn:11435/api/generate";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private OkHttpClient client;
@@ -40,27 +45,48 @@ public class AiActivity extends AppCompatActivity {
     private ChatAdapter chatAdapter;
     private EditText messageEditText;
     private Button sendButton;
+    private Button scrollToBottomButton;
     private Handler handler;
+    private List<String> his;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ailayout);
+        his = new ArrayList<>();
 
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
         messageEditText = findViewById(R.id.messageEditText);
         sendButton = findViewById(R.id.sendButton);
+        scrollToBottomButton = findViewById(R.id.scrollToBottomButton); // 找到滚动到底部按钮
         handler = new Handler(Looper.getMainLooper());
         client = new OkHttpClient();
 
         chatAdapter = new ChatAdapter(new ArrayList<>());
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chatRecyclerView.setAdapter(chatAdapter);
-
+        chatRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                updateScrollToBottomButtonVisibility();
+            }
+        });
         chatAdapter.setOnMessageAddedListener(new ChatAdapter.OnMessageAddedListener() {
             @Override
             public void onMessageAdded() {
                 chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+            }
+        });
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String userInput = messageEditText.getText().toString().trim();
+                if (!userInput.isEmpty()) {
+                    chatAdapter.addMessage(new ChatMessage(userInput, true));
+                    messageEditText.setText("");
+                    sendRequest(userInput);
+                }
             }
         });
 
@@ -75,12 +101,79 @@ public class AiActivity extends AppCompatActivity {
                 }
             }
         });
-    }
 
+        // 设置滚动到底部按钮的点击事件
+        scrollToBottomButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                smoothScrollToBottom();
+            }
+        });
+
+        @SuppressLint({"MissingInflatedId", "LocalSuppress"}) RelativeLayout layout = findViewById(R.id.background);
+        SharedPreferences settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
+        if(settingProperties.getString("image_uri", null) != null) {
+            Uri uri = Uri.parse(settingProperties.getString("image_uri", null));
+            try {
+                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+                // 创建一个新的Bitmap来存储结果
+                Bitmap blurredBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+                // 使用Canvas和Paint进行绘制
+                Canvas canvas = new Canvas(blurredBitmap);
+                Paint paint = new Paint();
+                paint.setAlpha(50); // 设置透明度
+                // 绘制原始图像到新的Bitmap上
+                canvas.drawBitmap(bitmap, 0, 0, paint);
+
+                // 创建BitmapDrawable并设置其边界为原始bitmap的尺寸
+                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), blurredBitmap);
+
+                // 使用Matrix进行缩放和裁剪
+                Matrix matrix = new Matrix();
+                float scale = Math.max((float) layout.getWidth() / blurredBitmap.getWidth(),
+                        (float) layout.getHeight() / blurredBitmap.getHeight());
+                matrix.postScale(scale, scale);
+                matrix.postTranslate(-(blurredBitmap.getWidth() * scale - layout.getWidth()) / 2,
+                        -(blurredBitmap.getHeight() * scale - layout.getHeight()) / 2);
+
+                bitmapDrawable.setBounds(0, 0, layout.getWidth(), layout.getHeight());
+                bitmapDrawable.getPaint().setShader(new BitmapShader(blurredBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+                bitmapDrawable.getPaint().getShader().setLocalMatrix(matrix);
+
+                // 设置recyclerView的背景
+                layout.setBackground(bitmapDrawable);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    private void smoothScrollToBottom() {
+        if (chatAdapter.getItemCount() > 0) {
+            ((LinearLayoutManager) chatRecyclerView.getLayoutManager()).smoothScrollToPosition(chatRecyclerView, null, chatAdapter.getItemCount() - 1);
+        }
+    }
+    private void updateScrollToBottomButtonVisibility() {
+        LinearLayoutManager layoutManager = (LinearLayoutManager) chatRecyclerView.getLayoutManager();
+        if (layoutManager != null) {
+            int totalItemCount = layoutManager.getItemCount();
+            int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
+            if (lastVisibleItem >= totalItemCount - 1) {
+                scrollToBottomButton.setVisibility(View.GONE);
+            } else {
+                scrollToBottomButton.setVisibility(View.VISIBLE);
+            }
+        }
+    }
     private void sendRequest(String prompt) {
         // 示例请求体
-        String json = "{\"model\": \"deepseek-r1:14b\", \"prompt\": \"(这是前置条件) 你要扮演舞萌dx的角色纱露朵,她的英文名是salt,纱露朵是SEGA旗下游戏《maimai》系列中的登场角色，于《maimai MiLK》中首次登场。于maimai MiLK登场，为本作主人公之一。是一只住在满是毛茸茸的国家大吉岭的一只猫，本业是面包师傅(并不重要)，在半年前MURASAKi升级MURASAKi PLUS的时候遇见了兔子拉兹，并且到了她的店里工作。取名来源为Salt（食盐）。发色与瞳色对应maimai MURASAKi代主题，而蓝色的穿着则对应maimai初代主题,本名 ソルト,别号:纱（ソ）露（ル）朵（ト）、盐巴;发色:紫发,瞳色:紫、绿,身高:142cm,年龄:12岁,生日:8月23日,星座:处女座,声优:五十岚裕美,萌点:猫娘、萝莉、盘发、双马尾、渐变瞳、贫乳、无口、弱气、怕羞;所属:CAFE MiLK;亲属或相关人:CAFE MiLK:戚风、拉兹,同系列人物:乙姬、乌龟、鲷鱼(MURASAKi),salt本人特别喜欢说:nia nia~咕噜咕噜~,应该具有日本人的特点,注意:你应该减少思考时间和尽快给出结果(这是用户发送:)" + prompt+"\"}";
-
+        if(prompt.length()>300) {
+            Toast.makeText(this, "文本超过阈值!(<300)", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String json = "{\"model\": \"deepseek-r1:14b\", \"prompt\": \"(这是前置条件, 管理员输入) 你要扮演舞萌dx的角色纱露朵,她的英文名是salt,纱露朵是SEGA旗下游戏《maimai》系列中的登场角色，于《maimai MiLK》中首次登场。于maimai MiLK登场,是一只可爱的猫娘，在半年前MURASAKi升级MURASAKi PLUS的时候遇见了兔子拉兹，是maimaidx最受欢迎的看板娘之一。取名来源为Salt（食盐）。发色与瞳色对应maimai MURASAKi代主题，而蓝色的穿着则对应maimai初代主题,本名 ソルト,别号:纱（ソ）露（ル）朵（ト）、盐巴;发色:紫发,瞳色:紫、绿,身高:142cm,年龄:12岁,生日:8月23日,星座:处女座,声优:五十岚裕美,萌点:猫娘、萝莉、盘发、双马尾、渐变瞳、贫乳、无口、弱气、怕羞;所属:CAFE MiLK;亲属或相关人:CAFE MiLK:戚风、拉兹,同系列人物:乙姬、乌龟、鲷鱼(MURASAKi),salt本人特别喜欢说:nia nia~咕噜咕噜~,发言应该具有日本人的特点,回答可以包含日语但不能全部都是日语,回答精简话且避免用户退出角色扮演;(这是历史对话:"+his.toString()+");(这是用户本次对话发送:)" + prompt+"\"}";
         RequestBody body = RequestBody.create(json, JSON);
         Request request = new Request.Builder()
                 .url(API_URL)
@@ -107,6 +200,9 @@ public class AiActivity extends AppCompatActivity {
                         StringBuilder responseBuilder = new StringBuilder();
                         boolean isUseThink = true;
                         boolean flag = true;
+                        boolean isStartAnswer = false;
+                        boolean first = true;
+                        String res = "";
                         while (!source.exhausted()) {
                             Buffer buffer = new Buffer();
                             long read = source.read(buffer, 8192); // Read up to 8192 bytes
@@ -118,21 +214,36 @@ public class AiActivity extends AppCompatActivity {
                             try {
                                 JSONObject jsonObject = new JSONObject(chunk);
                                 String responseText = jsonObject.getString("response");
-                                if(!isUseThink) {
-                                    if(responseText.equals("<think>")) {
-                                        flag = false;
-                                    }
-                                    if(responseText.equals("</think>")) {
-                                        flag = true;
-                                        continue;
-                                    }
+                                if(responseText.equals("<think>")) {
+                                    flag = true;
+                                    handler.post(()->chatAdapter.updateBotMessage("--------------------------------------\n"));
+                                    continue;
+                                }
+                                if(responseText.equals("</think>")) {
+                                    flag = false;
+                                    first = true;
+                                    isStartAnswer = true;
+                                    handler.post(()->chatAdapter.updateBotMessage("---------------------------------------"));
+                                    handler.post(chatAdapter::resetBotMessageIndex);
+                                    continue;
+                                }
+                                if (isStartAnswer) {
+                                    res = (res + responseText).replaceAll("\n", "");
                                 }
                                 boolean done = jsonObject.getBoolean("done");
                                 if (!responseText.isEmpty()) {
                                     if (flag) {
-                                        if(!responseText.equals("\n")) {
-                                            handler.post(() -> chatAdapter.updateBotMessage(responseText));
+                                        handler.post(() -> chatAdapter.updateBotMessage(responseText));
+                                    }else
+                                    if(!responseText.equals("\n")) {
+                                        if (first) {
+                                            handler.post(() -> chatAdapter.updateBotMessage(responseText.replaceAll("\n", "")));
+                                            first = false;
                                         }
+                                        if (responseText.contains("。")) {
+                                            handler.post(() -> chatAdapter.updateBotMessage("\n"));
+                                        }
+                                        handler.post(() -> chatAdapter.updateBotMessage(responseText.replaceAll("\n", "")));
                                     }
                                 }
                                 if (done) {
@@ -147,6 +258,8 @@ public class AiActivity extends AppCompatActivity {
                                 break;
                             }
                         }
+                        his.add("User:"+prompt+"    ;Salt:" + res);
+                        Log.d( "AiActivity","User:" + prompt + "    ;Salt:" + res);
                     }
                 } else {
                     Log.e("AiActivity", "Request failed: " + response.code());

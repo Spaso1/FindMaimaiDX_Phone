@@ -1,13 +1,20 @@
-// ChatMessage.java
 package org.ast.findmaimaidx.been;
 
 public class ChatMessage {
     private String message;
     private boolean isUser;
+    private boolean isThinking;
 
     public ChatMessage(String message, boolean isUser) {
         this.message = message;
         this.isUser = isUser;
+        this.isThinking = false;
+    }
+
+    public ChatMessage(String message, boolean isUser, boolean isThinking) {
+        this.message = message;
+        this.isUser = isUser;
+        this.isThinking = isThinking;
     }
 
     public String getMessage() {
@@ -20,5 +27,9 @@ public class ChatMessage {
 
     public boolean isUser() {
         return isUser;
+    }
+
+    public boolean isThinking() {
+        return isThinking;
     }
 }

@@ -6,7 +6,8 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.*;
-import android.graphics.Color;
+import android.graphics.*;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -617,6 +618,46 @@ public class PageActivity extends AppCompatActivity {
                 }
             }
         });
+
+        LinearLayout layout = findViewById(R.id.background);
+        SharedPreferences settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
+        if(settingProperties.getString("image_uri", null) != null) {
+            Uri uri = Uri.parse(settingProperties.getString("image_uri", null));
+            try {
+                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+                // 创建一个新的Bitmap来存储结果
+                Bitmap blurredBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+                // 使用Canvas和Paint进行绘制
+                Canvas canvas = new Canvas(blurredBitmap);
+                Paint paint = new Paint();
+                paint.setAlpha(50); // 设置透明度
+                // 绘制原始图像到新的Bitmap上
+                canvas.drawBitmap(bitmap, 0, 0, paint);
+
+                // 创建BitmapDrawable并设置其边界为原始bitmap的尺寸
+                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), blurredBitmap);
+
+                // 使用Matrix进行缩放和裁剪
+                Matrix matrix = new Matrix();
+                float scale = Math.max((float) layout.getWidth() / blurredBitmap.getWidth(),
+                        (float) layout.getHeight() / blurredBitmap.getHeight());
+                matrix.postScale(scale, scale);
+                matrix.postTranslate(-(blurredBitmap.getWidth() * scale - layout.getWidth()) / 2,
+                        -(blurredBitmap.getHeight() * scale - layout.getHeight()) / 2);
+
+                bitmapDrawable.setBounds(0, 0, layout.getWidth(), layout.getHeight());
+                bitmapDrawable.getPaint().setShader(new BitmapShader(blurredBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+                bitmapDrawable.getPaint().getShader().setLocalMatrix(matrix);
+
+                // 设置recyclerView的背景
+                layout.setBackground(bitmapDrawable);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
     public void update(Place place) {
         String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);

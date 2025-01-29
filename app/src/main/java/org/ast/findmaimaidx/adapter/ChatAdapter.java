@@ -1,9 +1,9 @@
-// ChatAdapter.java
 package org.ast.findmaimaidx.adapter;
 
 import android.graphics.Color;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,6 +60,10 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         }
     }
 
+    /**
+     * 就这样吧不想改了我草
+     * @param response
+     */
     public void updateBotMessage(String response) {
         if (currentBotMessageIndex == -1) {
             // 如果当前没有AI消息，添加一个新的AI消息
@@ -73,6 +77,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
             botMessage.setMessage(botMessage.getMessage() + response);
             notifyItemChanged(currentBotMessageIndex);
         }
+
+        // 触发滚动到最新消息
+        if (onMessageAddedListener != null) {
+            onMessageAddedListener.onMessageAdded();
+        }
     }
 
     public void resetBotMessageIndex() {
@@ -80,6 +89,9 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         isThinking = false;
     }
 
+    /**
+     * 狗屎啊写个判断死活不行
+     */
     static class ChatViewHolder extends RecyclerView.ViewHolder {
         private TextView messageTextView;
 
@@ -91,26 +103,28 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         public void bind(ChatMessage chatMessage) {
             String message = chatMessage.getMessage();
             SpannableString spannableString = new SpannableString(message);
-            Pattern pattern = Pattern.compile("<think>|</think>");
+            Pattern pattern = Pattern.compile("--------------------------------------\n|---------------------------------------");
             Matcher matcher = pattern.matcher(message);
 
             int start = 0;
             boolean isThinking = false;
 
             while (matcher.find()) {
-                if (matcher.group().equals("<think>")) {
+                if (matcher.group().equals("--------------------------------------\n")) {
                     isThinking = true;
-                } else if (matcher.group().equals("</think>")) {
-                    isThinking = false;
+                } else if (matcher.group().equals("---------------------------------------")) {
                 }
-
                 spannableString.setSpan(new ForegroundColorSpan(isThinking ? Color.parseColor("#808080") : Color.BLACK), start, matcher.start(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannableString.setSpan(new AbsoluteSizeSpan(isThinking ? 12 : 16, true), start, matcher.start(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 start = matcher.end();
             }
+            messageTextView.setText(messageTextView.getText().toString().replace("--------------------------------------\n",""));
+            messageTextView.setText(messageTextView.getText().toString().replace("---------------------------------------",""));
 
-            // Apply color to remaining text
+            // Apply color and size to remaining text
             if (start < message.length()) {
                 spannableString.setSpan(new ForegroundColorSpan(isThinking ? Color.parseColor("#808080") : Color.BLACK), start, message.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannableString.setSpan(new AbsoluteSizeSpan(isThinking ? 12 : 16, true), start, message.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
             messageTextView.setText(spannableString);
