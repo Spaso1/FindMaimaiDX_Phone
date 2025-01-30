@@ -258,6 +258,8 @@ public class MainLaunch extends AppCompatActivity {
                         break;
                     case 6:
                         Intent intent3 = new Intent(MainLaunch.this, SettingActivity.class);
+                        intent3.putExtra("x", x);
+                        intent3.putExtra("y", y);
                         startActivity(intent3);
                         break;
                     case 7:
@@ -381,7 +383,7 @@ public class MainLaunch extends AppCompatActivity {
             }
         }
 
-        String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        @SuppressLint("HardwareIds") String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         String url = "http://mai.godserver.cn:11451/api/mai/v1/check?androidId=" + androidId;
         Request request = new Request.Builder()
                 .url(url)

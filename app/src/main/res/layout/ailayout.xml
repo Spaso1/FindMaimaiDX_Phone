@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/background"
                 android:padding="16dp">
@@ -11,7 +12,9 @@
             android:layout_height="0dp"
             android:layout_above="@id/inputLayout"
             android:layout_alignParentTop="true"
-            android:scrollbars="vertical" android:layout_marginTop="33dp" android:layout_marginBottom="15dp"/>
+            android:scrollbars="vertical" android:layout_marginTop="33dp" android:layout_marginBottom="15dp">
+    </androidx.recyclerview.widget.RecyclerView>
+
     <LinearLayout
             android:id="@+id/inputLayout"
             android:layout_width="match_parent"
@@ -41,6 +44,7 @@
                 android:textColor="#FFFFFF" />
 
     </LinearLayout>
+
 
     <Button
             android:id="@+id/scrollToBottomButton"

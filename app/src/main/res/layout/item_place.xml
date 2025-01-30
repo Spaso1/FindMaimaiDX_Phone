@@ -9,6 +9,7 @@
 
     <TextView
             android:id="@+id/nameTextView"
+            android:textColor="@color/colorPrimary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="18sp"
@@ -16,7 +17,8 @@
 
     <TextView
             android:id="@+id/provinceTextView"
-            android:layout_width="wrap_content"
+        android:textColor="@color/colorPrimary"
+        android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:paddingEnd="10dp" />
@@ -24,12 +26,16 @@
     <TextView
             android:id="@+id/cityTextView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimary"
+
+        android:layout_height="wrap_content"
             android:textSize="16sp" />
 
     <TextView
             android:id="@+id/areaTextView"
-            android:layout_width="wrap_content"
+        android:textColor="@color/colorPrimary"
+
+        android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp" />
 

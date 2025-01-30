@@ -48,7 +48,7 @@
                   android:paddingLeft="15mm"
                   android:id="@+id/num7"
                   android:textSize="16sp"/>
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
                 android:text="收藏"
                 android:layout_width="match_parent"
                 android:layout_marginLeft="10mm"
@@ -73,21 +73,21 @@
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
               android:id="@+id/y"/>
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-        <Button
+        <com.google.android.material.button.MaterialButton
                 android:id="@+id/likeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="赞"
                 android:layout_marginLeft="2mm"
                 android:layout_centerInParent="true"/>
-        <Button
+        <com.google.android.material.button.MaterialButton
                 android:id="@+id/disButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="踩"
                 android:layout_marginLeft="2mm"
                 android:layout_centerInParent="true"/>
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/list"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -95,14 +95,14 @@
             android:layout_marginLeft="2mm"
             android:layout_centerInParent="true"/>
     </LinearLayout>
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:layout_width="match_parent"
         android:id="@+id/admin"
         android:text="机厅信息更改"
         android:layout_height="match_parent"/>
     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
-        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="机厅数据更新" android:id="@+id/updateButton"/>
-        <Button
+        <com.google.android.material.button.MaterialButton android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="机厅数据更新" android:id="@+id/updateButton"/>
+        <com.google.android.material.button.MaterialButton
                 android:text="导航"
                 android:layout_width="227dp"
                 android:layout_marginLeft="1mm"
@@ -115,7 +115,7 @@
                 android:text="TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/textView2"/>
-        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/add" android:layout_marginLeft="30mm"
+        <com.google.android.material.button.MaterialButton android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/add" android:layout_marginLeft="30mm"
                 android:text="录入商超"/>
     </LinearLayout>
 

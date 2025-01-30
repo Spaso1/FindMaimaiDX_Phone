@@ -267,6 +267,8 @@ public class  ChunActivity extends AppCompatActivity {
                     case 6:
                         Intent intent3 = new Intent(ChunActivity.this, SettingActivity.class);
                         startActivity(intent3);
+                        intent3.putExtra("x", x);
+                        intent3.putExtra("y", y);
                         break;
                 }
             }).show();

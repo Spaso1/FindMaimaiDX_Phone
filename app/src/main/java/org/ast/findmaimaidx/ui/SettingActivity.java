@@ -39,12 +39,15 @@ public class SettingActivity extends AppCompatActivity {
     private TextInputEditText shuiyuEditText;
     private TextInputEditText luoxueEditText;
     private TextInputEditText userId;
+    private String x;
+    private String y;
     @SuppressLint({"SetTextI18n","MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
-
+        x = getIntent().getStringExtra("x");
+        y = getIntent().getStringExtra("y");
         settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
         SwitchMaterial switchMaterial = findViewById(R.id.switchBeta1);
         switchMaterial.setChecked(settingProperties.getBoolean("setting_autobeta1", false));
@@ -92,6 +95,8 @@ public class SettingActivity extends AppCompatActivity {
         MaterialButton openAI = findViewById(R.id.openAi);
         openAI.setOnClickListener(v -> {
             Intent intent = new Intent(SettingActivity.this, AiActivity.class);
+            intent.putExtra("x", x);
+            intent.putExtra("y", y);
             startActivity(intent);
         });
         vits.setText("App version:" + getAppVersionName()+"\nLatest version:" );

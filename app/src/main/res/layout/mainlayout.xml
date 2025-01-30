@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
                                                    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+
                                                    android:layout_height="match_parent">
     <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
@@ -12,6 +13,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="7mm"
+                android:tooltipText="FindMaimai"
                 android:background="@color/colorPrimary"
                 android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
                 android:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"/>
@@ -19,7 +21,6 @@
                 android:text="卡在这个页面打开定位权限并且关闭夜间模式"
                 android:layout_width="match_parent"
                 android:background="@color/colorPrimary"
-
                 android:lines="1"
                 android:layout_height="wrap_content" android:id="@+id/textView"/>
 
@@ -30,6 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="9mm"
+            android:background="@color/colorOnPrimary"
             android:scrollbars="vertical" tools:layout_editor_absoluteY="161dp" tools:layout_editor_absoluteX="0dp"/>
     <androidx.constraintlayout.widget.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"

@@ -81,7 +81,7 @@
                 android:hardwareAccelerated="true"
                 android:name=".ui.PageActivity"
                 android:exported="true"
-                android:theme="@style/FindMaimaiDX2" tools:ignore="WrongManifestParent">
+                android:theme="@style/NewTheme" tools:ignore="WrongManifestParent">
         </activity>
         <activity
                 android:hardwareAccelerated="true"

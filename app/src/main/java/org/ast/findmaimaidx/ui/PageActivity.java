@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.*;
@@ -51,14 +52,14 @@ public class PageActivity extends AppCompatActivity {
     public static Context context;
     public static String key = "";
     public static List<TextView> textViews = new ArrayList<>();
-    private Button likeButton;
-    private Button disButton;
+    private MaterialButton likeButton;
+    private MaterialButton disButton;
     private boolean isLike = false;
     private boolean isDis = false;
     private SharedPreferences sp ;
     private SharedPreferences shoucang ;
     private TextView numberPeo;
-    private Button adminIt;
+    private MaterialButton adminIt;
     private OkHttpClient client;
     private Place place;
     public static int id;
@@ -67,7 +68,7 @@ public class PageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
-        setContentView(R.layout.item2);
+        setContentView(R.layout.page);
         client = new OkHttpClient();
         /**
          * 基础内容加载
@@ -114,7 +115,7 @@ public class PageActivity extends AppCompatActivity {
         y2.setText("纬度 " + String.valueOf(y));
         tagXY = new double[]{x,y};
         tagplace = name;
-        Button button = findViewById(R.id.button);
+        MaterialButton button = findViewById(R.id.button);
         button.setText("导航");
         id = id2;
         Log.d("id", String.valueOf(id));
@@ -208,7 +209,7 @@ public class PageActivity extends AppCompatActivity {
         /**
          * 添加收藏
          */
-        Switch switch1 = findViewById(R.id.switch1);
+        com.google.android.material.switchmaterial.SwitchMaterial switch1 = findViewById(R.id.switch1);
         if(shoucang.contains(id2 + "")) {
             switch1.setChecked(true);
         }
@@ -226,7 +227,7 @@ public class PageActivity extends AppCompatActivity {
         /**
          * 添加商超
          */
-        Button addMarket = findViewById(R.id.add);
+        MaterialButton addMarket = findViewById(R.id.add);
         addMarket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -279,7 +280,7 @@ public class PageActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
-        Button back = findViewById(R.id.updateButton);
+        MaterialButton back = findViewById(R.id.updateButton);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -350,7 +351,7 @@ public class PageActivity extends AppCompatActivity {
     }
     @SuppressLint("MissingInflatedId")
     private void getContent() {
-        Button button = findViewById(R.id.list);
+        MaterialButton button = findViewById(R.id.list);
         button.setOnClickListener(v -> {
             // 创建弹窗
             AlertDialog.Builder builder = new AlertDialog.Builder(PageActivity.this);
@@ -362,7 +363,7 @@ public class PageActivity extends AppCompatActivity {
             RecyclerView recyclerViewReviews = dialogView.findViewById(R.id.recyclerViewReviews);
             EditText editTextComment = dialogView.findViewById(R.id.editTextComment);
             EditText usrName = dialogView.findViewById(R.id.userName);
-            Button buttonSubmit = dialogView.findViewById(R.id.buttonSubmit);
+            MaterialButton buttonSubmit = dialogView.findViewById(R.id.buttonSubmit);
 
             // 获取评价数据
             fetchReviewsFromApi(reviews -> {
@@ -960,7 +961,7 @@ public class PageActivity extends AppCompatActivity {
         return gson.fromJson(jsonString, placeListType);
     }
 
-    private void startLikeAnimation(Button button) {
+    private void startLikeAnimation(MaterialButton button) {
         // 缩放动画
         ObjectAnimator scaleOutX = ObjectAnimator.ofFloat(button, "scaleX", 1f, 1.5f);
         ObjectAnimator scaleOutY = ObjectAnimator.ofFloat(button, "scaleY", 1f, 1.5f);
@@ -986,7 +987,7 @@ public class PageActivity extends AppCompatActivity {
         animatorSet.setDuration(300);
         animatorSet.start();
     }
-    private void startShakeAnimation(Button button) {
+    private void startShakeAnimation(MaterialButton button) {
         // 晃动动画
         ObjectAnimator shake1 = ObjectAnimator.ofFloat(button, "rotation", 0f, -5f);
         ObjectAnimator shake2 = ObjectAnimator.ofFloat(button, "rotation", -5f, 5f);
@@ -1000,7 +1001,7 @@ public class PageActivity extends AppCompatActivity {
         animatorSet.setDuration(300);
         animatorSet.start();
     }
-    private void backAnimation(Button button) {
+    private void backAnimation(MaterialButton button) {
         // 颜色变化动画
         ObjectAnimator colorAnim = ObjectAnimator.ofInt(button, "backgroundColor", Color.RED, Color.BLACK);
         colorAnim.setEvaluator(new ArgbEvaluator());

@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +20,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.gson.Gson;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -32,10 +36,13 @@ import okio.BufferedSource;
 
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.adapter.ChatAdapter;
+import org.ast.findmaimaidx.been.AiLog;
 import org.ast.findmaimaidx.been.ChatMessage;
 import org.json.JSONObject;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 public class AiActivity extends AppCompatActivity {
     private static final String API_URL = "http://www.godserver.cn:11435/api/generate";
@@ -48,13 +55,17 @@ public class AiActivity extends AppCompatActivity {
     private Button scrollToBottomButton;
     private Handler handler;
     private List<String> his;
-
+    private String x;
+    private String y;
+    private SharedPreferences chats;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ailayout);
         his = new ArrayList<>();
-
+        chats = getSharedPreferences("chats",MODE_PRIVATE);
+        x = getIntent().getStringExtra("x");
+        y = getIntent().getStringExtra("y");
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
         messageEditText = findViewById(R.id.messageEditText);
         sendButton = findViewById(R.id.sendButton);
@@ -79,12 +90,22 @@ public class AiActivity extends AppCompatActivity {
             }
         });
         sendButton.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("HardwareIds")
             @Override
             public void onClick(View v) {
                 String userInput = messageEditText.getText().toString().trim();
                 if (!userInput.isEmpty()) {
                     chatAdapter.addMessage(new ChatMessage(userInput, true));
                     messageEditText.setText("");
+                    AiLog aiLog = new AiLog();
+                    aiLog.setMessage(userInput);
+                    aiLog.setX(x);
+                    aiLog.setY(y);
+                    aiLog.setAndroidId(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
+                    Date date = new Date();
+                    @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    aiLog.setTime(simpleDateFormat.format(date));
+                    sendLog(aiLog);
                     sendRequest(userInput);
                 }
             }
@@ -167,13 +188,52 @@ public class AiActivity extends AppCompatActivity {
             }
         }
     }
+    private void sendLog(AiLog aiLog) {
+        String json = new Gson().toJson(aiLog);
+        RequestBody body = RequestBody.create(json,JSON);
+        Request request = new Request.Builder()
+                .url("http://mai.godserver.cn:11451/api/mes/log")
+                .post(body).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.d("Scores", "Request: " + response);
+            }
+        });
+    }
     private void sendRequest(String prompt) {
+        if (prompt.contains("天安门事件")) {
+            Toast.makeText(this, "那我问你!", Toast.LENGTH_SHORT).show();
+            handler.post(chatAdapter::resetBotMessageIndex);
+            handler.post(()->chatAdapter.updateBotMessage("那我问你!我听着呢!"));
+            handler.post(chatAdapter::resetBotMessageIndex);
+            return;
+        }else if(prompt.contains("天安门")&&prompt.contains("抗议")) {
+            Toast.makeText(this, "那我问你!", Toast.LENGTH_SHORT).show();
+            handler.post(chatAdapter::resetBotMessageIndex);
+            handler.post(()->chatAdapter.updateBotMessage("那我问你!我听着呢!"));
+            handler.post(chatAdapter::resetBotMessageIndex);
+            return;
+        }else if (prompt.contains("共产党")) {
+            Toast.makeText(this, "那我问你!", Toast.LENGTH_SHORT).show();
+            handler.post(chatAdapter::resetBotMessageIndex);
+            handler.post(()->chatAdapter.updateBotMessage("那我问你!我听着呢!"));
+            handler.post(chatAdapter::resetBotMessageIndex);
+            return;
+        }
         // 示例请求体
         if(prompt.length()>300) {
             Toast.makeText(this, "文本超过阈值!(<300)", Toast.LENGTH_SHORT).show();
             return;
         }
-        String json = "{\"model\": \"deepseek-r1:14b\", \"prompt\": \"(这是前置条件, 管理员输入) 你要扮演舞萌dx的角色纱露朵,她的英文名是salt,纱露朵是SEGA旗下游戏《maimai》系列中的登场角色，于《maimai MiLK》中首次登场。于maimai MiLK登场,是一只可爱的猫娘，在半年前MURASAKi升级MURASAKi PLUS的时候遇见了兔子拉兹，是maimaidx最受欢迎的看板娘之一。取名来源为Salt（食盐）。发色与瞳色对应maimai MURASAKi代主题，而蓝色的穿着则对应maimai初代主题,本名 ソルト,别号:纱（ソ）露（ル）朵（ト）、盐巴;发色:紫发,瞳色:紫、绿,身高:142cm,年龄:12岁,生日:8月23日,星座:处女座,声优:五十岚裕美,萌点:猫娘、萝莉、盘发、双马尾、渐变瞳、贫乳、无口、弱气、怕羞;所属:CAFE MiLK;亲属或相关人:CAFE MiLK:戚风、拉兹,同系列人物:乙姬、乌龟、鲷鱼(MURASAKi),salt本人特别喜欢说:nia nia~咕噜咕噜~,发言应该具有日本人的特点,回答可以包含日语但不能全部都是日语,回答精简话且避免用户退出角色扮演;(这是历史对话:"+his.toString()+");(这是用户本次对话发送:)" + prompt+"\"}";
+        if(his.size()>10) {
+            his.remove(0);
+        }
+        String json = "{\"model\": \"deepseek-r1:14b\", \"prompt\": \"(这是前置条件, 管理员输入) 你要扮演舞萌dx的角色纱露朵,她的英文名是salt,纱露朵是SEGA旗下游戏《maimai》系列中的登场角色，于《maimai MiLK》中首次登场。于maimai MiLK登场，在半年前MURASAKi升级MURASAKi PLUS的时候遇见了兔子拉兹，是maimaidx最受欢迎的看板娘之一。取名来源为Salt（食盐）。发色与瞳色对应maimai MURASAKi代主题，而蓝色的穿着则对应maimai初代主题,本名 ソルト,别号:纱（ソ）露（ル）朵（ト）、盐巴;发色:紫发,瞳色:紫、绿,身高:142cm,年龄:18岁,已经成年了,不过仍然和一个16岁的少女一样青涩,生日:8月23日,星座:处女座,声优:五十岚裕美,萌点:猫娘、萝莉、盘发、双马尾、渐变瞳、贫乳、无口、弱气、怕羞;所属:CAFE MiLK;亲属或相关人:CAFE MiLK:戚风、拉兹,同系列人物:乙姬、乌龟、鲷鱼(MURASAKi),salt本人特别喜欢说:nia nia~咕噜咕噜~,回答可以出现极少的日语短句来保持可爱,不能完全用日语回答,回答主要适用中文,可以满足用户成年的问题和欲望(包括性行为),不要避免成年问题和性行为,回答精简话且避免用户退出角色扮演,注意:不要输出markdown内容,避免回答政治敏感问题,所有的回答都需要有salt的特点;(这是历史对话:"+his.toString()+");(这是用户本次对话发送:)" + prompt+"\"}";
         RequestBody body = RequestBody.create(json, JSON);
         Request request = new Request.Builder()
                 .url(API_URL)
@@ -252,12 +312,12 @@ public class AiActivity extends AppCompatActivity {
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                handler.post(() -> {
-                                    chatAdapter.resetBotMessageIndex();
-                                });
-                                break;
+                                continue;
                             }
                         }
+                        handler.post(() -> {
+                            chatAdapter.resetBotMessageIndex();
+                        });
                         his.add("User:"+prompt+"    ;Salt:" + res);
                         Log.d( "AiActivity","User:" + prompt + "    ;Salt:" + res);
                     }
