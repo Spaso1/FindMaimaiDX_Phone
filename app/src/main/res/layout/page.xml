@@ -21,10 +21,13 @@
                   android:paddingLeft="15mm"
                   android:id="@+id/num5"
                   android:textSize="16sp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                  android:paddingLeft="5mm"
-                  android:id="@+id/numberPeo"
-                  android:textSize="12sp"/>
+
+        <TextView
+            android:id="@+id/numberPeo"
+            android:layout_width="23dp"
+            android:layout_height="22dp"
+            android:paddingLeft="5mm"
+            android:textSize="12sp" />
     </LinearLayout>
     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
         <TextView

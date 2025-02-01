@@ -112,10 +112,9 @@
                 android:paddingBottom="16dp"/>
         <com.google.android.material.button.MaterialButton
                 android:id="@+id/getUserid"
-
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="获取UserId"
+                android:text="#UserId灰色地带#"
                 android:backgroundTint="?attr/colorPrimary"
                 android:textColor="@android:color/white"
                 android:paddingTop="16dp"

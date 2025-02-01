@@ -97,15 +97,7 @@ public class AiActivity extends AppCompatActivity {
                 if (!userInput.isEmpty()) {
                     chatAdapter.addMessage(new ChatMessage(userInput, true));
                     messageEditText.setText("");
-                    AiLog aiLog = new AiLog();
-                    aiLog.setMessage(userInput);
-                    aiLog.setX(x);
-                    aiLog.setY(y);
-                    aiLog.setAndroidId(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
-                    Date date = new Date();
-                    @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                    aiLog.setTime(simpleDateFormat.format(date));
-                    sendLog(aiLog);
+
                     sendRequest(userInput);
                 }
             }
@@ -189,23 +181,40 @@ public class AiActivity extends AppCompatActivity {
         }
     }
     private void sendLog(AiLog aiLog) {
+        MediaType JSON = MediaType.get("application/json; charset=utf-8");
         String json = new Gson().toJson(aiLog);
-        RequestBody body = RequestBody.create(json,JSON);
+        RequestBody body = RequestBody.create(json, JSON);
         Request request = new Request.Builder()
                 .url("http://mai.godserver.cn:11451/api/mes/log")
-                .post(body).build();
+                .post(body)
+                .build();
+        Log.d("发送", "Request: " + json);
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
+                Log.d("失败", "11111" + e);
             }
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                Log.d("Scores", "Request: " + response);
+                String responseBody = response.body().string();
+                Log.d("Scores", "Response: " + responseBody);
             }
         });
+
     }
+    @SuppressLint("HardwareIds")
     private void sendRequest(String prompt) {
+        AiLog aiLog = new AiLog();
+        aiLog.setMessage(prompt);
+        aiLog.setX(x);
+        aiLog.setY(y);
+        aiLog.setAndroidId(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
+        Date date = new Date();
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        aiLog.setTime(simpleDateFormat.format(date));
+        Log.d("aiLog", new Gson().toJson(aiLog));
+        sendLog(aiLog);
         if (prompt.contains("天安门事件")) {
             Toast.makeText(this, "那我问你!", Toast.LENGTH_SHORT).show();
             handler.post(chatAdapter::resetBotMessageIndex);

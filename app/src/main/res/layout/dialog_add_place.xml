@@ -45,19 +45,6 @@
                 android:hint="详细地址" />
 
             <EditText
-                android:id="@+id/editTextX"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="经度"
-                android:inputType="numberDecimal" />
-
-            <EditText
-                android:id="@+id/editTextY"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="纬度"
-                android:inputType="numberDecimal" />
-            <EditText
                 android:hint="国机"
                 android:inputType="number"
                 android:id="@+id/num"

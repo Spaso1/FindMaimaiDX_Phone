@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.*;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.*;
 import android.provider.MediaStore;
@@ -115,6 +116,41 @@ public class B50 extends AppCompatActivity {
             Intent intent = new Intent(B50.this, Scores.class);
             startActivity(intent);
         });
+
+        ScrollView scrollView = findViewById(R.id.mainPage);
+        if(setting.getString("image_uri", null) != null) {
+            Uri uri = Uri.parse(setting.getString("image_uri", null));
+            try {
+                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+                // 创建一个新的Bitmap来存储结果
+                Bitmap blurredBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+                // 使用Canvas和Paint进行绘制
+                Canvas canvas = new Canvas(blurredBitmap);
+                Paint paint = new Paint();
+                paint.setAlpha(50); // 设置透明度
+                // 绘制原始图像到新的Bitmap上
+                canvas.drawBitmap(bitmap, 0, 0, paint);
+                // 创建BitmapDrawable并设置其边界为原始bitmap的尺寸
+                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), blurredBitmap);
+                // 使用Matrix进行缩放和裁剪
+                Matrix matrix = new Matrix();
+                float scale = Math.max((float) scrollView.getWidth() / blurredBitmap.getWidth(),
+                        (float) scrollView.getHeight() / blurredBitmap.getHeight());
+                matrix.postScale(scale, scale);
+                matrix.postTranslate(-(blurredBitmap.getWidth() * scale - scrollView.getWidth()) / 2,
+                        -(blurredBitmap.getHeight() * scale - scrollView.getHeight()) / 2);
+
+                bitmapDrawable.setBounds(0, 0, scrollView.getWidth(), scrollView.getHeight());
+                bitmapDrawable.getPaint().setShader(new BitmapShader(blurredBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+                bitmapDrawable.getPaint().getShader().setLocalMatrix(matrix);
+                // 设置recyclerView的背景
+                scrollView.setBackground(bitmapDrawable);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
     private void org_b50(int userId) {
         String url = "http://mai.godserver.cn:11451/api/hacker/getUserScore?userId=" + userId;

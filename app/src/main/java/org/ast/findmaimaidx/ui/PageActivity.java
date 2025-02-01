@@ -108,7 +108,6 @@ public class PageActivity extends AppCompatActivity {
         TextView t2 = findViewById(R.id.num6);
         t2.setText("国机 " + num);
         TextView t3 = findViewById(R.id.num7);
-        t3.setText("\uD83D\uDCB3 " + numJ);
         TextView x2 = findViewById(R.id.x);
         x2.setText("经度 " + String.valueOf(x));
         TextView y2 = findViewById(R.id.y);
@@ -292,6 +291,7 @@ public class PageActivity extends AppCompatActivity {
                 editText.setHint("这是国框数量 目前是" + place.getNum() + "个");
                 EditText editTextJ = new EditText(PageActivity.context);
                 editTextJ.setHint("这是\uD83D\uDCB3数量 目前是" + place.getNumJ() + "个");
+                editTextJ.setText(0);
                 layout.addView(editText);
                 layout.addView(editTextJ);
                 builder.setTitle("输入数量")
@@ -586,7 +586,13 @@ public class PageActivity extends AppCompatActivity {
                         place.setX(Double.parseDouble(textX.getText().toString()));
                         place.setY(Double.parseDouble(textY.getText().toString()));
                         place.setNum(Integer.parseInt(textNum.getText().toString()));
-                        place.setNumJ(Integer.parseInt(textNumJ.getText().toString()));
+                        int num2 = 0;
+                        try {
+                            num2 = Integer.parseInt(textNumJ.getText().toString());
+                        } catch (NumberFormatException e) {
+                            throw new RuntimeException(e);
+                        }
+                        place.setNumJ(num2);
                         place.setIsUse(Integer.parseInt(textIsUse.getText().toString()));
                         // 调用 sendUpdateNum 方法上传更新
                         update(place);
@@ -610,8 +616,8 @@ public class PageActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         if(!responseData.equals("1")) {
                             adminIt.setVisibility(View.GONE);
+                            Toast.makeText(PageActivity.this, "管理员", Toast.LENGTH_LONG).show();
                         }
-                        Toast.makeText(PageActivity.this, "管理员", Toast.LENGTH_LONG).show();
                         Log.d("TAG", "Response: " + responseData);
                     });
                 } else {

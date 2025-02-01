@@ -281,22 +281,25 @@ public class MainLaunch extends AppCompatActivity {
                                 EditText editTextCity = dialogView.findViewById(R.id.editTextCity);
                                 EditText editTextArea = dialogView.findViewById(R.id.editTextArea);
                                 EditText editTextAddress = dialogView.findViewById(R.id.editTextAddress);
-                                EditText editTextX = dialogView.findViewById(R.id.editTextX);
-                                EditText editTextY = dialogView.findViewById(R.id.editTextY);
                                 EditText num = dialogView.findViewById(R.id.num);
                                 EditText numJ = dialogView.findViewById(R.id.numJ);
+
                                 String name = editTextName.getText().toString();
                                 String province = editTextProvince.getText().toString();
                                 String city = editTextCity.getText().toString();
                                 String area = editTextArea.getText().toString();
                                 String address = editTextAddress.getText().toString();
-                                double x = Double.parseDouble(editTextX.getText().toString());
-                                double y = Double.parseDouble(editTextY.getText().toString());
+
                                 int num1 = Integer.parseInt(num.getText().toString());
-                                int num2 = Integer.parseInt(numJ.getText().toString());
+                                int num2 = 0;
+                                try {
+                                    num2 = Integer.parseInt(numJ.getText().toString());
+                                } catch (NumberFormatException e) {
+                                    throw new RuntimeException(e);
+                                }
 
                                 // Create a new Place object with the input values
-                                Place newPlace = new Place(0, name, province, city, area, address, 1, x, y, 0, 0, 0);
+                                Place newPlace = new Place(0, name, province, city, area, address, 1, 0.0, 0.0, 0, 0, 0);
                                 newPlace.setNum(num1);
                                 newPlace.setNumJ(num2);
                                 addPlace(newPlace);
@@ -735,14 +738,13 @@ public class MainLaunch extends AppCompatActivity {
                 Toast.makeText(MainLaunch.this, "添加失败", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
                     final String responseData = response.body().string();
                     runOnUiThread(() -> {
                         Toast.makeText(MainLaunch.this, "添加成功", Toast.LENGTH_SHORT).show();
-                        a.add(place);
-                        placeAdapter.notifyDataSetChanged();
                     });
                 }else {
                     Toast.makeText(MainLaunch.this, "添加失败", Toast.LENGTH_SHORT).show();
