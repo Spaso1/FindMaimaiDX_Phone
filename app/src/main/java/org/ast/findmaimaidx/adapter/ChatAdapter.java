@@ -1,5 +1,9 @@
 package org.ast.findmaimaidx.adapter;
 
+import static org.ast.findmaimaidx.ui.PageActivity.context;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Color;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -14,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.been.ChatMessage;
+import org.ast.findmaimaidx.ui.MessageManagementActivity;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -40,13 +45,24 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.chat_item, parent, false);
         return new ChatViewHolder(view);
     }
-
     @Override
-    public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ChatViewHolder holder, @SuppressLint("RecyclerView") int position) {
         ChatMessage chatMessage = chatMessages.get(position);
         holder.bind(chatMessage);
-    }
 
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Intent intent = new Intent(context, MessageManagementActivity.class);
+                intent.putExtra("message", chatMessage.getMessage());
+                intent.putExtra("time", chatMessage.getTime());
+                intent.putExtra("position", position);
+                //打开
+                context.startActivity(intent);
+                return true;
+            }
+        });
+    }
     @Override
     public int getItemCount() {
         return chatMessages.size();
@@ -94,10 +110,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
      */
     static class ChatViewHolder extends RecyclerView.ViewHolder {
         private TextView messageTextView;
-
+        private TextView timeTextView;
         public ChatViewHolder(@NonNull View itemView) {
             super(itemView);
             messageTextView = itemView.findViewById(R.id.messageTextView);
+            timeTextView = itemView.findViewById(R.id.timeTextView);
         }
 
         public void bind(ChatMessage chatMessage) {
@@ -120,7 +137,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
             }
             messageTextView.setText(messageTextView.getText().toString().replace("--------------------------------------\n",""));
             messageTextView.setText(messageTextView.getText().toString().replace("---------------------------------------",""));
-
+            timeTextView.setText(chatMessage.getTime());
             // Apply color and size to remaining text
             if (start < message.length()) {
                 spannableString.setSpan(new ForegroundColorSpan(isThinking ? Color.parseColor("#808080") : Color.BLACK), start, message.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

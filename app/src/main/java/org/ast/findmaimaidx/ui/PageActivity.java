@@ -33,6 +33,7 @@ import org.ast.findmaimaidx.been.Place;
 import org.ast.findmaimaidx.been.PlaceContent;
 import org.ast.findmaimaidx.message.ApiResponse;
 import org.ast.findmaimaidx.adapter.ReviewAdapter;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +57,8 @@ public class PageActivity extends AppCompatActivity {
     private MaterialButton disButton;
     private boolean isLike = false;
     private boolean isDis = false;
+    private String meituan = "";
+    private String douyin = "";
     private SharedPreferences sp ;
     private SharedPreferences shoucang ;
     private TextView numberPeo;
@@ -86,6 +89,8 @@ public class PageActivity extends AppCompatActivity {
         int bad = getIntent().getIntExtra("bad", 0);
         int num = getIntent().getIntExtra("num",0);
         int numJ = getIntent().getIntExtra("numJ",0);
+        meituan = getIntent().getStringExtra("meituan");
+        douyin = getIntent().getStringExtra("douyin");
         numberPeo = findViewById(R.id.numberPeo);
         TextView textView = findViewById(R.id.nameTextView);
         textView.setText(name);
@@ -108,12 +113,17 @@ public class PageActivity extends AppCompatActivity {
         TextView t2 = findViewById(R.id.num6);
         t2.setText("国机 " + num);
         TextView t3 = findViewById(R.id.num7);
-        TextView x2 = findViewById(R.id.x);
-        x2.setText("经度 " + String.valueOf(x));
-        TextView y2 = findViewById(R.id.y);
-        y2.setText("纬度 " + String.valueOf(y));
         tagXY = new double[]{x,y};
         tagplace = name;
+        MaterialButton bi = findViewById(R.id.bi);
+        bi.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                openLinkHub(meituan,douyin);
+            }
+        });
+
         MaterialButton button = findViewById(R.id.button);
         button.setText("导航");
         id = id2;
@@ -291,7 +301,7 @@ public class PageActivity extends AppCompatActivity {
                 editText.setHint("这是国框数量 目前是" + place.getNum() + "个");
                 EditText editTextJ = new EditText(PageActivity.context);
                 editTextJ.setHint("这是\uD83D\uDCB3数量 目前是" + place.getNumJ() + "个");
-                editTextJ.setText(0);
+                editTextJ.setText("0");
                 layout.addView(editText);
                 layout.addView(editTextJ);
                 builder.setTitle("输入数量")
@@ -1060,5 +1070,101 @@ public class PageActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             Log.d("TAG", "Response: " + result);
         }
+    }
+    private void openLinkHub(String meituan,String douyin) {
+        final Context context = this;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("选择链接")
+
+                .setItems(new String[]{"美团:" + meituan, "抖音:" + douyin}, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (i == 0) {
+                            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                            ClipData clip = ClipData.newPlainText("link", meituan);
+                            clipboard.setPrimaryClip(clip);
+                            Toast.makeText(PageActivity.this, "已复制链接，请在美团中粘贴并打开", Toast.LENGTH_SHORT).show();
+                        }else {
+                            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                            ClipData clip = ClipData.newPlainText("link", douyin);
+                            clipboard.setPrimaryClip(clip);
+                            Toast.makeText(PageActivity.this, "已复制链接，请在抖音中粘贴并打开", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setPositiveButton("更新链接(null就是不存在)", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // 创建一个输入框的 Dialog
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setTitle("编辑链接");
+
+                        // 创建一个 LinearLayout 来包含两个 EditText
+                        LinearLayout layout = new LinearLayout(context);
+                        layout.setOrientation(LinearLayout.VERTICAL);
+                        layout.setPadding(16, 16, 16, 16);
+
+                        // 创建美团链接的 EditText
+                        EditText meituanEditText = new EditText(context);
+                        meituanEditText.setHint("美团链接");
+                        meituanEditText.setText(meituan); // 设置默认值
+                        layout.addView(meituanEditText);
+
+                        // 创建抖音链接的 EditText
+                        EditText douyinEditText = new EditText(context);
+                        douyinEditText.setHint("抖音链接");
+                        douyinEditText.setText(douyin); // 设置默认值
+                        layout.addView(douyinEditText);
+
+                        // 设置对话框的视图
+                        builder.setView(layout);
+
+                        // 添加确定按钮
+                        builder.setPositiveButton("确定", (dialog, which) -> {
+                            // 获取用户输入的美团和抖音链接
+                            String newMeituanLink = meituanEditText.getText().toString();
+                            String newDouyinLink = douyinEditText.getText().toString();
+
+                            sendUpdateLink(id,newMeituanLink,newDouyinLink);
+                            // 调用回调函数
+                        });
+
+                        // 添加取消按钮
+                        builder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
+
+                        // 创建并显示对话框
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
+                })
+                .setNegativeButton("取消", null)
+                .show();
+    }
+    private void sendUpdateLink(int id,String meituan,String douyin) {
+        this.meituan = meituan;
+        this.douyin = douyin;
+        RequestBody body = RequestBody.create(meituan, MediaType.parse("application/json; charset=utf-8"));
+        Request request = new Request.Builder()
+                .url("http://mai.godserver.cn:11451/api/" + type_code + "/v1/updateLink?id=" + id + "&meituan=" + meituan + "&douyin=" + douyin)
+                .post(body)
+                .build();
+        Log.d("url",("http://mai.godserver.cn:11451/api/" + type_code + "/v1/updateLink?id=" + id + "&meituan=" + meituan + "&douyin=" + douyin));
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Toast.makeText(PageActivity.this, "更新失败", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    Log.d("TAG", "Response: " + responseBody);
+                    runOnUiThread(() -> {
+                        Toast.makeText(PageActivity.this, "更新成功", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }
+        });
     }
 }

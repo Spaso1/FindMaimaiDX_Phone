@@ -99,6 +99,14 @@ public class SettingActivity extends AppCompatActivity {
             intent.putExtra("y", y);
             startActivity(intent);
         });
+        MaterialButton clearAi = findViewById(R.id.clearAi);
+        clearAi.setOnClickListener(v -> {
+            SharedPreferences.Editor editor = getSharedPreferences("chats", Context.MODE_PRIVATE).edit();
+            editor.clear();
+            editor.apply();
+            Toast.makeText(this, "已清除数据", Toast.LENGTH_SHORT).show();
+        });
+
         vits.setText("App version:" + getAppVersionName()+"\nLatest version:" );
         getLatestRelease();
     }

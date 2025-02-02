@@ -515,6 +515,8 @@ public class MainLaunch extends AppCompatActivity {
                                     intent.putExtra("good",place.getGood());
                                     intent.putExtra("num",place.getNum());
                                     intent.putExtra("numJ",place.getNumJ());
+                                    intent.putExtra("meituan",place.getMeituan_link());
+                                    intent.putExtra("douyin",place.getDouyin_link());
                                     startActivity(intent);
                                 }
                             });

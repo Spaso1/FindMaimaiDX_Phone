@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/meituanLink"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:padding="8dp"
+        android:background="@drawable/link_background"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="美团链接" />
+
+    <TextView
+        android:id="@+id/douyinLink"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:padding="8dp"
+        android:background="@drawable/link_background"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="抖音链接" />
+
+    <Button
+        android:id="@+id/editLinksButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="编辑链接"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>

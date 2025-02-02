@@ -60,6 +60,4 @@
             android:textColor="#FFFFFF"
             android:contentDescription="滚动到底部" android:layout_marginTop="16dp" android:layout_marginStart="16dp"
             android:layout_marginEnd="12dp"/>
-
-
 </RelativeLayout>

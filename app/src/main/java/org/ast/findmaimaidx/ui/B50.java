@@ -60,11 +60,14 @@ public class B50 extends AppCompatActivity {
         String shuiyu_username = setting.getString("shuiyu_username", null);
         String luoxue_username = setting.getString("luoxue_username", null);
         int userId = 0;
+
         try {
             userId = Integer.parseInt(setting.getString("userId", null).replace("\"", "").trim());
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
+            Toast.makeText(B50.this, "userId不存在！", Toast.LENGTH_SHORT).show();
             Log.d("TAG", "没有userId");
         }
+
         if(shuiyu_username == null) {
             if(luoxue_username == null) {
                 Toast.makeText(B50.this, "请先绑定水鱼账号", Toast.LENGTH_SHORT).show();

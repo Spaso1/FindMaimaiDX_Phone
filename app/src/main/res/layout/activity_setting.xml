@@ -119,15 +119,36 @@
                 android:textColor="@android:color/white"
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"/>
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/openAi"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="打开AI"
-            android:backgroundTint="?attr/colorPrimary"
-            android:textColor="@android:color/white"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"/>
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/openAi"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.7"
+                android:text="打开AI"
+                android:backgroundTint="?attr/colorPrimary"
+                android:textColor="@android:color/white"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"/>
+            <View
+                android:layout_width="10dp"
+                android:layout_height="match_parent"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/clearAi"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:text="清除对话"
+                android:backgroundTint="?attr/colorPrimary"
+                android:textColor="@android:color/white"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"/>
+        </LinearLayout>
+
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
             <com.google.android.material.button.MaterialButton
                     android:id="@+id/save_settings_button"

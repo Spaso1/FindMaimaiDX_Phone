@@ -71,10 +71,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp" />
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-              android:id="@+id/x"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-              android:id="@+id/y"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/bi"
+        android:text="购币链接"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
         <com.google.android.material.button.MaterialButton
                 android:id="@+id/likeButton"
@@ -123,10 +124,12 @@
     </LinearLayout>
 
     <ScrollView
-            android:layout_width="match_parent"
+        android:background="@android:color/transparent"
+        android:layout_width="match_parent"
             android:layout_height="match_parent">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                       android:orientation="vertical"
+            android:background="@android:color/transparent"
         android:id="@+id/hor"/>
     </ScrollView>
 

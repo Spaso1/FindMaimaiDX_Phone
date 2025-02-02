@@ -19,6 +19,24 @@ public class Place implements Parcelable {
     private int bad;
     public int num;
     public int numJ;
+    private String meituan_link;
+    private String douyin_link;
+
+    public String getMeituan_link() {
+        return meituan_link;
+    }
+
+    public void setMeituan_link(String meituan_link) {
+        this.meituan_link = meituan_link;
+    }
+
+    public String getDouyin_link() {
+        return douyin_link;
+    }
+
+    public void setDouyin_link(String douyin_link) {
+        this.douyin_link = douyin_link;
+    }
 
     public int getNumJ() {
         return numJ;
