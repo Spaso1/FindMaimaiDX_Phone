@@ -1,4 +1,4 @@
-package org.ast.findmaimaidx.updater.ui;
+package org.ast.findmaimaidx.ui;
 
 
 import android.annotation.SuppressLint;
@@ -14,11 +14,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 import okhttp3.*;
@@ -28,15 +29,17 @@ import org.ast.findmaimaidx.been.lx.Lx_chart;
 import org.ast.findmaimaidx.been.PlayerData;
 import org.ast.findmaimaidx.been.lx.Lx_data;
 import org.ast.findmaimaidx.been.lx.Lx_res;
-import org.ast.findmaimaidx.ui.B50;
+import org.ast.findmaimaidx.message.ApiResponse;
 import org.ast.findmaimaidx.updater.crawler.Callback;
 import org.ast.findmaimaidx.updater.crawler.CrawlerCaller;
 import org.ast.findmaimaidx.updater.notification.NotificationUtil;
 import org.ast.findmaimaidx.updater.server.HttpServer;
 import org.ast.findmaimaidx.updater.server.HttpServerService;
+import org.ast.findmaimaidx.updater.ui.DataContext;
 import org.ast.findmaimaidx.updater.vpn.core.Constant;
 import org.ast.findmaimaidx.updater.vpn.core.LocalVpnService;
 import org.ast.findmaimaidx.updater.vpn.core.ProxyConfig;
+import org.ast.findmaimaidx.utill.AESUtil;
 import org.ast.findmaimaidx.utill.Shuiyu2Luoxue;
 
 import java.io.IOException;
@@ -129,20 +132,32 @@ public class UpdateActivity extends AppCompatActivity implements
             OkHttpClient client = new OkHttpClient();
             SharedPreferences setting = getSharedPreferences("setting", MODE_PRIVATE);
             int userId = Integer.parseInt(setting.getString("userId", null).replace("\"","").trim());
-            String url = "http://mai.godserver.cn:11451/api/hacker/getUserScore?userId=" + userId;
+            ApiResponse apiResponse = new ApiResponse();
+            apiResponse.setStatus(200);
+            try {
+                apiResponse.setMessage(AESUtil.encrypt(userId + ""));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            String sessionId = getIntent().getStringExtra("sessionId");
+            String url = "http://mai.godserver.cn:11451/api/hacker/getUserScore?userId";
+            RequestBody requestBody = RequestBody.create(new Gson().toJson(apiResponse), MediaType.parse("application/json; charset=utf-8"));
             System.out.println(url);
             Request request = new Request.Builder()
                     .url(url)
+                    .addHeader("Cookie", "sessionId=" + sessionId)
+                    .post(requestBody)
                     .build();
             client.newCall(request).enqueue(new okhttp3.Callback() {
                 @Override
-                public void onFailure(Call call, IOException e) {
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     e.printStackTrace();
                     runOnUiThread(() -> Toast.makeText(UpdateActivity.this, "Request failed", Toast.LENGTH_SHORT).show());
                 }
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                     if (response.isSuccessful()) {
+                        assert response.body() != null;
                         final String responseData = response.body().string();
                         try {
                             UserScore userScore = new Gson().fromJson(responseData, UserScore.class);

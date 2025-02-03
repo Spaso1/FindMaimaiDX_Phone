@@ -1,6 +1,8 @@
 // HackGetUserId.java
 package org.ast.findmaimaidx.ui;
 
+import static org.ast.findmaimaidx.utill.AESUtil.encrypt;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,12 +27,16 @@ import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.ast.findmaimaidx.R;
+import org.ast.findmaimaidx.application.MyApplication;
 import org.ast.findmaimaidx.been.faker.RegionData;
 import org.ast.findmaimaidx.been.faker.UserRegion;
+import org.ast.findmaimaidx.message.ApiResponse;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -38,7 +44,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class HackGetUserId extends AppCompatActivity {
-
+    private String sessionId;
     private static final int REQUEST_IMAGE_PICK = 1;
     private TextInputEditText userId;
     private OkHttpClient client;
@@ -48,6 +54,8 @@ public class HackGetUserId extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hack_get_user_id);
+        sessionId = getIntent().getStringExtra("sessionId");
+        Log.d("TAG", "onCreate: " + sessionId);
         sp = getSharedPreferences("setting", MODE_PRIVATE);
         Button button = findViewById(R.id.button);
         userId = findViewById(R.id.userId);
@@ -65,7 +73,11 @@ public class HackGetUserId extends AppCompatActivity {
 
         // 如果已经保存了userId，则直接获取数据
         if (!userId.getText().toString().equals("")) {
-            getUserRegionData(userId.getText().toString());
+            try {
+                getUserRegionData(userId.getText().toString());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -82,7 +94,7 @@ public class HackGetUserId extends AppCompatActivity {
                 } else {
                     Toast.makeText(this, "No QR Code found", Toast.LENGTH_LONG).show();
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -105,12 +117,17 @@ public class HackGetUserId extends AppCompatActivity {
         return null;
     }
 
-    private void sendApiRequest(String qrCode) {
-        String url = "http://mai.godserver.cn:11451/api/hacker/getUserId?qr=" + qrCode;
+    private void sendApiRequest(String qrCode) throws Exception {
+        String url = "http://mai.godserver.cn:11451/api/hacker/getUserId";
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setMessage(encrypt(qrCode));
+        RequestBody requestBody = RequestBody.create(new Gson().toJson(apiResponse), MediaType.parse("application/json; charset=utf-8"));
         Request request = new Request.Builder()
                 .url(url)
+                .addHeader("Cookie", sessionId)
+                .post(requestBody)
                 .build();
-
+        Log.d("TAG", "sendApiRequest: " + url);
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -129,7 +146,12 @@ public class HackGetUserId extends AppCompatActivity {
                         SharedPreferences.Editor editor = sp.edit();
                         editor.putString("userId", responseData);
                         editor.commit();
-                        getUserRegionData(responseData);
+                        Toast.makeText(HackGetUserId.this, "设置已保存,您的UsrId已写入硬盘!", Toast.LENGTH_SHORT).show();
+                        try {
+                            getUserRegionData(responseData);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     });
                 } else {
                     runOnUiThread(() -> Toast.makeText(HackGetUserId.this, "Request not successful", Toast.LENGTH_SHORT).show());
@@ -138,12 +160,17 @@ public class HackGetUserId extends AppCompatActivity {
         });
     }
 
-    private void getUserRegionData(String userId) {
-        String url = "http://mai.godserver.cn:11451/api/hacker/getUserRegion?uid=" + userId;
+    private void getUserRegionData(String userId) throws Exception {
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setMessage(encrypt(userId));
+        RequestBody requestBody = RequestBody.create(new Gson().toJson(apiResponse), MediaType.parse("application/json; charset=utf-8"));
+        String url = "http://mai.godserver.cn:11451/api/hacker/getUserRegion" ;
         Request request = new Request.Builder()
                 .url(url)
+                .addHeader("Cookie", sessionId)
+                .post(requestBody)
                 .build();
-
+        Log.d("url",url);
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {

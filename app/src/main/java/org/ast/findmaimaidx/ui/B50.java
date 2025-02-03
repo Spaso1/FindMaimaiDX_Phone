@@ -1,5 +1,7 @@
 package org.ast.findmaimaidx.ui;
 
+import static org.ast.findmaimaidx.utill.AESUtil.encrypt;
+
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -32,15 +34,13 @@ import org.ast.findmaimaidx.been.lx.Lx_data;
 import org.ast.findmaimaidx.been.lx.Lx_playerInfo;
 import org.ast.findmaimaidx.been.lx.Lx_res;
 import org.ast.findmaimaidx.been.lx.Song;
-import org.ast.findmaimaidx.updater.ui.UpdateActivity;
-import org.ast.findmaimaidx.utill.AESUtil;
+import org.ast.findmaimaidx.message.ApiResponse;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class B50 extends AppCompatActivity {
@@ -86,7 +86,11 @@ public class B50 extends AppCompatActivity {
                     if(currentHour >= 3 && currentHour < 7) {
                         Toast.makeText(B50.this, "当前时间段不进行查询", Toast.LENGTH_SHORT).show();
                     }else {
-                        org_b50(userId);
+                        try {
+                            org_b50(userId);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             } else if(use_ ==1) {
@@ -106,6 +110,7 @@ public class B50 extends AppCompatActivity {
 
         updateButton.setOnClickListener(v -> {
             Intent intent = new Intent(B50.this, UpdateActivity.class);
+            intent.putExtra("sessionId",getIntent().getStringExtra("sessionId"));
             startActivity(intent);
         });
         TextView textView = findViewById(R.id.user_score);
@@ -155,11 +160,18 @@ public class B50 extends AppCompatActivity {
             }
         }
     }
-    private void org_b50(int userId) {
-        String url = "http://mai.godserver.cn:11451/api/hacker/getUserScore?userId=" + userId;
+    private void org_b50(int userId) throws Exception {
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setMessage(encrypt(String.valueOf(userId)));
+        RequestBody requestBody = RequestBody.create(new Gson().toJson(apiResponse), MediaType.parse("application/json; charset=utf-8"));
+        String url = "http://mai.godserver.cn:11451/api/hacker/getUserScore";
         System.out.println(url);
+        String sessionId = getIntent().getStringExtra("sessionId");
+        assert sessionId != null;
         Request request = new Request.Builder()
                 .url(url)
+                .post(requestBody)
+                .addHeader("Cookie",sessionId)
                 .build();
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -253,10 +265,16 @@ public class B50 extends AppCompatActivity {
             }
         });
     }
-    private void org_getPersonal(int userId) {
-        String url = "http://mai.godserver.cn:11451/api/hacker/getUserData?userId=" + userId;
+    private void org_getPersonal(int userId) throws Exception {
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setMessage(encrypt(String.valueOf(userId)));
+        RequestBody requestBody = RequestBody.create(new Gson().toJson(apiResponse), MediaType.parse("application/json; charset=utf-8"));
+        String url = "http://mai.godserver.cn:11451/api/hacker/getUserData?userId";
+        String sessionId = getIntent().getStringExtra("sessionId");
         Request request = new Request.Builder()
                 .url(url)
+                .post(requestBody)
+                .addHeader("Cookie", sessionId)
                 .build();
         client.newCall(request).enqueue(new Callback() {
             @Override

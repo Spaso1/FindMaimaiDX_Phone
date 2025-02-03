@@ -38,6 +38,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.ast.findmaimaidx.R;
+import org.ast.findmaimaidx.application.MyApplication;
 import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Geocode;
 import org.ast.findmaimaidx.been.Place;
@@ -56,7 +57,7 @@ public class MainLaunch extends AppCompatActivity {
     private Handler handler = new Handler(Looper.getMainLooper());
     public static final int LOCATION_CODE = 301;
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
-
+    private String sessionId;
     private LocationManager locationManager;
     private RecyclerView recyclerView;
     private PlaceAdapter placeAdapter;
@@ -69,6 +70,7 @@ public class MainLaunch extends AppCompatActivity {
     private String y;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private PlaceAdapter adapter;
+
     public static String province;
     public static String city;
     public static List<Place> a = new ArrayList<>();
@@ -88,6 +90,7 @@ public class MainLaunch extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mainlayout);
+        //设置随机数
         String userInput = "";
         shoucang = getSharedPreferences("shoucang@", MODE_PRIVATE);
         editor = shoucang.edit();
@@ -172,6 +175,7 @@ public class MainLaunch extends AppCompatActivity {
                         break;
                     case 1:
                         Intent intent = new Intent(MainLaunch.this, B50.class);
+                        intent.putExtra("sessionId",sessionId);
                         startActivity(intent);
                         break;
                     case 2:
@@ -260,6 +264,7 @@ public class MainLaunch extends AppCompatActivity {
                         Intent intent3 = new Intent(MainLaunch.this, SettingActivity.class);
                         intent3.putExtra("x", x);
                         intent3.putExtra("y", y);
+                        intent3.putExtra("sessionId", sessionId);
                         startActivity(intent3);
                         break;
                     case 7:
@@ -432,6 +437,13 @@ public class MainLaunch extends AppCompatActivity {
 
                         try (Response response = client.newCall(request).execute()) {
                             if (((Response) response).isSuccessful()) {
+                                List<String> cookies = response.headers("Set-Cookie");
+                                for (String cookie : cookies) {
+                                    if (cookie.startsWith("JSESSIONID=")) {
+                                        sessionId = cookie.split(";")[0];
+                                        break;
+                                    }
+                                }
                                 return response.body().string();
                             } else {
                                 Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show();
@@ -732,6 +744,7 @@ public class MainLaunch extends AppCompatActivity {
         Request request = new Request.Builder()
                 .url(url)
                 .put(requestBody)
+                .addHeader("Cookie", sessionId)
                 .build();
         OkHttpClient client = new OkHttpClient();
         client.newCall(request).enqueue(new Callback() {

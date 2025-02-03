@@ -41,6 +41,7 @@ public class SettingActivity extends AppCompatActivity {
     private TextInputEditText userId;
     private String x;
     private String y;
+    private String sessionId;
     @SuppressLint({"SetTextI18n","MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +49,7 @@ public class SettingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setting);
         x = getIntent().getStringExtra("x");
         y = getIntent().getStringExtra("y");
+        sessionId = getIntent().getStringExtra("sessionId");
         settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
         SwitchMaterial switchMaterial = findViewById(R.id.switchBeta1);
         switchMaterial.setChecked(settingProperties.getBoolean("setting_autobeta1", false));
@@ -78,6 +80,7 @@ public class SettingActivity extends AppCompatActivity {
         MaterialButton frifind = findViewById(R.id.getUserid);
         frifind.setOnClickListener(v -> {
             Intent intent = new Intent(SettingActivity.this, HackGetUserId.class);
+            intent.putExtra("sessionId",sessionId);
             startActivity(intent);
         });
         TextView uuid = findViewById(R.id.uuid);
