@@ -15,10 +15,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.zxing.BinaryBitmap;
@@ -59,7 +62,9 @@ public class HackGetUserId extends AppCompatActivity {
         sp = getSharedPreferences("setting", MODE_PRIVATE);
         Button button = findViewById(R.id.button);
         userId = findViewById(R.id.userId);
-
+        userId.setOnClickListener(v -> {
+           Toast.makeText(this, "不可更改", Toast.LENGTH_SHORT).show();
+        });
         userId.setText(sp.getString("userId", ""));
 
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
@@ -70,7 +75,14 @@ public class HackGetUserId extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(intent, REQUEST_IMAGE_PICK);
         });
-
+        MaterialButton getTicket = findViewById(R.id.getTicket);
+        getTicket.setOnClickListener(v -> {
+            try {
+                getTicket(userId.getText().toString());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
         // 如果已经保存了userId，则直接获取数据
         if (!userId.getText().toString().equals("")) {
             try {
@@ -115,6 +127,35 @@ public class HackGetUserId extends AppCompatActivity {
             e.printStackTrace();
         }
         return null;
+    }
+    private void getTicket(String uid) throws Exception {
+        String url = "http://mai.godserver.cn:11451/api/hacker/getTicket";
+        RequestBody requestBody = RequestBody.create(new Gson().toJson(new ApiResponse(encrypt(uid))), MediaType.parse("application/json; charset=utf-8"));
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Cookie", sessionId)
+                .post(requestBody)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    runOnUiThread(() ->{
+                        try {
+                            Toast.makeText(HackGetUserId.this, response.body().string(), Toast.LENGTH_SHORT).show();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+
+            }
+        });
     }
 
     private void sendApiRequest(String qrCode) throws Exception {
@@ -183,7 +224,6 @@ public class HackGetUserId extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     final String responseData = response.body().string();
                     runOnUiThread(() -> {
-                        Toast.makeText(HackGetUserId.this, "Response: " + responseData, Toast.LENGTH_LONG).show();
                         Log.d("TAG", "Response: " + responseData);
                         Gson gson = new Gson();
                         RegionData regionData = gson.fromJson(responseData, RegionData.class);
