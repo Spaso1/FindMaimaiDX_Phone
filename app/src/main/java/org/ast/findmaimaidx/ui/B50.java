@@ -25,14 +25,9 @@ import okhttp3.*;
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.been.*;
 import org.ast.findmaimaidx.been.faker.UserData;
-import org.ast.findmaimaidx.been.faker.UserScore;
-import org.ast.findmaimaidx.been.lx.Lx_chart;
-import org.ast.findmaimaidx.been.lx.Lx_data;
 import org.ast.findmaimaidx.been.lx.Lx_playerInfo;
 import org.ast.findmaimaidx.been.lx.Lx_res;
 import org.ast.findmaimaidx.been.lx.Song;
-import org.ast.findmaimaidx.message.ApiResponse;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.OutputStream;

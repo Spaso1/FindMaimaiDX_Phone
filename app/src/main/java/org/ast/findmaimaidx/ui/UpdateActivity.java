@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
@@ -24,12 +23,8 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 import okhttp3.*;
 import org.ast.findmaimaidx.R;
-import org.ast.findmaimaidx.been.faker.UserScore;
 import org.ast.findmaimaidx.been.lx.Lx_chart;
 import org.ast.findmaimaidx.been.PlayerData;
-import org.ast.findmaimaidx.been.lx.Lx_data;
-import org.ast.findmaimaidx.been.lx.Lx_res;
-import org.ast.findmaimaidx.message.ApiResponse;
 import org.ast.findmaimaidx.updater.crawler.Callback;
 import org.ast.findmaimaidx.updater.crawler.CrawlerCaller;
 import org.ast.findmaimaidx.updater.notification.NotificationUtil;
@@ -39,7 +34,6 @@ import org.ast.findmaimaidx.updater.ui.DataContext;
 import org.ast.findmaimaidx.updater.vpn.core.Constant;
 import org.ast.findmaimaidx.updater.vpn.core.LocalVpnService;
 import org.ast.findmaimaidx.updater.vpn.core.ProxyConfig;
-import org.ast.findmaimaidx.utill.AESUtil;
 import org.ast.findmaimaidx.utill.Shuiyu2Luoxue;
 
 import java.io.IOException;
@@ -48,8 +42,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.ast.findmaimaidx.updater.Util.copyText;
 import static org.ast.findmaimaidx.updater.Util.getDifficulties;
