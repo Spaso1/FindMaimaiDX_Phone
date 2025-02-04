@@ -75,14 +75,6 @@ public class SettingActivity extends AppCompatActivity {
         });
         MaterialButton changeButton = findViewById(R.id.changePhoto);
         changeButton.setOnClickListener(v -> openFileChooser());
-
-
-        MaterialButton frifind = findViewById(R.id.getUserid);
-        frifind.setOnClickListener(v -> {
-            Intent intent = new Intent(SettingActivity.this, HackGetUserId.class);
-            intent.putExtra("sessionId",sessionId);
-            startActivity(intent);
-        });
         TextView uuid = findViewById(R.id.uuid);
         @SuppressLint("HardwareIds") String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         uuid.setText("Android ID:" + androidId);
@@ -187,9 +179,13 @@ public class SettingActivity extends AppCompatActivity {
         luoxueEditText.setText(settingProperties.getString("luoxue_username", ""));
         userId.setText(settingProperties.getString("userId", ""));
 
-        int use_ = settingProperties.getInt("use_", 0);
+        int use_ = settingProperties.getInt("use_", 1);
         if(use_==0) {
-            org.setChecked(true);
+            use_ = 1;
+            materialRadioButton.setChecked(true);
+            SharedPreferences.Editor editorSetting = settingProperties.edit();
+            editorSetting.putInt("use_", use_);
+            editorSetting.apply();
         }else if (use_==1){
             materialRadioButton.setChecked(true);
         }else if(use_==2) {

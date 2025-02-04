@@ -1,7 +1,4 @@
 package org.ast.findmaimaidx.ui;
-
-import static org.ast.findmaimaidx.utill.AESUtil.encrypt;
-
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -78,6 +75,8 @@ public class B50 extends AppCompatActivity {
             int use_ = setting.getInt("use_", 0);
             if(use_ ==0) {
                 Toast.makeText(B50.this, "模式：原生", Toast.LENGTH_SHORT).show();
+                Toast.makeText(B50.this, "禁用", Toast.LENGTH_SHORT).show();
+
                 if(userId==0) {
                     Toast.makeText(B50.this, "userId不存在！", Toast.LENGTH_SHORT).show();
                 }else {
@@ -87,7 +86,7 @@ public class B50 extends AppCompatActivity {
                         Toast.makeText(B50.this, "当前时间段不进行查询", Toast.LENGTH_SHORT).show();
                     }else {
                         try {
-                            org_b50(userId);
+                            Toast.makeText(B50.this, "禁用", Toast.LENGTH_SHORT).show();
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -160,137 +159,7 @@ public class B50 extends AppCompatActivity {
             }
         }
     }
-    private void org_b50(int userId) throws Exception {
-        ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setMessage(encrypt(String.valueOf(userId)));
-        RequestBody requestBody = RequestBody.create(new Gson().toJson(apiResponse), MediaType.parse("application/json; charset=utf-8"));
-        String url = "http://mai.godserver.cn:11451/api/hacker/getUserScore";
-        System.out.println(url);
-        String sessionId = getIntent().getStringExtra("sessionId");
-        assert sessionId != null;
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .addHeader("Cookie",sessionId)
-                .build();
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(B50.this, "Request failed", Toast.LENGTH_SHORT).show());
-            }
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    final String responseData = response.body().string();
-                    try {
-                        UserScore userScore = new Gson().fromJson(responseData, UserScore.class);
-                        System.out.println(responseData);
-                        Log.d("TAG", "onResponse: " + responseData);
-                        Lx_res lx_res = new Lx_res();
-                        lx_res.setCode(200);
-                        Lx_data lx_data = new Lx_data();
-                        List<Lx_chart> standard = new ArrayList<>();
-                        int old_rating =0;
 
-                        for (int i = 0; i < userScore.getUserRating().getRatingList().size(); i++){
-                            Lx_chart lx_chart = new Lx_chart();
-                            lx_chart.setId(userScore.getUserRating().getRatingList().get(i).getMusicId());
-                            lx_chart.setSong_name(userScore.getUserRating().getRatingList().get(i).getMusicName());
-                            lx_chart.setAchievements((double) userScore.getUserRating().getRatingList().get(i).getAchievement() / 10000);
-                            lx_chart.setDx_rating(userScore.getUserRating().getRatingList().get(i).getRating());
-                            lx_chart.setLevel_index(userScore.getUserRating().getRatingList().get(i).getLevel());
-                            if (userScore.getUserRating().getRatingList().get(i).getType().equals("dx")) {
-                                lx_chart.setId(userScore.getUserRating().getRatingList().get(i).getMusicId()-10000);
-                            }
-                            if(lx_chart.getAchievements() >= 100.5){
-                                lx_chart.setRate("sssp");
-                            }else if(lx_chart.getAchievements() >= 100.0){
-                                lx_chart.setRate("sss");
-                            }else if(lx_chart.getAchievements() >= 99.5){
-                                lx_chart.setRate("ssp");
-                            }else if(lx_chart.getAchievements() >= 99.0){
-                                lx_chart.setRate("ss");
-                            }else if(lx_chart.getAchievements() >= 98.0){
-                                lx_chart.setRate("sp");
-                            }else if(lx_chart.getAchievements() >= 97){
-                                lx_chart.setRate("s");
-                            }
-                            lx_chart.setLevel(userScore.getUserRating().getRatingList().get(i).getLevel_info()+"");
-                            lx_chart.setType(userScore.getUserRating().getRatingList().get(i).getType());
-
-                            old_rating = old_rating + userScore.getUserRating().getRatingList().get(i).getRating();
-                            standard.add(lx_chart);
-                        }
-                        lx_data.setStandardTotal(old_rating);
-                        lx_data.setStandard(standard);
-                        List<Lx_chart> dx = new ArrayList<>();
-                        int new_rating = 0;
-                        for (int i = 0; i < userScore.getUserRating().getNewRatingList().size(); i++){
-                            Lx_chart lx_chart = new Lx_chart();
-                            lx_chart.setId(userScore.getUserRating().getNewRatingList().get(i).getMusicId() - 10000);
-                            lx_chart.setSong_name(userScore.getUserRating().getNewRatingList().get(i).getMusicName());
-                            lx_chart.setAchievements((double) userScore.getUserRating().getNewRatingList().get(i).getAchievement() / 10000);
-                            lx_chart.setDx_rating(userScore.getUserRating().getNewRatingList().get(i).getRating());
-                            lx_chart.setLevel_index(userScore.getUserRating().getNewRatingList().get(i).getLevel());
-                            if(lx_chart.getAchievements() >= 100.5){
-                                lx_chart.setRate("sssp");
-                            }else if(lx_chart.getAchievements() >= 100.0){
-                                lx_chart.setRate("sss");
-                            }else if(lx_chart.getAchievements() >= 99.5){
-                                lx_chart.setRate("ssp");
-                            }else if(lx_chart.getAchievements() >= 99.0){
-                                lx_chart.setRate("ss");
-                            }else if(lx_chart.getAchievements() >= 98.0){
-                                lx_chart.setRate("sp");
-                            }else if(lx_chart.getAchievements() >= 97){
-                                lx_chart.setRate("s");
-                            }
-                            lx_chart.setLevel(userScore.getUserRating().getNewRatingList().get(i).getLevel_info()+"");
-                            lx_chart.setType(userScore.getUserRating().getNewRatingList().get(i).getType());
-                            new_rating = new_rating + userScore.getUserRating().getNewRatingList().get(i).getRating();
-                            dx.add(lx_chart);
-                        }
-                        lx_data.setDx(dx);
-                        lx_res.setData(lx_data);
-                        lx_data.setStandardTotal(new_rating);
-                        System.out.println(lx_res.getData().toString());
-                        initView(new PlayerData(),lx_res, 0);
-                        org_getPersonal(userId);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        });
-    }
-    private void org_getPersonal(int userId) throws Exception {
-        ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setMessage(encrypt(String.valueOf(userId)));
-        RequestBody requestBody = RequestBody.create(new Gson().toJson(apiResponse), MediaType.parse("application/json; charset=utf-8"));
-        String url = "http://mai.godserver.cn:11451/api/hacker/getUserData?userId";
-        String sessionId = getIntent().getStringExtra("sessionId");
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .addHeader("Cookie", sessionId)
-                .build();
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
-            }
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    String responseBody = response.body().string();
-                    UserData userData = new Gson().fromJson(responseBody, UserData.class);
-                    orgSetUserData(userData);
-                }
-            }
-        });
-    }
     private void orgSetUserData(UserData userData) {
         runOnUiThread(() -> {
             TextView username = findViewById(R.id.user_name);
