@@ -12,6 +12,12 @@ public class ApiResponse {
         this.timestamp = System.currentTimeMillis();
     }
 
+    public ApiResponse(String uid) {
+        this.status = 200;
+        this.message = uid;
+        this.timestamp = System.currentTimeMillis();
+    }
+
     public int getStatus() {
         return status;
     }

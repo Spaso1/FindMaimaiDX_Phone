@@ -1106,13 +1106,13 @@ public class PageActivity extends AppCompatActivity {
 
                         // 创建美团链接的 EditText
                         EditText meituanEditText = new EditText(context);
-                        meituanEditText.setHint("美团链接");
+                        meituanEditText.setHint("美团链接(店铺点击复制链接即可)");
                         meituanEditText.setText(meituan); // 设置默认值
                         layout.addView(meituanEditText);
 
                         // 创建抖音链接的 EditText
                         EditText douyinEditText = new EditText(context);
-                        douyinEditText.setHint("抖音链接");
+                        douyinEditText.setHint("抖音链接(团购点击复制链接即可)");
                         douyinEditText.setText(douyin); // 设置默认值
                         layout.addView(douyinEditText);
 

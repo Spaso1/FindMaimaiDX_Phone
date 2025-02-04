@@ -157,13 +157,6 @@
                 android:onClick="saveText"
                 android:text="水鱼数据迁移到落雪" />
     </LinearLayout>
-    <Button
-        android:id="@+id/lx_prof"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="saveText"
-        android:text="一键更新落雪数据" />
-
 
     <TextView
         android:id="@+id/textViewLog"

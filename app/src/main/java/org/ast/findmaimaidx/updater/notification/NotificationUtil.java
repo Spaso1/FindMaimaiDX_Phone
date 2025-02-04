@@ -13,7 +13,7 @@ import android.os.IBinder;
 import android.util.Log;
 import androidx.annotation.Nullable;
 import org.ast.findmaimaidx.R;
-import org.ast.findmaimaidx.updater.ui.UpdateActivity;
+import org.ast.findmaimaidx.ui.UpdateActivity;
 
 public class NotificationUtil extends Service {
 
