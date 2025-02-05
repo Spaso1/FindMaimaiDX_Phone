@@ -1,26 +1,25 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="vertical"
-              android:id="@+id/background"
-              android:padding="16dp" tools:ignore="WebViewLayout">
-
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:id="@+id/background"
+    android:padding="16dp" tools:ignore="WebViewLayout">
     <TextView
-            android:id="@+id/nameTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+        android:id="@+id/nameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold" />
     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
         <TextView
-                android:id="@+id/provinceTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp" />
+            android:id="@+id/provinceTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                  android:paddingLeft="15mm"
-                  android:id="@+id/num5"
-                  android:textSize="16sp"/>
+            android:paddingLeft="15mm"
+            android:id="@+id/num5"
+            android:textSize="16sp"/>
 
         <TextView
             android:id="@+id/numberPeo"
@@ -31,46 +30,46 @@
     </LinearLayout>
     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
         <TextView
-                android:id="@+id/cityTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp" />
+            android:id="@+id/cityTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                  android:paddingLeft="15mm"
-                  android:id="@+id/num6"
-                  android:textSize="16sp"/>
+            android:paddingLeft="15mm"
+            android:id="@+id/num6"
+            android:textSize="16sp"/>
     </LinearLayout>
 
     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" >
         <TextView
-                android:id="@+id/areaTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                  android:paddingLeft="15mm"
-                  android:id="@+id/num7"
-                  android:textSize="16sp"/>
-        <com.google.android.material.switchmaterial.SwitchMaterial
-                android:text="收藏"
-                android:layout_width="match_parent"
-                android:layout_marginLeft="10mm"
-                android:layout_height="wrap_content" android:id="@+id/switch1"/>
-    </LinearLayout>
-
-    <WebView android:layout_width="wrap_content" android:layout_height="wrap_content"
-             android:background="@android:color/transparent"
-             android:id="@+id/imageView1"/>
-    <View android:layout_width="wrap_content" android:layout_height="3dp" />
-    <WebView android:layout_width="wrap_content" android:layout_height="wrap_content"
-             android:background="@android:color/transparent"
-             android:id="@+id/imageView2"/>
-
-    <TextView
-            android:id="@+id/addressTextView"
+            android:id="@+id/areaTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:paddingLeft="15mm"
+            android:id="@+id/num7"
+            android:textSize="16sp"/>
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:text="收藏"
+            android:layout_width="match_parent"
+            android:layout_marginLeft="10mm"
+            android:layout_height="wrap_content" android:id="@+id/switch1"/>
+    </LinearLayout>
+
+    <WebView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:id="@+id/imageView1"/>
+    <View android:layout_width="wrap_content" android:layout_height="3dp" />
+    <WebView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:id="@+id/imageView2"/>
+
+    <TextView
+        android:id="@+id/addressTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp" />
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal">
         <com.google.android.material.button.MaterialButton
@@ -92,19 +91,19 @@
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
         <com.google.android.material.button.MaterialButton
-                android:id="@+id/likeButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="赞"
-                android:layout_marginLeft="2mm"
-                android:layout_centerInParent="true"/>
+            android:id="@+id/likeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="赞"
+            android:layout_marginLeft="2mm"
+            android:layout_centerInParent="true"/>
         <com.google.android.material.button.MaterialButton
-                android:id="@+id/disButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="踩"
-                android:layout_marginLeft="2mm"
-                android:layout_centerInParent="true"/>
+            android:id="@+id/disButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="踩"
+            android:layout_marginLeft="2mm"
+            android:layout_centerInParent="true"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/list"
             android:layout_width="wrap_content"
@@ -129,30 +128,30 @@
             android:layout_width="10dp"
             android:layout_height="match_parent"/>
         <com.google.android.material.button.MaterialButton
-                android:text="导航"
-                android:layout_width="wrap_content"
+            android:text="导航"
+            android:layout_width="wrap_content"
             android:layout_weight="0.4"
             android:layout_height="wrap_content" android:id="@+id/button"/>
     </LinearLayout>
 
     <LinearLayout android:layout_width="wrap_content" android:layout_height="60dp"
-                  android:orientation="horizontal">
+        android:orientation="horizontal">
         <TextView
-                android:text="TextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:id="@+id/textView2"/>
+            android:text="TextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/textView2"/>
         <com.google.android.material.button.MaterialButton android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/add" android:layout_marginLeft="30mm"
-                android:text="录入商超"/>
+            android:text="录入商超"/>
     </LinearLayout>
 
     <ScrollView
         android:background="@android:color/transparent"
         android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        android:layout_height="match_parent">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                      android:orientation="vertical"
+            android:orientation="vertical"
             android:background="@android:color/transparent"
-        android:id="@+id/hor"/>
+            android:id="@+id/hor"/>
     </ScrollView>
 
 </LinearLayout>
