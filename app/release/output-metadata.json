@@ -33,5 +33,5 @@
       ]
     }
   ],
-  "minSdkVersionForDexing": 30
+  "minSdkVersionForDexing": 28
 }
