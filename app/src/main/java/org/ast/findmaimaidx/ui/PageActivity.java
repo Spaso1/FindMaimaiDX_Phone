@@ -15,6 +15,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -115,6 +116,16 @@ public class PageActivity extends AppCompatActivity {
         TextView t3 = findViewById(R.id.num7);
         tagXY = new double[]{x,y};
         tagplace = name;
+        MaterialButton share = findViewById(R.id.share);
+        share.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clipData = ClipData.newPlainText("text", address );
+                clipboardManager.setPrimaryClip(clipData);
+                Toast.makeText(PageActivity.this, "机厅地址信息已经复制!", Toast.LENGTH_SHORT).show();
+            }
+        });
         MaterialButton bi = findViewById(R.id.bi);
         bi.setOnClickListener(new View.OnClickListener() {
 
@@ -636,40 +647,125 @@ public class PageActivity extends AppCompatActivity {
             }
         });
 
-        LinearLayout layout = findViewById(R.id.background);
         SharedPreferences settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
-        if(settingProperties.getString("image_uri", null) != null) {
+        LinearLayout layout = findViewById(R.id.background);
+        if (settingProperties.getString("image_uri", null) != null) {
             Uri uri = Uri.parse(settingProperties.getString("image_uri", null));
             try {
                 Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-                // 创建一个新的Bitmap来存储结果
-                Bitmap blurredBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+                if (bitmap != null) {
+                    // 获取LinearLayout的尺寸
+                    int layoutWidth = layout.getWidth();
+                    int layoutHeight = layout.getHeight();
 
-                // 使用Canvas和Paint进行绘制
-                Canvas canvas = new Canvas(blurredBitmap);
-                Paint paint = new Paint();
-                paint.setAlpha(50); // 设置透明度
-                // 绘制原始图像到新的Bitmap上
-                canvas.drawBitmap(bitmap, 0, 0, paint);
+                    if (layoutWidth > 0 && layoutHeight > 0) {
+                        // 计算缩放比例
+                        float scaleWidth = ((float) layoutWidth) / bitmap.getWidth();
+                        float scaleHeight = ((float) layoutHeight) / bitmap.getHeight();
 
-                // 创建BitmapDrawable并设置其边界为原始bitmap的尺寸
-                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), blurredBitmap);
+                        // 选择较小的缩放比例以保持图片的原始比例
+                        float scaleFactor = Math.min(scaleWidth, scaleHeight);
 
-                // 使用Matrix进行缩放和裁剪
-                Matrix matrix = new Matrix();
-                float scale = Math.max((float) layout.getWidth() / blurredBitmap.getWidth(),
-                        (float) layout.getHeight() / blurredBitmap.getHeight());
-                matrix.postScale(scale, scale);
-                matrix.postTranslate(-(blurredBitmap.getWidth() * scale - layout.getWidth()) / 2,
-                        -(blurredBitmap.getHeight() * scale - layout.getHeight()) / 2);
+                        // 计算新的宽度和高度
+                        int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                        int newHeight = (int) (bitmap.getHeight() * scaleFactor);
 
-                bitmapDrawable.setBounds(0, 0, layout.getWidth(), layout.getHeight());
-                bitmapDrawable.getPaint().setShader(new BitmapShader(blurredBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
-                bitmapDrawable.getPaint().getShader().setLocalMatrix(matrix);
+                        // 缩放图片
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
 
-                // 设置recyclerView的背景
-                layout.setBackground(bitmapDrawable);
+                        // 计算裁剪区域
+                        int x = (scaledBitmap.getWidth() - layoutWidth) / 2;
+                        int y = (scaledBitmap.getHeight() - layoutHeight) / 2;
 
+                        // 处理x和y为负数的情况
+                        x = Math.max(x, 0);
+                        y = Math.max(y, 0);
+
+                        // 确保裁剪区域在scaledBitmap的范围内
+                        int cropWidth = Math.min(layoutWidth, scaledBitmap.getWidth());
+                        int cropHeight = Math.min(layoutHeight, scaledBitmap.getHeight());
+
+                        // 裁剪图片
+                        Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, x, y, cropWidth, cropHeight);
+
+                        // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                        Bitmap transparentBitmap = Bitmap.createBitmap(layoutWidth, layoutHeight, bitmap.getConfig());
+
+                        // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                        Canvas canvas = new Canvas(transparentBitmap);
+
+                        // 创建一个 Paint 对象，并设置透明度
+                        Paint paint = new Paint();
+                        paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                        // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                        canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                        // 创建BitmapDrawable并设置其边界为LinearLayout的尺寸
+                        BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+
+                        // 设置LinearLayout的背景
+                        layout.setBackground(bitmapDrawable);
+                    } else {
+                        // 如果LinearLayout的尺寸未确定，可以使用ViewTreeObserver来监听尺寸变化
+                        layout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                layout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                int layoutWidth = layout.getWidth();
+                                int layoutHeight = layout.getHeight();
+
+                                // 计算缩放比例
+                                float scaleWidth = ((float) layoutWidth) / bitmap.getWidth();
+                                float scaleHeight = ((float) layoutHeight) / bitmap.getHeight();
+
+                                // 选择较小的缩放比例以保持图片的原始比例
+                                float scaleFactor = Math.min(scaleWidth, scaleHeight);
+
+                                // 计算新的宽度和高度
+                                int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                                int newHeight = (int) (bitmap.getHeight() * scaleFactor);
+
+                                // 缩放图片
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+                                // 计算裁剪区域
+                                int x = (scaledBitmap.getWidth() - layoutWidth) / 2;
+                                int y = (scaledBitmap.getHeight() - layoutHeight) / 2;
+
+                                // 处理x和y为负数的情况
+                                x = Math.max(x, 0);
+                                y = Math.max(y, 0);
+
+                                // 确保裁剪区域在scaledBitmap的范围内
+                                int cropWidth = Math.min(layoutWidth, scaledBitmap.getWidth());
+                                int cropHeight = Math.min(layoutHeight, scaledBitmap.getHeight());
+
+                                // 裁剪图片
+                                Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, x, y, cropWidth, cropHeight);
+
+                                // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                                Bitmap transparentBitmap = Bitmap.createBitmap(layoutWidth, layoutHeight, bitmap.getConfig());
+
+                                // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                                Canvas canvas = new Canvas(transparentBitmap);
+
+                                // 创建一个 Paint 对象，并设置透明度
+                                Paint paint = new Paint();
+                                paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                                // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                                canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                                // 创建BitmapDrawable并设置其边界为LinearLayout的尺寸
+                                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+
+                                // 设置LinearLayout的背景
+                                layout.setBackground(bitmapDrawable);
+                            }
+                        });
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();

@@ -53,13 +53,6 @@ public class B50 extends AppCompatActivity {
         String luoxue_username = setting.getString("luoxue_username", null);
         int userId = 0;
 
-        try {
-            userId = Integer.parseInt(setting.getString("userId", null).replace("\"", "").trim());
-        } catch (Exception e) {
-            Toast.makeText(B50.this, "userId不存在！", Toast.LENGTH_SHORT).show();
-            Log.d("TAG", "没有userId");
-        }
-
         if(shuiyu_username == null) {
             if(luoxue_username == null) {
                 Toast.makeText(B50.this, "请先绑定水鱼账号", Toast.LENGTH_SHORT).show();
@@ -120,39 +113,122 @@ public class B50 extends AppCompatActivity {
         });
 
         ScrollView scrollView = findViewById(R.id.mainPage);
-        if(setting.getString("image_uri", null) != null) {
+        if (setting.getString("image_uri", null) != null) {
             Uri uri = Uri.parse(setting.getString("image_uri", null));
             try {
                 Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-                // 创建一个新的Bitmap来存储结果
-                Bitmap blurredBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+                if (bitmap != null) {
+                    // 获取ScrollView的尺寸
+                    int scrollViewWidth = scrollView.getWidth();
+                    int scrollViewHeight = scrollView.getHeight();
 
-                // 使用Canvas和Paint进行绘制
-                Canvas canvas = new Canvas(blurredBitmap);
-                Paint paint = new Paint();
-                paint.setAlpha(50); // 设置透明度
-                // 绘制原始图像到新的Bitmap上
-                canvas.drawBitmap(bitmap, 0, 0, paint);
-                // 创建BitmapDrawable并设置其边界为原始bitmap的尺寸
-                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), blurredBitmap);
-                // 使用Matrix进行缩放和裁剪
-                Matrix matrix = new Matrix();
-                float scale = Math.max((float) scrollView.getWidth() / blurredBitmap.getWidth(),
-                        (float) scrollView.getHeight() / blurredBitmap.getHeight());
-                matrix.postScale(scale, scale);
-                matrix.postTranslate(-(blurredBitmap.getWidth() * scale - scrollView.getWidth()) / 2,
-                        -(blurredBitmap.getHeight() * scale - scrollView.getHeight()) / 2);
+                    if (scrollViewWidth > 0 && scrollViewHeight > 0) {
+                        // 计算缩放比例
+                        float scaleWidth = ((float) scrollViewWidth) / bitmap.getWidth();
+                        float scaleHeight = ((float) scrollViewHeight) / bitmap.getHeight();
 
-                bitmapDrawable.setBounds(0, 0, scrollView.getWidth(), scrollView.getHeight());
-                bitmapDrawable.getPaint().setShader(new BitmapShader(blurredBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
-                bitmapDrawable.getPaint().getShader().setLocalMatrix(matrix);
-                // 设置recyclerView的背景
-                scrollView.setBackground(bitmapDrawable);
+                        // 选择较大的缩放比例以保持图片的原始比例
+                        float scaleFactor = Math.max(scaleWidth, scaleHeight);
+
+                        // 计算新的宽度和高度
+                        int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                        int newHeight = (int) (bitmap.getHeight() * scaleFactor);
+
+                        // 缩放图片
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+                        // 计算裁剪区域
+                        int x = (scaledBitmap.getWidth() - scrollViewWidth) / 2;
+                        int y = (scaledBitmap.getHeight() - scrollViewHeight) / 2;
+
+                        // 处理x和y为负数的情况
+                        x = Math.max(x, 0);
+                        y = Math.max(y, 0);
+
+                        // 裁剪图片
+                        Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, x, y, scrollViewWidth, scrollViewHeight);
+
+                        // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                        Bitmap transparentBitmap = Bitmap.createBitmap(croppedBitmap.getWidth(), croppedBitmap.getHeight(), croppedBitmap.getConfig());
+
+                        // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                        Canvas canvas = new Canvas(transparentBitmap);
+
+                        // 创建一个 Paint 对象，并设置透明度
+                        Paint paint = new Paint();
+                        paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                        // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                        canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                        // 创建BitmapDrawable并设置其边界为ScrollView的尺寸
+                        BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+
+                        // 设置scrollView的背景
+                        scrollView.setBackground(bitmapDrawable);
+                    } else {
+                        // 如果ScrollView的尺寸未确定，可以使用ViewTreeObserver来监听尺寸变化
+                        scrollView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                scrollView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                int scrollViewWidth = scrollView.getWidth();
+                                int scrollViewHeight = scrollView.getHeight();
+
+                                // 计算缩放比例
+                                float scaleWidth = ((float) scrollViewWidth) / bitmap.getWidth();
+                                float scaleHeight = ((float) scrollViewHeight) / bitmap.getHeight();
+
+                                // 选择较大的缩放比例以保持图片的原始比例
+                                float scaleFactor = Math.max(scaleWidth, scaleHeight);
+
+                                // 计算新的宽度和高度
+                                int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                                int newHeight = (int) (bitmap.getHeight() * scaleFactor);
+
+                                // 缩放图片
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+                                // 计算裁剪区域
+                                int x = (scaledBitmap.getWidth() - scrollViewWidth) / 2;
+                                int y = (scaledBitmap.getHeight() - scrollViewHeight) / 2;
+
+                                // 处理x和y为负数的情况
+                                x = Math.max(x, 0);
+                                y = Math.max(y, 0);
+
+                                // 裁剪图片
+                                Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, x, y, scrollViewWidth, scrollViewHeight);
+
+                                // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                                Bitmap transparentBitmap = Bitmap.createBitmap(croppedBitmap.getWidth(), croppedBitmap.getHeight(), croppedBitmap.getConfig());
+
+                                // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                                Canvas canvas = new Canvas(transparentBitmap);
+
+                                // 创建一个 Paint 对象，并设置透明度
+                                Paint paint = new Paint();
+                                paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                                // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                                canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                                // 创建BitmapDrawable并设置其边界为ScrollView的尺寸
+                                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+
+                                // 设置scrollView的背景
+                                scrollView.setBackground(bitmapDrawable);
+                            }
+                        });
+                    }
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
             }
         }
+
     }
 
     private void orgSetUserData(UserData userData) {
