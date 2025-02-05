@@ -370,18 +370,6 @@ public class MainLaunch extends AppCompatActivity {
                 // 创建BitmapDrawable并设置其边界为原始bitmap的尺寸
                 BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), blurredBitmap);
 
-                // 使用Matrix进行缩放和裁剪
-                Matrix matrix = new Matrix();
-                float scale = Math.max((float) recyclerView.getWidth() / blurredBitmap.getWidth(),
-                        (float) recyclerView.getHeight() / blurredBitmap.getHeight());
-                matrix.postScale(scale, scale);
-                matrix.postTranslate(-(blurredBitmap.getWidth() * scale - recyclerView.getWidth()) / 2,
-                        -(blurredBitmap.getHeight() * scale - recyclerView.getHeight()) / 2);
-
-                bitmapDrawable.setBounds(0, 0, recyclerView.getWidth(), recyclerView.getHeight());
-                bitmapDrawable.getPaint().setShader(new BitmapShader(blurredBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
-                bitmapDrawable.getPaint().getShader().setLocalMatrix(matrix);
-
                 // 设置recyclerView的背景
                 recyclerView.setBackground(bitmapDrawable);
 

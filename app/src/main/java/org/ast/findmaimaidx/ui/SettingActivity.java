@@ -9,9 +9,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -20,6 +24,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
+import com.yalantis.ucrop.UCrop;
 import org.ast.findmaimaidx.R;
 import org.ast.findmaimaidx.service.GitHubApiService;
 import org.ast.findmaimaidx.been.Release;
@@ -28,8 +33,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import java.io.*;
-import java.nio.file.Files;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 
 public class SettingActivity extends AppCompatActivity {
@@ -42,7 +48,8 @@ public class SettingActivity extends AppCompatActivity {
     private String x;
     private String y;
     private String sessionId;
-    @SuppressLint({"SetTextI18n","MissingInflatedId"})
+
+    @SuppressLint({"SetTextI18n", "MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,9 +64,9 @@ public class SettingActivity extends AppCompatActivity {
             SharedPreferences.Editor editor = settingProperties.edit();
             if (isChecked) {
                 Toast.makeText(this, "已开启实验性功能,可能并不起作用", Toast.LENGTH_SHORT).show();
-                editor.putBoolean("setting_autobeta1",true);
-            }else {
-                editor.putBoolean("setting_autobeta1",false);
+                editor.putBoolean("setting_autobeta1", true);
+            } else {
+                editor.putBoolean("setting_autobeta1", false);
             }
             editor.apply();
         });
@@ -71,7 +78,7 @@ public class SettingActivity extends AppCompatActivity {
 
         MaterialButton saveButton = findViewById(R.id.save_settings_button);
         saveButton.setOnClickListener(v -> {
-            saveSettings(switchMaterial.isChecked(), shuiyuEditText.getText().toString(), luoxueEditText.getText().toString(),userId.getText().toString());
+            saveSettings(switchMaterial.isChecked(), shuiyuEditText.getText().toString(), luoxueEditText.getText().toString(), userId.getText().toString());
         });
         MaterialButton changeButton = findViewById(R.id.changePhoto);
         changeButton.setOnClickListener(v -> openFileChooser());
@@ -80,9 +87,9 @@ public class SettingActivity extends AppCompatActivity {
         uuid.setText("Android ID:" + androidId);
         uuid.setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-// 创建一个ClipData对象
+            // 创建一个ClipData对象
             ClipData clip = ClipData.newPlainText("label", androidId);
-// 将ClipData对象设置到剪贴板中
+            // 将ClipData对象设置到剪贴板中
             clipboard.setPrimaryClip(clip);
             Toast.makeText(this, "Android ID已复制到剪贴板", Toast.LENGTH_SHORT).show();
         });
@@ -102,15 +109,18 @@ public class SettingActivity extends AppCompatActivity {
             Toast.makeText(this, "已清除数据", Toast.LENGTH_SHORT).show();
         });
 
-        vits.setText("App version:" + getAppVersionName()+"\nLatest version:" );
+        vits.setText("App version:" + getAppVersionName() + "\nLatest version:");
         getLatestRelease();
     }
+
     private void openFileChooser() {
-        Intent intent = new Intent();
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent, PICK_IMAGE_REQUEST);
+        }
     }
+
     private String getAppVersionName() {
         try {
             PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -120,42 +130,88 @@ public class SettingActivity extends AppCompatActivity {
             return null;
         }
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d("SettingActivity", "onActivityResult called with requestCode: " + requestCode + ", resultCode: " + resultCode);
+
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
-            SharedPreferences.Editor editor = settingProperties.edit();
-            //先将图片复制到app目录下,再保存app目录下的uri
-            try {
-                File file = new File(getExternalFilesDir(null), "image.jpg");
-                InputStream inputStream = getContentResolver().openInputStream(uri);
-                OutputStream outputStream = Files.newOutputStream(file.toPath());
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = inputStream.read(buffer)) > 0) {
-                    outputStream.write(buffer, 0, length);
-                }
-                outputStream.close();
-                inputStream.close();
-            }catch (Exception e) {}
-            uri = Uri.fromFile(new File(getExternalFilesDir(null), "image.jpg"));
-            editor.putString("image_uri", uri.toString());
-            editor.apply();
-            Toast.makeText(this, "图片已保存", Toast.LENGTH_SHORT).show();
+            startCropActivity(uri);
+        } else if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
+            handleCroppedImage(data);
+        } else if (requestCode == UCrop.REQUEST_CROP && resultCode == UCrop.RESULT_ERROR) {
+            final Throwable cropError = UCrop.getError(data);
+            Log.e("SettingActivity", "Cropping failed: ", cropError);
+            Toast.makeText(this, "裁剪失败: " + cropError.getMessage(), Toast.LENGTH_SHORT).show();
+        } else {
+            Log.w("SettingActivity", "Unexpected result from image picker or cropper");
+            Toast.makeText(this, "裁剪操作未成功", Toast.LENGTH_SHORT).show();
         }
     }
-    private void saveSettings(boolean betaEnabled, String shuiyuUsername, String luoxueUsername,String userId) {
+
+    private void startCropActivity(Uri uri) {
+        Uri destinationUri = Uri.fromFile(new File(getCacheDir(), "cropped_image.jpg"));
+
+        UCrop.Options options = new UCrop.Options();
+        options.setCompressionQuality(90);
+        options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
+
+        // 计算屏幕宽高比
+        float[] aspectRatio = getScreenAspectRatio();
+
+        UCrop.of(uri, destinationUri)
+                .withAspectRatio(aspectRatio[0], aspectRatio[1]) // 设置裁剪比例为屏幕比例
+                .withMaxResultSize(getScreenWidth(), getScreenHeight()) // 设置最大结果尺寸
+                .withOptions(options)
+                .start(this);
+    }
+
+    private void handleCroppedImage(Intent data) {
+        Uri croppedUri = UCrop.getOutput(data);
+        if (croppedUri != null) {
+            try {
+                Bitmap photo = MediaStore.Images.Media.getBitmap(getContentResolver(), croppedUri);
+                if (photo != null) {
+                    File croppedFile = new File(getExternalFilesDir(null), "cropped_image.jpg");
+                    try (FileOutputStream out = new FileOutputStream(croppedFile)) {
+                        photo.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                        SharedPreferences.Editor editor = settingProperties.edit();
+                        editor.putString("image_uri", croppedUri.toString());
+                        editor.apply();
+                        Toast.makeText(this, "图片已保存", Toast.LENGTH_SHORT).show();
+                        Log.d("SettingActivity", "图片已保存到: " + croppedFile.getAbsolutePath());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(this, "保存图片失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e("SettingActivity", "保存图片失败: ", e);
+                    }
+                } else {
+                    Toast.makeText(this, "无法获取裁剪后的图片", Toast.LENGTH_SHORT).show();
+                    Log.w("SettingActivity", "无法获取裁剪后的图片");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "无法获取裁剪后的图片: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("SettingActivity", "无法获取裁剪后的图片: ", e);
+            }
+        } else {
+            Toast.makeText(this, "无法找到裁剪后的图片", Toast.LENGTH_SHORT).show();
+            Log.w("SettingActivity", "无法找到裁剪后的图片");
+        }
+    }
+
+    private void saveSettings(boolean betaEnabled, String shuiyuUsername, String luoxueUsername, String userId) {
         SharedPreferences.Editor editor = settingProperties.edit();
         MaterialRadioButton materialRadioButton = findViewById(R.id.radioButton1);
         MaterialRadioButton org = findViewById(R.id.org);
         int use = 0;
-        if(org.isChecked()) {
+        if (org.isChecked()) {
             use = 0;
-        }
-        else if (materialRadioButton.isChecked()) {
+        } else if (materialRadioButton.isChecked()) {
             use = 1;
-        }else {
+        } else {
             use = 2;
         }
         editor.putInt("use_", use);
@@ -180,15 +236,15 @@ public class SettingActivity extends AppCompatActivity {
         userId.setText(settingProperties.getString("userId", ""));
 
         int use_ = settingProperties.getInt("use_", 1);
-        if(use_==0) {
+        if (use_ == 0) {
             use_ = 1;
             materialRadioButton.setChecked(true);
             SharedPreferences.Editor editorSetting = settingProperties.edit();
             editorSetting.putInt("use_", use_);
             editorSetting.apply();
-        }else if (use_==1){
+        } else if (use_ == 1) {
             materialRadioButton.setChecked(true);
-        }else if(use_==2) {
+        } else if (use_ == 2) {
             materialRadioButton2.setChecked(true);
         }
         SharedPreferences mContextSp = this.getSharedPreferences(
@@ -196,14 +252,15 @@ public class SettingActivity extends AppCompatActivity {
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editorSetting = settingProperties.edit();
         String username = mContextSp.getString("username", "");
-        if(Objects.requireNonNull(shuiyuEditText.getText()).toString().isEmpty()) {
+        if (Objects.requireNonNull(shuiyuEditText.getText()).toString().isEmpty()) {
             if (mContextSp.contains("username")) {
-                editorSetting.putString("shuiyu_username",username);
+                editorSetting.putString("shuiyu_username", username);
                 editorSetting.apply();
                 shuiyuEditText.setText(username);
             }
         }
     }
+
     private void openAppSettings() {
         new AlertDialog.Builder(this)
                 .setTitle("Permission Needed")
@@ -217,6 +274,7 @@ public class SettingActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                 .show();
     }
+
     private void getLatestRelease() {
         GitHubApiService service = GitHubApiClient.getClient();
         Call<Release> call = service.getLatestRelease("Spaso1", "FindMaimaiDX_Phone"); // 替换为你的仓库信息
@@ -248,5 +306,25 @@ public class SettingActivity extends AppCompatActivity {
                 Toast.makeText(SettingActivity.this, "Request failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private int getScreenWidth() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.widthPixels;
+    }
+
+    private int getScreenHeight() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.heightPixels;
+    }
+
+    private float[] getScreenAspectRatio() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        float width = displayMetrics.widthPixels;
+        float height = displayMetrics.heightPixels;
+        return new float[]{width, height};
     }
 }
