@@ -112,7 +112,12 @@
             android:hardwareAccelerated="true"
             android:exported="true">
         </activity>
-
+        <activity
+            android:name=".ui.PaikaActivity"
+            android:theme="@style/NewTheme"
+            android:hardwareAccelerated="true"
+            android:exported="true">
+        </activity>
         <activity
             android:name=".ui.FindFri"
             android:theme="@style/NewTheme"
@@ -137,6 +142,7 @@
         <activity
             android:name=".ui.AiActivity"
             android:exported="true"
+            android:windowSoftInputMode="adjustPan"
             android:hardwareAccelerated="true">
         </activity>
 

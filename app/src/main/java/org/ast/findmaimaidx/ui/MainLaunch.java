@@ -115,7 +115,7 @@ public class MainLaunch extends AppCompatActivity {
 
         addressTextView = findViewById(R.id.textView);
         FloatingActionButton button2 = findViewById(R.id.fab);
-        final CharSequence[][] items = {{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "设置及更多"}};
+        final CharSequence[][] items = {{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "排卡","设置及更多"}};
 
         button2.setOnClickListener(v -> {
 
@@ -262,13 +262,18 @@ public class MainLaunch extends AppCompatActivity {
                         startActivity(intent1);
                         break;
                     case 6:
+                        Intent intent4 = new Intent(MainLaunch.this, PaikaActivity.class);
+                        startActivity(intent4);
+                        break;
+                    case 7:
                         Intent intent3 = new Intent(MainLaunch.this, SettingActivity.class);
                         intent3.putExtra("x", x);
                         intent3.putExtra("y", y);
                         intent3.putExtra("sessionId", sessionId);
                         startActivity(intent3);
                         break;
-                    case 7:
+
+                    case 8:
                         AlertDialog.Builder builder_addplace = new AlertDialog.Builder(this);
                         builder_addplace.setTitle("添加机厅");
 
@@ -490,7 +495,7 @@ public class MainLaunch extends AppCompatActivity {
                     if(res.equals("1")) {
                         System.out.println("1");
                         isAdmin = true;
-                        items[0] = new CharSequence[]{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "设置及更多","添加机厅"};
+                        items[0] = new CharSequence[]{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "排卡","设置及更多","添加机厅"};
                     }
                     System.out.println(res);
                 }
