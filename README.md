@@ -49,14 +49,14 @@
 ## 排卡功能
 在 `README.md` 中添加一个开放 API 的表格，可以清晰地展示 API 的功能、请求方式、参数和返回值。以下是一个示例表格：
 
-| 功能描述         | 请求方式     | 请求 URL                                                              | 参数说明                                                | 返回值示例              |
-|--------------|----------|---------------------------------------------------------------------|-----------------------------------------------------|--------------------|
+| 功能描述         | 请求方式     | 请求 URL                                                              | 参数说明                                                | 返回值示例 |
+|--------------|----------|---------------------------------------------------------------------|-----------------------------------------------------|------|
 | 获取party的排卡队列 | `GET`    | `/api/mai/v1/party?party={party}`                                   | `party`: 房间名称                                       | `["a1","a2","a3"}]` |
 | 排卡           | `POST`   | `/api/mai/v1/party?party={party}&people={people}`                   | `party`: 房间名称 `people`:排卡名称                         | `["a1","a2","a3"}]` |
 | 排卡插队位置       | `PUT`    | `/api/mai/v1/party?party={party}&people={people}&changeToPeople={changeToPeople}` | `party`: 房间名称 `people`:排卡名称 `changeToPeople`:插队对象名称 | `["a1","a2","a3"}]` |
 | 退勤           | `DELETE` | `/api/mai/v1/party?party={party}&people={people}` | `party`: 房间名称 `people`:排卡名称                         | `["a1","a2","a3"}]` |
 | 完成一次上机       | `POST`   | `/api/mai/v1/partyPlay?party={party}` | `party`: 房间名称                                       | `["a2","a3","a1"}]` |
-| 指定对象上机       | `DELETE` | `/api/mai/v1/partyPlay?party={party}&people={people}` | `party`: 房间名称 `people`:上机对象                         | `["a1","a2","a3"}]` |
+| 指定对象上机       | `DELETE` | `/api/mai/v1/partyPlay?party={party}&people={people}` | `party`: 房间名称 `people`:上机对象                         | `a3` |
 | 获取房间正在上机对象   | `GET`    | `/api/mai/v1/partyPlay?party={party}` | `party`: 房间名称                                       | `["a2","a3","a1"}]` |
 | 获取排卡对象的卡     | `GET`    | `/api/mai/v1/player?party={party}&people={people}` | `party`: 房间名称 `people`:上机对象                         | `default` |
 | 提交排卡对象的卡     | `POST`   | `/api/mai/v1/player?party={party}&people={people}&card={card}` | `party`: 房间名称 `people`:上机对象 `card`:卡名                         | `default` |  
