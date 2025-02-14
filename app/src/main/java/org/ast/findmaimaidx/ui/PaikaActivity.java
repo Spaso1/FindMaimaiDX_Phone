@@ -56,6 +56,7 @@ public class PaikaActivity extends AppCompatActivity {
     private MaterialButton card;
     private Handler handler;
     private String cardStyle;
+    private String old = "";
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onStart() {
@@ -257,6 +258,9 @@ public class PaikaActivity extends AppCompatActivity {
                     String responseData = null;
                     try {
                         responseData = response.body().string();
+                        if(old.equals(responseData)) {
+                            return;
+                        }
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -319,6 +323,7 @@ public class PaikaActivity extends AppCompatActivity {
                             tableLayout.addView(row);
                         }
                     });
+                    old = finalResponseData;
                 }
             }
 
