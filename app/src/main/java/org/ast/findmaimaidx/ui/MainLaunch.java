@@ -744,6 +744,11 @@ public class MainLaunch extends AppCompatActivity {
                 }
 
             }
+
+            @Override
+            public void onProviderDisabled(@NonNull String provider) {
+                Toast.makeText(getApplicationContext(), R.string.location_disabled, Toast.LENGTH_SHORT).show();
+            }
         });
     }
     //手动刷新定位
