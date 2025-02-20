@@ -4,6 +4,7 @@
             android:layout_width="match_parent"
             android:id="@+id/scrollView"
             android:layout_height="match_parent"
+            android:background="@color/colorOnPrimary"
             android:fillViewport="true">
 
     <LinearLayout
@@ -16,7 +17,8 @@
                 android:id="@+id/switchBeta1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/beta"
+            android:textColor="@color/textcolorPrimary"
+            android:text="@string/beta"
                 android:textSize="20sp"
                 android:checked="false"
                 android:paddingTop="16dp"
@@ -28,12 +30,13 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                      android:textColor="@color/black"
+                    android:textColor="@color/textcolorPrimary"
                       android:textSize="20sp"
                       android:text="查分器"/>
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/org"
                 android:checked="true"
+                android:textColor="@color/textcolorPrimary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
@@ -41,7 +44,8 @@
             <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/radioButton1"
                     android:checked="true"
-                    android:layout_width="wrap_content"
+                android:textColor="@color/textcolorPrimary"
+                android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/shuiyu_option" />
 
@@ -49,7 +53,8 @@
                     android:id="@+id/radioButton2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/lx_option" />
+                android:textColor="@color/textcolorPrimary"
+                android:text="@string/lx_option" />
         </RadioGroup>
         <!-- 分割线 -->
         <View
@@ -86,7 +91,7 @@
                     android:id="@+id/shuiyu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="水鱼用户名"
+                android:hint="水鱼用户名"
                     android:inputType="textPersonName"/>
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -99,7 +104,7 @@
                     android:id="@+id/luoxue"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="落雪个人API"
+                android:hint="落雪个人API"
                     android:inputType="textPersonName"/>
         </com.google.android.material.textfield.TextInputLayout>
         <!-- 按钮示例 -->
@@ -109,7 +114,7 @@
                 android:layout_height="wrap_content"
                 android:text="更改主界面背景图"
                 android:backgroundTint="?attr/colorPrimary"
-                android:textColor="@android:color/white"
+            android:textColor="@color/textcolorPrimary"
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"/>
         <LinearLayout
@@ -154,16 +159,19 @@
                     android:paddingBottom="16dp"/>
 
         </LinearLayout>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/settin_body"/>
+        <TextView android:layout_width="wrap_content"             android:textColor="@color/textcolorPrimary"
+            android:layout_height="wrap_content" android:text="@string/settin_body"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:textColor="@color/textcolorPrimary"
             android:id="@+id/uuid"/>
         <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?android:attr/dividerVertical"
                 android:layout_marginTop="16dp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16dp" android:id="@+id/vits" />
+        <TextView android:layout_width="wrap_content"         android:textColor="@color/textcolorPrimary"
+            android:layout_height="wrap_content" android:textSize="16dp" android:id="@+id/vits" />
     </LinearLayout>
 </ScrollView>

@@ -195,7 +195,7 @@ public class MainLaunch extends AppCompatActivity {
                                 Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT).show();
                                 Address address = addresses.get(0);
                                 String detail = address.getAddressLine(0);
-                                addressTextView.setText(detail);
+                                addressTextView.setText(" " + detail);
                                 tot = detail;
                                 province = address.getAdminArea();
                                 city = address.getLocality();
@@ -673,7 +673,7 @@ public class MainLaunch extends AppCompatActivity {
                         if (addresses.size() > 0) {
                             Address address = addresses.get(0);
                             String detail = address.getAddressLine(0);
-                            addressTextView.setText(detail);
+                            addressTextView.setText(" "+detail);
                             tot = detail;
                             province = address.getAdminArea();
                             city = address.getLocality();
@@ -685,7 +685,7 @@ public class MainLaunch extends AppCompatActivity {
                         x = String.valueOf(116.3912757);
                         y = String.valueOf(39.906217);
 
-                        addressTextView.setText("未知定位,默认设置北京市");
+                        addressTextView.setText(" 未知定位,默认设置北京市");
                         tot = "北京市";
                         province ="北京市";
                         city = "北京市";
@@ -696,7 +696,7 @@ public class MainLaunch extends AppCompatActivity {
                 Log.d("Location","定位失败");
                 x = String.valueOf(39.906217);
                 y = String.valueOf(116.3912757);
-                addressTextView.setText("未知定位,默认设置北京市");
+                addressTextView.setText(" 未知定位,默认设置北京市");
                 tot = "北京市";
                 province ="北京市";
                 city = "北京市";
@@ -721,7 +721,7 @@ public class MainLaunch extends AppCompatActivity {
                             if (addresses.size() > 0) {
                                 Address address = addresses.get(0);
                                 String detail = address.getAddressLine(0);
-                                addressTextView.setText(detail);
+                                addressTextView.setText(" "+detail);
                                 tot = detail;
                                 province = address.getAdminArea();
                                 city = address.getLocality();

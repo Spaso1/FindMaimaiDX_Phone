@@ -21,6 +21,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -859,6 +860,8 @@ public class PageActivity extends AppCompatActivity {
                     }
                     for (int i = 0; i < marketList.size(); i++) {
                         TextView t = new TextView(PageActivity.context);
+                        t.setTextColor(ContextCompat.getColor(PageActivity.context, R.color.textcolorPrimary));
+
                         double distance = marketList.get(i).getDistance();
                         int type = marketList.get(i).getType();
                         DecimalFormat decimalFormat = new DecimalFormat("0.#");
@@ -888,6 +891,8 @@ public class PageActivity extends AppCompatActivity {
                 }else {
                     TextView ttt =new TextView(PageActivity.context);
                     ttt.setText("暂时关闭");
+                    ttt.setTextColor(ContextCompat.getColor(PageActivity.context, R.color.textcolorPrimary));
+
                     t31.addView(ttt);
                 }
             }
