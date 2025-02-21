@@ -19,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
@@ -361,6 +362,7 @@ public class PaikaActivity extends AppCompatActivity {
     private void addTextViewToRow(TableRow row, String text, int weight) {
         TextView textView = new TextView(context);
         textView.setText(text);
+        textView.setTextColor(ContextCompat.getColor(context, R.color.textcolorPrimary));
         TableRow.LayoutParams params = new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, weight);
         textView.setLayoutParams(params);
         row.addView(textView);
