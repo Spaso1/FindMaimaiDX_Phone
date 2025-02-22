@@ -36,7 +36,7 @@
         <item name="android:statusBarColor">@color/night</item>
     </style>
     <!-- Base application theme. -->
-    <style name="NewTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <style name="NewTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/night</item>
         <item name="colorPrimaryVariant">@color/night</item>

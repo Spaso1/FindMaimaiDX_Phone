@@ -4,11 +4,12 @@ plugins {
 
 android {
     namespace 'org.ast.findmaimaidx'
-    compileSdk 33
+    compileSdk 34
     defaultConfig {
         applicationId "org.ast.findmaimaidx"
         minSdk 28
-        targetSdk 33
+        //noinspection OldTargetApi,OldTargetApi
+        targetSdk 34
         versionCode 1
         versionName "1.5.2dev"
 
@@ -29,6 +30,12 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
+    }
+    defaultConfig {
+        ndk {
+            // 设置支持的SO库架构（开发者可以根据需要，选择一个或多个平台的so）
+            abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86","x86_64"
+        }
     }
 }
 

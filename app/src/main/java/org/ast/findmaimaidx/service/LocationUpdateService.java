@@ -18,6 +18,7 @@ import android.location.LocationManager;
 import android.os.*;
 import android.util.Log;
 
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -162,13 +163,17 @@ public class LocationUpdateService extends Service {
         runnable = new Runnable() {
             @Override
             public void run() {
-                requestSingleUpdate();
+                try {
+                    requestSingleUpdate();
+                }catch (Exception e) {
+                    handler.removeCallbacks(runnable);
+                }
                 handler.postDelayed(this, UPDATE_INTERVAL);
             }
         };
 
         createNotificationChannel();
-        startForeground(NOTIFICATION_ID, createNotification());
+//        startForeground(NOTIFICATION_ID, createNotification());
         Log.d("服务", "服务已启动");
 
         // 检查位置服务是否启用

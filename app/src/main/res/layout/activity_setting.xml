@@ -114,7 +114,6 @@
                 android:layout_height="wrap_content"
                 android:text="更改主界面背景图"
                 android:backgroundTint="?attr/colorPrimary"
-            android:textColor="@color/textcolorPrimary"
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"/>
         <LinearLayout

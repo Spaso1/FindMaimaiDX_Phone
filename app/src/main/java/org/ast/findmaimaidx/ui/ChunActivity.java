@@ -552,45 +552,47 @@ public class  ChunActivity extends AppCompatActivity {
 
         }
         //每隔三秒获取一次GPS信息
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 12000, 16f, new LocationListener() {
-            @Override
-            public void onLocationChanged(@NonNull Location location) {
-                Log.d("Location", "onLocationChanged");
-                if(flag) {
-                    Toast.makeText(ChunActivity.this, "定位成功", Toast.LENGTH_SHORT);
-                    x = String.valueOf(location.getLongitude());
-                    y = String.valueOf(location.getLatitude());
-                    if (location != null) {
-                        Geocoder geocoder = new Geocoder(ChunActivity.this, Locale.getDefault());
-                        try {
-                            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                            if (addresses.size() > 0) {
-                                Address address = addresses.get(0);
-                                String detail = address.getAddressLine(0);
-                                addressTextView.setText(detail);
-                                tot = detail;
-                                province = address.getAdminArea();
-                                city = address.getLocality();
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 12000, 16f, new LocationListener() {
+                @Override
+                public void onLocationChanged(@NonNull Location location) {
+                    Log.d("Location", "onLocationChanged");
+                    if (flag) {
+                        Toast.makeText(ChunActivity.this, "定位成功", Toast.LENGTH_SHORT);
+                        x = String.valueOf(location.getLongitude());
+                        y = String.valueOf(location.getLatitude());
+                        if (location != null) {
+                            Geocoder geocoder = new Geocoder(ChunActivity.this, Locale.getDefault());
+                            try {
+                                List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                                if (addresses.size() > 0) {
+                                    Address address = addresses.get(0);
+                                    String detail = address.getAddressLine(0);
+                                    addressTextView.setText(detail);
+                                    tot = detail;
+                                    province = address.getAdminArea();
+                                    city = address.getLocality();
+                                    extracted();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                Log.d("Location", "GPS定位失败");
+                                x = String.valueOf(39.906217);
+                                y = String.valueOf(116.3912757);
+                                addressTextView.setText("未知定位,默认设置北京市");
+                                tot = "北京市";
+                                province = "北京市";
+                                city = "北京市";
                                 extracted();
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Log.d("Location","GPS定位失败");
-                            x = String.valueOf(39.906217);
-                            y = String.valueOf(116.3912757);
-                            addressTextView.setText("未知定位,默认设置北京市");
-                            tot = "北京市";
-                            province ="北京市";
-                            city = "北京市";
-                            extracted();
                         }
+                        Toast.makeText(ChunActivity.this, "定位成功", Toast.LENGTH_SHORT);
+
                     }
-                    Toast.makeText(ChunActivity.this, "定位成功", Toast.LENGTH_SHORT);
 
                 }
-
-            }
-        });
+            });
+        }catch (Exception e) {}
     }
     //手动刷新定位
     private void extracted() {

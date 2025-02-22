@@ -14,16 +14,22 @@ import android.net.Uri;
 import android.os.*;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.*;
 import androidx.appcompat.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -39,9 +45,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.ast.findmaimaidx.R;
-import org.ast.findmaimaidx.application.MyApplication;
 import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Geocode;
+import org.ast.findmaimaidx.been.Market;
 import org.ast.findmaimaidx.been.Place;
 import org.ast.findmaimaidx.map2d.BasicMapActivity;
 import org.ast.findmaimaidx.service.LocationUpdateService;
@@ -50,6 +56,7 @@ import org.ast.findmaimaidx.adapter.PlaceAdapter;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.text.DecimalFormat;
 import java.util.*;
 
 import static androidx.core.location.LocationManagerCompat.requestLocationUpdates;
@@ -71,13 +78,14 @@ public class MainLaunch extends AppCompatActivity {
     private String y;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private PlaceAdapter adapter;
-
+    public static List<Market> marketList = new ArrayList<>();
+    private Context context;
     public static String province;
     public static String city;
     public static List<Place> a = new ArrayList<>();
     public static List<Place> b = new ArrayList<>();
     private BroadcastReceiver locationReceiver;
-
+    public static List<TextView> textViews = new ArrayList<>();
     private boolean flag = true;
     private double tagXY[] = new double[2];
     private String tagplace;
@@ -85,12 +93,27 @@ public class MainLaunch extends AppCompatActivity {
     private SharedPreferences shoucang ;
     private SharedPreferences.Editor editor;
     private SharedPreferences settingProperties;
+    private boolean isPad = false;
+    private LinearLayout t31 ;
 
     @Override
     @SuppressLint({"MissingInflatedId", "Range", "UnspecifiedRegisterReceiverFlag", "SetTextI18n"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.mainlayout);
+        setContentView(R.layout.activity_mainlayout);
+        context = this;
+        //获取屏幕长宽
+        Display display = getWindowManager().getDefaultDisplay();
+        int width = display.getWidth();
+        int height = display.getHeight();
+        Log.d("MainLaunch", "onCreate: " + width + " " + height);
+        isPad = false;
+        if(width>=height) {
+            isPad = true;
+        }
+        if(isPad) {
+            setContentView(R.layout.activity_mainpadlayout);
+        }
         //设置随机数
         String userInput = "";
         shoucang = getSharedPreferences("shoucang@", MODE_PRIVATE);
@@ -354,20 +377,31 @@ public class MainLaunch extends AppCompatActivity {
                     Log.d("机厅位置","位置更新服务");
                 }
             };
-            registerReceiver(locationReceiver, new IntentFilter("LOCATION_UPDATE"));
+            try {
+                registerReceiver(locationReceiver, new IntentFilter("LOCATION_UPDATE"));
+            }catch (Exception e) {
+
+            }
             Log.d("机厅位置","启动位置更新服务");
             Toast.makeText(MainLaunch.this, "已启动位置更新服务", Toast.LENGTH_SHORT).show();
         }
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        if (settingProperties.getString("image_uri", null) != null) {
+        if (settingProperties.getString("image_uri", null) != null ) {
             Uri uri = Uri.parse(settingProperties.getString("image_uri", null));
             try {
                 Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
                 if (bitmap != null) {
                     // 获取RecyclerView的尺寸
-                    int recyclerViewWidth = recyclerView.getWidth();
-                    int recyclerViewHeight = recyclerView.getHeight();
-
+                    int recyclerViewWidth = 0;
+                    int recyclerViewHeight = 0;
+                    if(isPad) {
+                        LinearLayout linearLayout = findViewById(R.id.pad);
+                        recyclerViewWidth = linearLayout.getWidth();
+                        recyclerViewHeight = linearLayout.getHeight();
+                    }else {
+                        recyclerViewWidth = recyclerView.getWidth();
+                        recyclerViewHeight = recyclerView.getHeight();
+                    }
                     if (recyclerViewWidth > 0 && recyclerViewHeight > 0) {
                         // 计算缩放比例
                         float scaleWidth = ((float) recyclerViewWidth) / bitmap.getWidth();
@@ -411,15 +445,28 @@ public class MainLaunch extends AppCompatActivity {
                         BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
 
                         // 设置recyclerView的背景
-                        recyclerView.setBackground(bitmapDrawable);
+                        if(!isPad) {
+                            recyclerView.setBackground(bitmapDrawable);
+                        } else {
+                            LinearLayout linearLayout = findViewById(R.id.pad);
+                            linearLayout.setBackground(bitmapDrawable);
+                        }
                     } else {
                         // 如果RecyclerView的尺寸未确定，可以使用ViewTreeObserver来监听尺寸变化
                         recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                             @Override
                             public void onGlobalLayout() {
                                 recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                                int recyclerViewWidth = recyclerView.getWidth();
-                                int recyclerViewHeight = recyclerView.getHeight();
+                                int recyclerViewWidth = 0;
+                                int recyclerViewHeight = 0;
+                                if(isPad) {
+                                    LinearLayout linearLayout = findViewById(R.id.pad);
+                                    recyclerViewWidth = linearLayout.getWidth();
+                                    recyclerViewHeight = linearLayout.getHeight();
+                                }else {
+                                    recyclerViewWidth = recyclerView.getWidth();
+                                    recyclerViewHeight = recyclerView.getHeight();
+                                }
 
                                 // 计算缩放比例
                                 float scaleWidth = ((float) recyclerViewWidth) / bitmap.getWidth();
@@ -463,8 +510,12 @@ public class MainLaunch extends AppCompatActivity {
                                 BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
 
                                 // 设置recyclerView的背景
-                                recyclerView.setBackground(bitmapDrawable);
-                            }
+                                if(!isPad) {
+                                    recyclerView.setBackground(bitmapDrawable);
+                                } else {
+                                    LinearLayout linearLayout = findViewById(R.id.pad);
+                                    linearLayout.setBackground(bitmapDrawable);
+                                }                            }
                         });
                     }
                 }
@@ -594,28 +645,37 @@ public class MainLaunch extends AppCompatActivity {
                         }
                         boolean flag2 = true;
                         if(flag2) {
-                            adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
-                                @Override
-                                public void onItemClick(Place place) {
-                                    Intent intent = new Intent(MainLaunch.this, PageActivity.class);
-                                    intent.putExtra("id", place.getId());
-                                    intent.putExtra("name", place.getName());
-                                    intent.putExtra("address", place.getAddress());
-                                    intent.putExtra("province", place.getProvince());
-                                    intent.putExtra("city", place.getCity());
-                                    intent.putExtra("area", place.getArea());
-                                    intent.putExtra("x", place.getX());
-                                    intent.putExtra("y", place.getY());
-                                    intent.putExtra("count",place.getCount());
-                                    intent.putExtra("bad",place.getBad());
-                                    intent.putExtra("good",place.getGood());
-                                    intent.putExtra("num",place.getNum());
-                                    intent.putExtra("numJ",place.getNumJ());
-                                    intent.putExtra("meituan",place.getMeituan_link());
-                                    intent.putExtra("douyin",place.getDouyin_link());
-                                    startActivity(intent);
-                                }
-                            });
+                            if (isPad) {
+                                adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
+                                    @Override
+                                    public void onItemClick(Place place) {
+                                        startPadPage(place);
+                                    }
+                                });
+                            }else {
+                                adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
+                                    @Override
+                                    public void onItemClick(Place place) {
+                                        Intent intent = new Intent(MainLaunch.this, PageActivity.class);
+                                        intent.putExtra("id", place.getId());
+                                        intent.putExtra("name", place.getName());
+                                        intent.putExtra("address", place.getAddress());
+                                        intent.putExtra("province", place.getProvince());
+                                        intent.putExtra("city", place.getCity());
+                                        intent.putExtra("area", place.getArea());
+                                        intent.putExtra("x", place.getX());
+                                        intent.putExtra("y", place.getY());
+                                        intent.putExtra("count", place.getCount());
+                                        intent.putExtra("bad", place.getBad());
+                                        intent.putExtra("good", place.getGood());
+                                        intent.putExtra("num", place.getNum());
+                                        intent.putExtra("numJ", place.getNumJ());
+                                        intent.putExtra("meituan", place.getMeituan_link());
+                                        intent.putExtra("douyin", place.getDouyin_link());
+                                        startActivity(intent);
+                                    }
+                                });
+                            }
                             recyclerView.setAdapter(adapter);
                             // 设置Toolbar
                             Toolbar toolbar = findViewById(R.id.toolbar);
@@ -643,7 +703,102 @@ public class MainLaunch extends AppCompatActivity {
         }
 
     }
+    private void startPadPage(Place place) {
 
+        TextView name = findViewById(R.id.pag2_nameTextView);
+        name.setText(place.getName());
+        TextView address = findViewById(R.id.pag2_addressTextView);
+        address.setText(place.getAddress());
+        TextView province = findViewById(R.id.pag2_provinceTextView);
+        province.setText(place.getProvince());
+        TextView city = findViewById(R.id.pag2_cityTextView);
+        city.setText(place.getCity());
+        TextView area = findViewById(R.id.pag2_areaTextView);
+        area.setText(place.getArea());
+        TextView num = findViewById(R.id.pag2_num5);
+        num.setText("国机 " + place.getNum());
+        if(place.getNumJ()>0) {
+            TextView numJ = findViewById(R.id.pag2_num6);
+            numJ.setText("\uD83D\uDCB3" + place.getNumJ());
+        }else {
+            TextView numJ = findViewById(R.id.pag2_num6);
+            numJ.setText("");
+        }
+        TextView num7 = findViewById(R.id.pag2_num7);
+        num7.setText("机台:" + (place.getNum() + place.getNumJ()));
+        String address2 = place.getAddress();
+        MaterialButton share = findViewById(R.id.pag2_share);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                share.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clipData = ClipData.newPlainText("text", address2 );
+                        clipboardManager.setPrimaryClip(clipData);
+                        Toast.makeText(MainLaunch.this, "机厅地址信息已经复制!", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+            }
+        });
+        shoucang = getSharedPreferences("shoucang@", MODE_PRIVATE);
+        SharedPreferences.Editor editor2 = shoucang.edit();
+        int id2 = place.getId();
+        com.google.android.material.switchmaterial.SwitchMaterial switch1 = findViewById(R.id.pag2_switch1);
+        if(shoucang.contains(id2 + "")) {
+            switch1.setChecked(true);
+        }
+        switch1.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                if(switch1.isChecked()) {
+                    editor2.putString(id2 + "","1");
+                }else {
+                    editor2.remove(id2 + "");
+                }
+                editor2.apply();
+            }
+        });
+
+        int good = place.getGood();
+        int bad = place.getBad();
+        WebView webView = findViewById(R.id.pag2_imageView1);
+        String imageUrl = "https://img.shields.io/badge/recommend-" + good + "-green";
+        webView.setBackgroundColor(0x00000000); // 设置背景为透明
+
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true); // 启用JavaScript
+        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                // 注入JavaScript来设置网页背景为透明
+                view.loadUrl("javascript:(function() { " +
+                        "document.body.style.backgroundColor = 'transparent'; " +
+                        "})()");
+            }
+        });
+        webView.loadUrl(imageUrl); // 加载网页
+        WebView webView2 = findViewById(R.id.pag2_imageView2);
+        String imageUrl2 = "https://img.shields.io/badge/oppose-" + bad + "-red";
+        webView2.setBackgroundColor(0x00000000); // 设置背景为透明
+        webView2.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                // 注入JavaScript来设置网页背景为透明
+                view.loadUrl("javascript:(function() { " +
+                        "document.body.style.backgroundColor = 'transparent'; " +
+                        "})()");
+            }
+        });
+        webView2.loadUrl(imageUrl2); // 加载网页
+        t31 = findViewById(R.id.pag2_hor);
+        findnear(place, "mai",t31);
+    }
     private List<Place> parseJsonToPlaceList(String jsonString) {
         Gson gson = new Gson();
         Type placeListType = new TypeToken<List<Place>>() {
@@ -705,51 +860,56 @@ public class MainLaunch extends AppCompatActivity {
 
 
         }
-        //每隔三秒获取一次GPS信息
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 12000, 16f, new LocationListener() {
-            @Override
-            public void onLocationChanged(@NonNull Location location) {
-                Log.d("Location", "onLocationChanged");
-                if(flag) {
-                    Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
-                    x = String.valueOf(location.getLongitude());
-                    y = String.valueOf(location.getLatitude());
-                    if (location != null) {
-                        Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
-                        try {
-                            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                            if (addresses.size() > 0) {
-                                Address address = addresses.get(0);
-                                String detail = address.getAddressLine(0);
-                                addressTextView.setText(" "+detail);
-                                tot = detail;
-                                province = address.getAdminArea();
-                                city = address.getLocality();
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 12000, 16f, new LocationListener() {
+                @Override
+                public void onLocationChanged(@NonNull Location location) {
+                    Log.d("Location", "onLocationChanged");
+                    if(flag) {
+                        Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
+                        x = String.valueOf(location.getLongitude());
+                        y = String.valueOf(location.getLatitude());
+                        if (location != null) {
+                            Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
+                            try {
+                                List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                                if (addresses.size() > 0) {
+                                    Address address = addresses.get(0);
+                                    String detail = address.getAddressLine(0);
+                                    addressTextView.setText(" "+detail);
+                                    tot = detail;
+                                    province = address.getAdminArea();
+                                    city = address.getLocality();
+                                    extracted();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                Log.d("Location","GPS定位失败");
+                                x = String.valueOf(39.906217);
+                                y = String.valueOf(116.3912757);
+                                addressTextView.setText("未知定位,默认设置北京市");
+                                tot = "北京市";
+                                province ="北京市";
+                                city = "北京市";
                                 extracted();
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Log.d("Location","GPS定位失败");
-                            x = String.valueOf(39.906217);
-                            y = String.valueOf(116.3912757);
-                            addressTextView.setText("未知定位,默认设置北京市");
-                            tot = "北京市";
-                            province ="北京市";
-                            city = "北京市";
-                            extracted();
                         }
+                        Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
+
                     }
-                    Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
 
                 }
 
-            }
+                @Override
+                public void onProviderDisabled(@NonNull String provider) {
+                    Toast.makeText(getApplicationContext(), "关闭定位", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }catch (Exception e) {
+            Log.d("Location","GPS定位失败");
+        }
+        //每隔三秒获取一次GPS信息
 
-            @Override
-            public void onProviderDisabled(@NonNull String provider) {
-                Toast.makeText(getApplicationContext(), R.string.location_disabled, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
     //手动刷新定位
     private void extracted() {
@@ -855,6 +1015,136 @@ public class MainLaunch extends AppCompatActivity {
                 }
             }
         });
+    }
+    public void findnear(Place place_centor,String type_code,LinearLayout t31) {
+        OkHttpClient client = new OkHttpClient();
+        String web = "http://mai.godserver.cn:11451/api/" + type_code + "/v1/near?id=" + place_centor.getId();
+        Log.d("Web", web);
+
+        Request request = new Request.Builder()
+                .url(web)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("OkHttp", "Error: " + e.getMessage());
+                runOnUiThread(() -> {
+                    TextView ttt = new TextView(PageActivity.context);
+                    ttt.setText("网络请求失败");
+                    ttt.setTextColor(ContextCompat.getColor(PageActivity.context, R.color.textcolorPrimary));
+                    t31.addView(ttt);
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String result = response.body().string();
+                    runOnUiThread(() -> handleResponse(result));
+                } else {
+                    runOnUiThread(() -> {
+                        TextView ttt = new TextView(PageActivity.context);
+                        ttt.setText("请求失败，错误码: " + response.code());
+                        ttt.setTextColor(ContextCompat.getColor(PageActivity.context, R.color.textcolorPrimary));
+                        t31.addView(ttt);
+                    });
+                }
+            }
+        });
+    }
+    @SuppressLint("SetTextI18n")
+    private void handleResponse(String result) {
+        t31.setVisibility(View.VISIBLE);
+        if (result.contains("[{")) {
+            marketList = parseJsonToPlaceList2(result);
+            for (Market market : marketList) {
+                Log.d("Market", market.getMarketName());
+            }
+            for (int i = 0; i < marketList.size(); i++) {
+                TextView t = new TextView(context);
+                t.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary));
+
+                double distance = marketList.get(i).getDistance();
+                int type = marketList.get(i).getType();
+                DecimalFormat decimalFormat = new DecimalFormat("0.#");
+                String formattedResult = decimalFormat.format(distance * 1000);
+                if (type == 1) {
+                    t.setTextColor(Color.rgb(255, 182, 193));
+                } else if (type == 2) {
+                    t.setTextColor(Color.rgb(144, 238, 144));
+                }
+                t.setText(marketList.get(i).getMarketName() + " \n距离机厅:" + distance + "米\n");
+                t.setTextSize(15.0F);
+                int finalI = i;
+                t.isTextSelectable();
+                t.isEnabled();
+                t.setOnClickListener(v -> {
+                    tagXY[0] = marketList.get(finalI).getX();
+                    tagXY[1] = marketList.get(finalI).getY();
+
+                    tagplace = marketList.get(finalI).getMarketName().split(" ")[0];
+                    //导航
+                    Toast.makeText(this, "即将导航" + marketList.get(finalI).getMarketName(), Toast.LENGTH_SHORT).show();
+                    showNavigationOptions();
+                });
+                Log.d("Market2", marketList.get(i).getMarketName());
+                textViews.add(t);
+                t31.addView(t);
+            }
+        } else {
+            TextView ttt = new TextView(this);
+            ttt.setText("暂时关闭");
+            ttt.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary));
+            t31.addView(ttt);
+        }
+        Log.d("Market3", t31.getHeight() + "---");
+    }
+    private void showNavigationOptions() {
+        final CharSequence[] items = {"Google Maps", "高德地图", "百度地图(暂时不可用)"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("选择导航应用")
+                .setItems(items, (dialog, item) -> {
+                    switch (item) {
+                        case 0:
+                            startGoogleMaps();
+                            break;
+                        case 1:
+                            startAmap();
+                            break;
+                        case 2:
+                            startBaiduMaps();
+                            break;
+                    }
+                })
+                .show();
+    }
+
+    private void startGoogleMaps() {
+        String uri = "google.navigation:q=" + tagXY[0] + "," + tagXY[1];
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+        intent.setPackage("com.google.android.apps.maps");
+        startActivity(intent);
+    }
+
+    private void startAmap() {
+        // 高德地图
+        Intent intent = new Intent("android.intent.action.VIEW", android.net.Uri.parse("androidamap://route?sourceApplication=appName&slat=&slon=&sname=我的位置&dlat=" + tagXY[1] +"&dlon="+ tagXY[0]+"&dname=" +tagplace + "&dev=0&t=2"));
+        MainLaunch.this.startActivity(intent);
+    }
+
+    private void startBaiduMaps() {
+        Toast.makeText(PageActivity.context, "111", Toast.LENGTH_SHORT).show();
+        String uri = "baidumap://map/direction?destination=latlng:" + tagXY[0] + "," + tagXY[1] +"&mode=driving&src=appName";
+        Intent intent = new Intent("com.baidu.tieba",  android.net.Uri.parse(uri));
+        startActivity(intent);
+    }
+    private static List<Market> parseJsonToPlaceList2(String jsonString) {
+        Gson gson = new Gson();
+        Type placeListType = new TypeToken<List<Market>>() {
+        }.getType();
+        return gson.fromJson(jsonString, placeListType);
     }
     @Override
     protected void onDestroy() {

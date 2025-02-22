@@ -47,6 +47,8 @@ import java.util.Date;
 import java.util.List;
 public class AiActivity extends AppCompatActivity {
     private static final String API_URL = "http://www.godserver.cn:11435/api/generate";
+    //private static final String API_URL = "http://192.168.2.88:8080/api/ai/stream-data";
+
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private OkHttpClient client;
     private RecyclerView chatRecyclerView;
@@ -253,6 +255,7 @@ public class AiActivity extends AppCompatActivity {
             json = basic + basic2;
         }
         RequestBody body = RequestBody.create(json, JSON);
+
         Request request = new Request.Builder()
                 .url(API_URL)
                 .post(body)

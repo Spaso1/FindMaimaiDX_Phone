@@ -365,11 +365,11 @@ public class PageActivity extends AppCompatActivity {
                         "})()");
             }
         });
+        webView2.loadUrl(imageUrl2); // 加载网页
 
         checkAndIntial();
         getContent();
 
-        webView2.loadUrl(imageUrl2); // 加载网页
     }
     @SuppressLint("MissingInflatedId")
     private void getContent() {

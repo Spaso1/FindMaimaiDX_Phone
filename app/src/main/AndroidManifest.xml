@@ -51,13 +51,12 @@
         <meta-data
             android:name="com.amap.api.v2.apikey"
             android:value="4a0a6436895193dc149bd1b90e943512" />
-
         <activity
             android:hardwareAccelerated="true"
             android:name=".ui.MainLaunch"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/FindMaimaiDX2">
+            android:theme="@style/NewTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -1,0 +1,184 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:id="@+id/pag2_background"
+    android:background="@color/colorOnPrimary"
+    android:padding="16dp" tools:ignore="WebViewLayout">
+    <TextView
+        android:id="@+id/pag2_nameTextView"
+        android:textColor="@color/textcolorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="点击获取机厅信息"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+        <TextView
+            android:id="@+id/pag2_provinceTextView"
+            android:textColor="@color/textcolorPrimary"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
+        <TextView
+                android:id="@+id/pag2_cityTextView"
+                android:textColor="@color/textcolorPrimary"
+                android:paddingLeft="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp" />
+        <TextView
+                android:id="@+id/pag2_areaTextView"
+                android:layout_width="wrap_content"
+                android:textColor="@color/textcolorPrimary"
+                android:paddingLeft="5dp"
+                android:layout_height="wrap_content"
+                android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" >
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                  android:paddingLeft="15mm"
+                  android:textColor="@color/textcolorPrimary"
+
+                  android:id="@+id/pag2_num5"
+                  android:textSize="16sp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                  android:paddingLeft="15mm"
+                  android:textColor="@color/textcolorPrimary"
+
+                  android:id="@+id/pag2_num6"
+                  android:textSize="16sp"/>
+        <TextView
+                android:id="@+id/pag2_numberPeo"
+                android:layout_width="23dp"
+                android:textColor="@color/textcolorPrimary"
+
+                android:layout_height="22dp"
+                android:paddingLeft="5mm"
+                android:textSize="12sp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:paddingLeft="15mm"
+            android:id="@+id/pag2_num7"
+            android:textColor="@color/textcolorPrimary"
+
+            android:textSize="16sp"/>
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:text="收藏"
+            android:textColor="@color/textcolorPrimary"
+
+            android:layout_width="match_parent"
+            android:layout_marginLeft="10mm"
+            android:layout_height="wrap_content" android:id="@+id/pag2_switch1"/>
+    </LinearLayout>
+
+    <WebView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:id="@+id/pag2_imageView1"/>
+    <View android:layout_width="wrap_content" android:layout_height="3dp" />
+    <WebView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:id="@+id/pag2_imageView2"/>
+
+    <TextView
+        android:id="@+id/pag2_addressTextView"
+        android:layout_width="wrap_content"
+        android:textColor="@color/textcolorPrimary"
+
+        android:layout_height="wrap_content"
+        android:textSize="16sp" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pag2_bi"
+            android:text="购币链接"
+            android:layout_width="wrap_content"
+            android:layout_weight="0.7"
+            android:visibility="gone"
+            android:layout_height="wrap_content"/>
+        <View
+            android:layout_width="10dp"
+            android:layout_height="match_parent"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pag2_share"
+            android:text="分享 "
+            android:layout_weight="0.3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pag2_likeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="赞"
+            android:layout_marginLeft="2mm"
+            android:layout_centerInParent="true"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pag2_disButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="踩"
+            android:layout_marginLeft="2mm"
+            android:layout_centerInParent="true"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pag2_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="大众评价"
+            android:layout_marginLeft="2mm"
+            android:layout_centerInParent="true"/>
+    </LinearLayout>
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="match_parent"
+        android:id="@+id/pag2_admin"
+        android:visibility="gone"
+        android:text="机厅信息更改"
+        android:layout_height="match_parent"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="机厅数据更新"
+            android:layout_weight="0.6"
+            android:id="@+id/pag2_updateButton"/>
+        <View
+            android:layout_width="10dp"
+            android:layout_height="match_parent"/>
+        <com.google.android.material.button.MaterialButton
+                android:visibility="gone"
+                android:text="导航"
+            android:layout_width="wrap_content"
+            android:layout_weight="0.4"
+            android:layout_height="wrap_content" android:id="@+id/pag2_button"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="60dp"
+        android:orientation="horizontal">
+        <TextView
+            android:text="TextView"
+            android:layout_width="match_parent"
+            android:textColor="@color/textcolorPrimary"
+            android:layout_height="wrap_content" android:id="@+id/pag2_textView2"/>
+        <com.google.android.material.button.MaterialButton android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/pag2_add" android:layout_marginLeft="30mm"
+                                                           android:visibility="gone"
+                                                           android:text="录入商超"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:background="@android:color/transparent"
+        android:layout_width="match_parent"
+        android:textColor="@color/textcolorPrimary"
+        android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:textColor="@color/textcolorPrimary"
+            android:background="@android:color/transparent"
+            android:id="@+id/pag2_hor"/>
+    </ScrollView>
+
+</LinearLayout>
