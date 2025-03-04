@@ -25,6 +25,14 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.model.LatLng;
 import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -68,11 +76,16 @@ public class PageActivity extends AppCompatActivity {
     private OkHttpClient client;
     private Place place;
     public static int id;
+    private MapView mapView;
+    private BaiduMap baiduMap;
     @Override
     @SuppressLint({"MissingInflatedId", "Range", "SetTextI18n", "UnspecifiedRegisterReceiverFlag"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+
+        SDKInitializer.setAgreePrivacy(getApplicationContext(),true);
+        SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.page);
         client = new OkHttpClient();
         /**
@@ -365,6 +378,28 @@ public class PageActivity extends AppCompatActivity {
                         "})()");
             }
         });
+
+        /**
+         * 定位
+         */
+        mapView = findViewById(R.id.bmapView);
+        mapView.onCreate(this,savedInstanceState);
+
+        baiduMap = mapView.getMap();
+
+        // 设置地图中心点
+        LatLng latLng = new LatLng(y, x); // 北京市经纬度
+        baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLngZoom(latLng, 13)); // 缩放级别调整为
+// 添加独特样式的标记
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo); // 自定义图标资源
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 200, 130, true); // 缩放到 100x100 像素
+        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromBitmap(scaledBitmap);
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(latLng)
+                .title("机厅位置")
+                .icon(descriptor); // 使用自定义图标
+        baiduMap.addOverlay(markerOptions);
+
         webView2.loadUrl(imageUrl2); // 加载网页
 
         checkAndIntial();

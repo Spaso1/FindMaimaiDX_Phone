@@ -5,9 +5,6 @@
                 android:id="@+id/nav_home"
                 android:title="FindMaimaiDX"/>
         <item
-                android:id="@+id/nav_gallery"
-                android:title="设置"/>
-        <item
                 android:id="@+id/nav_slideshow"
                 android:title="B50"/>
         <item
@@ -16,6 +13,9 @@
         <item
                 android:id="@+id/nav_map"
                 android:title="地图"/>
+        <item
+            android:id="@+id/nav_gallery"
+            android:title="设置"/>
     </group>
 
     <item android:title="社区">
