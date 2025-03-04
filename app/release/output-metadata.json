@@ -11,10 +11,27 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 1,
-      "versionName": "1.5.2r",
-      "outputFile": "FindMaiMaiDXPhone_release_v1.5.2r.apk"
+      "versionCode": 2,
+      "versionName": "1.5.3r",
+      "outputFile": "FindMaiMaiDXPhone_release_v1.5.3r.apk"
     }
   ],
-  "elementType": "File"
+  "elementType": "File",
+  "baselineProfiles": [
+    {
+      "minApi": 28,
+      "maxApi": 30,
+      "baselineProfiles": [
+        "baselineProfiles/1/FindMaiMaiDXPhone_release_v1.5.3r.dm"
+      ]
+    },
+    {
+      "minApi": 31,
+      "maxApi": 2147483647,
+      "baselineProfiles": [
+        "baselineProfiles/0/FindMaiMaiDXPhone_release_v1.5.3r.dm"
+      ]
+    }
+  ],
+  "minSdkVersionForDexing": 28
 }
