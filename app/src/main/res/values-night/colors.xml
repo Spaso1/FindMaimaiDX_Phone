@@ -5,6 +5,7 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#045D53</color>
     <color name="night">#673AB7</color>
+    <color name="border_color">#FFFFFF</color> <!-- 白色 -->
 
     <color name="teal_700">#FF018786</color>
     <color name="black">#8A8282</color>

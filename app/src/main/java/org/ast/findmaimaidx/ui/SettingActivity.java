@@ -16,6 +16,8 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -73,7 +75,17 @@ public class SettingActivity extends AppCompatActivity {
 
         shuiyuEditText = findViewById(R.id.shuiyu);
         luoxueEditText = findViewById(R.id.luoxue);
-        userId = findViewById(R.id.userId);
+        userId = findViewById(R.id.qqbot);
+
+        MaterialButton openQQBot = findViewById(R.id.openQQbot);
+        openQQBot.setOnClickListener(v -> {
+            try {
+                Intent intent = new Intent(SettingActivity.this, LinkQQBot.class);
+                startActivity(intent);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
         loadSettings();
 
         MaterialButton saveButton = findViewById(R.id.save_settings_button);
@@ -111,6 +123,21 @@ public class SettingActivity extends AppCompatActivity {
 
         vits.setText("App version:" + getAppVersionName() + "\nLatest version:");
         getLatestRelease();
+        WebView webView = findViewById(R.id.develop);
+        webView.setBackgroundColor(0x00000000);
+        webView.getSettings().setJavaScriptEnabled(true);
+        String url = "http://wekan.godserver.cn/b/eu5nNL7GzF9SLYc6i/findmaimaidx";
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                view.loadUrl("javascript:(function() { " +
+                        "document.body.style.backgroundColor = 'transparent'; " +
+                        "})()");
+            }
+        });
+        webView.loadUrl(url); // 加载网页
+
     }
 
     private void openFileChooser() {
@@ -237,8 +264,8 @@ public class SettingActivity extends AppCompatActivity {
 
         int use_ = settingProperties.getInt("use_", 1);
         if (use_ == 0) {
-            use_ = 1;
-            materialRadioButton.setChecked(true);
+            use_ = 0;
+            org.setChecked(true);
             SharedPreferences.Editor editorSetting = settingProperties.edit();
             editorSetting.putInt("use_", use_);
             editorSetting.apply();

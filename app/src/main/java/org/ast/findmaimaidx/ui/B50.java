@@ -7,19 +7,26 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.*;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.*;
+import android.webkit.WebView;
 import android.widget.*;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
+import com.github.chrisbanes.photoview.PhotoView;
 import com.google.gson.Gson;
 import okhttp3.*;
 import org.ast.findmaimaidx.R;
@@ -28,6 +35,7 @@ import org.ast.findmaimaidx.been.faker.UserData;
 import org.ast.findmaimaidx.been.lx.Lx_playerInfo;
 import org.ast.findmaimaidx.been.lx.Lx_res;
 import org.ast.findmaimaidx.been.lx.Song;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,45 +59,9 @@ public class B50 extends AppCompatActivity {
         mainLayout = findViewById(R.id.main);
         String shuiyu_username = setting.getString("shuiyu_username", null);
         String luoxue_username = setting.getString("luoxue_username", null);
-        int userId = 0;
+        String qqbot = setting.getString("userId", "");
 
-        if(shuiyu_username == null) {
-            if(luoxue_username == null) {
-                Toast.makeText(B50.this, "请先绑定水鱼账号", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(B50.this, UpdateActivity.class);
-                startActivity(intent);
-            }
-        }else {
-            int use_ = setting.getInt("use_", 0);
-            if(use_ ==0) {
-                Toast.makeText(B50.this, "模式：原生", Toast.LENGTH_SHORT).show();
-                Toast.makeText(B50.this, "禁用", Toast.LENGTH_SHORT).show();
 
-                if(userId==0) {
-                    Toast.makeText(B50.this, "userId不存在！", Toast.LENGTH_SHORT).show();
-                }else {
-                    LocalTime currentTime = LocalTime.now();
-                    int currentHour = currentTime.getHour();
-                    if(currentHour >= 3 && currentHour < 7) {
-                        Toast.makeText(B50.this, "当前时间段不进行查询", Toast.LENGTH_SHORT).show();
-                    }else {
-                        try {
-                            Toast.makeText(B50.this, "禁用", Toast.LENGTH_SHORT).show();
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            } else if(use_ ==1) {
-                Toast.makeText(B50.this, "模式：水鱼", Toast.LENGTH_SHORT).show();
-                sendRawData(shuiyu_username);
-            } else if (use_ ==2){
-                Toast.makeText(B50.this, "模式：落雪", Toast.LENGTH_SHORT).show();
-                Log.d("TAG", "sendRawData: " + luoxue_username);
-                new LuoxueOkhttpRequest(luoxue_username).execute();
-                new LuoxueUserOkhttpRequest(luoxue_username).execute();
-            }
-        }
         Button saveButton = findViewById(R.id.saveButton);
 
         saveButton.setOnClickListener(v -> saveScreenshot());
@@ -228,7 +200,88 @@ public class B50 extends AppCompatActivity {
                 Toast.makeText(this, "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
             }
         }
+        if(shuiyu_username == null) {
+            if(luoxue_username == null) {
+                Toast.makeText(B50.this, "请先绑定水鱼账号", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(B50.this, UpdateActivity.class);
+                startActivity(intent);
+            }
+        }else {
+            int use_ = setting.getInt("use_", 0);
+            if(use_ ==0) {
+                setContentView(R.layout.b50new);
+                Toast.makeText(B50.this, "模式：原生", Toast.LENGTH_SHORT).show();
 
+                if(qqbot.isEmpty()) {
+                    Toast.makeText(B50.this, "userId不存在！", Toast.LENGTH_SHORT).show();
+                }else {
+                    LocalTime currentTime = LocalTime.now();
+                    int currentHour = currentTime.getHour();
+                    if(currentHour >= 3 && currentHour < 7) {
+                        Toast.makeText(B50.this, "当前时间段不进行查询", Toast.LENGTH_SHORT).show();
+                    }else {
+                        try {
+                            Toast.makeText(B50.this, "开始查询", Toast.LENGTH_SHORT).show();
+                            Request request = new Request.Builder()
+                            .url("http://mai.godserver.cn:11451/api/qq/b50?qq=" + qqbot)
+                            .build();
+                            client.newCall(request).enqueue(new Callback() {
+
+                                @Override
+                                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                                    PhotoView photoView =  findViewById(R.id.photo_view);
+                                    String url =  "http://cdn.godserver.cn/resource/b50/" + response.body().string() + ".png";
+                                    runOnUiThread(() -> {
+                                        Glide.with(B50.this)
+                                                .asBitmap() // 强制加载为 Bitmap
+                                                .load(url)
+                                                .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                                                .into(new CustomTarget<Bitmap>() {
+                                                    @Override
+                                                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                                        photoView.setImageBitmap(resource);
+                                                        photoView.setVisibility(View.VISIBLE);
+                                                    }
+
+                                                    @Override
+                                                    public void onLoadCleared(@Nullable Drawable placeholder) {
+                                                        photoView.setImageBitmap(null);
+                                                    }
+
+                                                    @Override
+                                                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                                                        super.onLoadFailed(errorDrawable);
+                                                        Toast.makeText(B50.this, "图片加载失败", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                    });
+                                }
+
+                                @Override
+                                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                                    runOnUiThread(() -> {
+                                        Log.d("TAG", "onFailure: " + e.getMessage());
+                                        Toast.makeText(B50.this, "查询失败", Toast.LENGTH_SHORT).show();
+                                    });
+                                }
+                            });
+
+
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            } else if(use_ ==1) {
+                Toast.makeText(B50.this, "模式：水鱼", Toast.LENGTH_SHORT).show();
+                sendRawData(shuiyu_username);
+            } else if (use_ ==2){
+                Toast.makeText(B50.this, "模式：落雪", Toast.LENGTH_SHORT).show();
+                Log.d("TAG", "sendRawData: " + luoxue_username);
+                new LuoxueOkhttpRequest(luoxue_username).execute();
+                new LuoxueUserOkhttpRequest(luoxue_username).execute();
+            }
+        }
     }
 
     private void orgSetUserData(UserData userData) {

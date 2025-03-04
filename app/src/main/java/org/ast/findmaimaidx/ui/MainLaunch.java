@@ -22,15 +22,19 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.*;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -63,20 +67,14 @@ import static androidx.core.location.LocationManagerCompat.requestLocationUpdate
 
 public class MainLaunch extends AppCompatActivity {
     private Handler handler = new Handler(Looper.getMainLooper());
-    public static final int LOCATION_CODE = 301;
-    private static final int REQUEST_CODE_PERMISSIONS = 1001;
     private String sessionId;
     private LocationManager locationManager;
     private RecyclerView recyclerView;
-    private PlaceAdapter placeAdapter;
-    private String locationProvider = null;
     private TextView addressTextView;
-    private static final String GITHUB_API_URL = "https://api.github.com/repos/owner/repo/releases/latest";
     private boolean isAdmin;
     private String tot;
     private String x;
     private String y;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private PlaceAdapter adapter;
     public static List<Market> marketList = new ArrayList<>();
     private Context context;
@@ -91,10 +89,11 @@ public class MainLaunch extends AppCompatActivity {
     private String tagplace;
     private boolean isFlag = true;
     private SharedPreferences shoucang ;
-    private SharedPreferences.Editor editor;
     private SharedPreferences settingProperties;
     private boolean isPad = false;
     private LinearLayout t31 ;
+    private DrawerLayout drawerLayout;
+
 
     @Override
     @SuppressLint({"MissingInflatedId", "Range", "UnspecifiedRegisterReceiverFlag", "SetTextI18n"})
@@ -117,7 +116,6 @@ public class MainLaunch extends AppCompatActivity {
         //设置随机数
         String userInput = "";
         shoucang = getSharedPreferences("shoucang@", MODE_PRIVATE);
-        editor = shoucang.edit();
         try {
             // 获取传递过来的数据
             Intent intent = getIntent();
@@ -552,8 +550,102 @@ public class MainLaunch extends AppCompatActivity {
                 }
             }
         });
-    }
 
+        drawerLayout = findViewById(R.id.drawer_layout);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // 创建 ActionBarDrawerToggle 并将其与 DrawerLayout 和 Toolbar 关联
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        try {
+            drawerLayout.addDrawerListener(toggle);
+            toggle.syncState();
+
+            // 设置 NavigationView 的点击事件
+            NavigationView navigationView = findViewById(R.id.nav_view);
+            navigationView.setNavigationItemSelectedListener(item -> {
+                int id = item.getItemId();
+
+                if (id == R.id.nav_home) {
+                    // Handle the home action
+                } else if (id == R.id.nav_gallery) {
+                    Intent intent3 = new Intent(MainLaunch.this, SettingActivity.class);
+                    intent3.putExtra("x", x);
+                    intent3.putExtra("y", y);
+                    intent3.putExtra("sessionId", sessionId);
+                    startActivity(intent3);
+                    // Handle the gallery action
+                } else if (id == R.id.nav_slideshow) {
+                    Intent intent = new Intent(MainLaunch.this, B50.class);
+                    intent.putExtra("sessionId",sessionId);
+                    startActivity(intent);
+                    // Handle the slideshow action
+                } else if (id == R.id.nav_share) {
+                    ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clipData = ClipData.newPlainText("Github", "https://github.com/Spaso1/FindMaimaiDX_Phone");
+                    clipboard.setPrimaryClip(clipData);
+                    Toast.makeText(this, "GitHub地址已复制到剪贴板", Toast.LENGTH_SHORT).show();
+                    MainLaunch.gotoQQ(this);
+                    // Handle the share action
+                } else if (id == R.id.nav_send) {
+                    ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clipData = ClipData.newPlainText("QQ群号", "669030069");
+                    clipboard.setPrimaryClip(clipData);
+                    Toast.makeText(this, "QQ群号已复制到剪贴板", Toast.LENGTH_SHORT).show();
+                    MainLaunch.gotoQQ(this);
+                    // Handle the send action
+                }else if (id == R.id.nav_auto) {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    }
+                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                    try {
+                        x = String.valueOf(location.getLongitude());
+                        y = String.valueOf(location.getLatitude());
+
+                        Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
+                        List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        if (!addresses.isEmpty()) {
+                            Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT).show();
+                            Address address = addresses.get(0);
+                            String detail = address.getAddressLine(0);
+                            addressTextView.setText(" " + detail);
+                            tot = detail;
+                            province = address.getAdminArea();
+                            city = address.getLocality();
+                            extracted();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        addressTextView.setText("Error getting address");
+                    }
+                }else if (id == R.id.nav_map) {
+                    Intent intent2 = new Intent(MainLaunch.this, BasicMapActivity.class);
+                    intent2.putExtra("x", x);
+                    intent2.putExtra("y", y);
+                    ArrayList<Place> aL = new ArrayList<>(a);
+
+                    intent2.putParcelableArrayListExtra("place_list_key", aL);
+                    startActivity(intent2);
+                }
+
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            });
+        }catch (Exception e) {
+
+        }
+
+    }
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
     @SuppressLint("StaticFieldLeak")
     private void sendGetRequest() {
         try {

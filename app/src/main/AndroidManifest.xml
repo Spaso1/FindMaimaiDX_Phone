@@ -76,7 +76,12 @@
             android:exported="true"
             android:theme="@style/NewTheme">
         </activity>
-
+        <activity
+                android:hardwareAccelerated="true"
+                android:name=".ui.LinkQQBot"
+                android:exported="true"
+                android:theme="@style/NewTheme">
+        </activity>
         <activity
             android:hardwareAccelerated="true"
             android:name=".ui.Scores"

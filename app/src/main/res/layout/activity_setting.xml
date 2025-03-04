@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="match_parent"
+            xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
             android:id="@+id/scrollView"
             android:layout_height="match_parent"
             android:background="@color/colorOnPrimary"
@@ -39,7 +39,6 @@
                 android:textColor="@color/textcolorPrimary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
                 android:text="@string/org" />
             <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/radioButton1"
@@ -67,15 +66,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="16dp"
-            android:visibility="gone"
             app:endIconMode="password_toggle"
             android:paddingBottom="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/userId"
+                android:id="@+id/qqbot"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="UserId"
+                android:hint="qqbot"
                 android:inputType="textPassword"/>  <!-- 修改为 textPassword -->
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -113,9 +111,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="更改主界面背景图"
+                android:textColor="@android:color/white"
+
                 android:backgroundTint="?attr/colorPrimary"
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"/>
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/openQQbot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="#QQ机器人相关#"
+                android:textColor="@android:color/white"
+
+                android:backgroundTint="?attr/colorPrimary"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -172,5 +184,8 @@
                 android:layout_marginTop="16dp"/>
         <TextView android:layout_width="wrap_content"         android:textColor="@color/textcolorPrimary"
             android:layout_height="wrap_content" android:textSize="16dp" android:id="@+id/vits" />
+        <WebView android:layout_width="match_parent" android:layout_height="600dp" android:id="@+id/develop"
+                 tools:ignore="WebViewLayout"/>
+
     </LinearLayout>
 </ScrollView>

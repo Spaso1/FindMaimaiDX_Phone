@@ -14,13 +14,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="16dp"
+            android:id="@+id/userBox"
+            android:visibility="gone"
             android:paddingBottom="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/userId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="UserId"
+                android:hint="qqbot"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
                 android:clickable="false"
@@ -28,16 +30,46 @@
                 android:inputType="textPersonName"/>
 
         </com.google.android.material.textfield.TextInputLayout>
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="使用二维码获取UserId并保存"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="key"/>
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/safecode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="安全码"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton android:layout_width="match_parent"
+                                                           android:text="绑定qq机器人"
+                                                           android:textColor="@android:color/white"
+
+                                                           android:id="@+id/bangding"
+                                                           android:layout_height="wrap_content">
+        </com.google.android.material.button.MaterialButton>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/getTicket"
+            android:textColor="@android:color/white"
+
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="拿 6 倍卷"/>
+            android:text="拿 6 倍卷(公众号先发码)"/>
 
         <TableLayout
             android:id="@+id/tableLayout"

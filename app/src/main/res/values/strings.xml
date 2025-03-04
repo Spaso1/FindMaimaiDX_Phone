@@ -30,5 +30,8 @@
     <string name="settin_body">项目地址:https://github.com/Spaso1/FindMaimaiDX_Phone/ 个人开发,欢迎合作或者提意见!遵从MIT 协议,您可以在随意修改软件源码.</string>
     <string name="org">原生</string>
     <string name="location_disabled">设备定位已关闭，请打开定位以获取当前位置信息</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
 
 </resources>

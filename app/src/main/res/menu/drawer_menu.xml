@@ -1,0 +1,31 @@
+<!-- res/menu/drawer_menu.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+                android:id="@+id/nav_home"
+                android:title="FindMaimaiDX"/>
+        <item
+                android:id="@+id/nav_gallery"
+                android:title="设置"/>
+        <item
+                android:id="@+id/nav_slideshow"
+                android:title="B50"/>
+        <item
+                android:id="@+id/nav_auto"
+                android:title="自动刷新定位"/>
+        <item
+                android:id="@+id/nav_map"
+                android:title="地图"/>
+    </group>
+
+    <item android:title="社区">
+        <menu>
+            <item
+                    android:id="@+id/nav_share"
+                    android:title="分享"/>
+            <item
+                    android:id="@+id/nav_send"
+                    android:title="与开发者交流!"/>
+        </menu>
+    </item>
+</menu>

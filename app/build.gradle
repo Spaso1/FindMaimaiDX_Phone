@@ -10,8 +10,8 @@ android {
         minSdk 28
         //noinspection OldTargetApi,OldTargetApi
         targetSdk 34
-        versionCode 1
-        versionName "1.5.2r"
+        versionCode 2
+        versionName "1.5.3r"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -60,6 +60,6 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     implementation 'com.github.yalantis:ucrop:2.2.8'
-
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 }
    

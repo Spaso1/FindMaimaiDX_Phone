@@ -5,255 +5,255 @@
                 android:layout_height="match_parent"
                 android:id="@+id/main"
                 tools:context=".ui.B50">
+
     <!-- 顶部用户信息区域 -->
-    <LinearLayout
-            android:id="@+id/top_info_layout"
-            android:layout_width="match_parent"
-            android:layout_height="15mm"
-            android:orientation="vertical"
-            android:background="#FFFFFF">
-
         <LinearLayout
+                android:id="@+id/top_info_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-            <ImageView
-                    android:paddingLeft="13dp"
-                    android:id="@+id/user_avatar"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"/>
+                android:layout_height="15mm"
+                android:orientation="vertical"
+                android:background="#FFFFFF">
 
             <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingStart="16dp">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                <ImageView
+                        android:paddingLeft="13dp"
+                        android:id="@+id/user_avatar"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"/>
+
+                <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingStart="16dp">
+
+                    <TextView
+                            android:id="@+id/user_name2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Username"
+                            android:textSize="18sp"
+                            android:textColor="#000000" />
+
+                    <TextView
+                            android:id="@+id/user_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="AAAAAAA"
+                            android:textSize="14sp"
+                            android:textColor="#888888" />
+
+                </LinearLayout>
 
                 <TextView
-                        android:id="@+id/user_name2"
+                        android:id="@+id/user_score"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Username"
+                        android:text="14293"
+                        android:padding="3mm"
                         android:textSize="18sp"
                         android:textColor="#000000" />
-
-                <TextView
-                        android:id="@+id/user_name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="AAAAAAA"
-                        android:textSize="14sp"
-                        android:textColor="#888888" />
-
             </LinearLayout>
 
             <TextView
-                    android:id="@+id/user_score"
+                    android:id="@+id/user_score_details"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="14293"
-                    android:padding="3mm"
-                    android:textSize="18sp"
-                    android:textColor="#000000" />
+                    android:text="B35: 10029 + B15: 4264 = 14293"
+                    android:textSize="14sp"
+                    android:textColor="#888888"
+                    android:paddingTop="2dp" />
+
         </LinearLayout>
-
-        <TextView
-                android:id="@+id/user_score_details"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="B35: 10029 + B15: 4264 = 14293"
-                android:textSize="14sp"
-                android:textColor="#888888"
-                android:paddingTop="2dp" />
-
-    </LinearLayout>
-    <ScrollView
-            android:id="@+id/mainPage"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_below="@id/top_info_layout"
-            android:layout_above="@id/bottom_info_layout"
-            android:padding="10dp" tools:ignore="Suspicious0dp">
-
-        <org.ast.findmaimaidx.utill.ZoomableViewGroup
-                android:id="@+id/zoom"
-                android:layout_gravity="center"
+        <ScrollView
+                android:id="@+id/mainPage"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="0dp"
+                android:layout_below="@id/top_info_layout"
+                android:layout_above="@id/bottom_info_layout"
+                android:padding="10dp" tools:ignore="Suspicious0dp">
 
-            <LinearLayout
-                    android:id="@+id/contentContainer"
+            <org.ast.findmaimaidx.utill.ZoomableViewGroup
+                    android:id="@+id/zoom"
+                    android:layout_gravity="center"
                     android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                <LinearLayout
+                        android:id="@+id/contentContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                    <GridLayout
+                            android:id="@+id/song_grid4"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp">
+                    </GridLayout>
+                    <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
+
+                    <GridLayout
+                            android:id="@+id/song_grid5"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp">
+                    </GridLayout>
+                    <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
+
+                    <GridLayout
+                            android:id="@+id/song_grid6"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp">
+                    </GridLayout>
+                    <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
+
+                    <GridLayout
+                            android:id="@+id/song_grid7"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp">
+                    </GridLayout>
+                    <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
+
+                    <GridLayout
+                            android:id="@+id/song_grid8"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp">
+                    </GridLayout>
+                    <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
+
+                    <GridLayout
+                            android:id="@+id/song_grid9"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp"/>
+                    <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
+
+                    <GridLayout
+                            android:id="@+id/song_grid10"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp">
+                    </GridLayout>
+                    <View android:layout_width="wrap_content" android:layout_height="3mm"></View>
+
+                    <GridLayout
+                            android:id="@+id/song_grid1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp">
+                    </GridLayout>
+                    <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
+                    <GridLayout
+                            android:id="@+id/song_grid2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp">
+                    </GridLayout>
+                    <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
+                    <GridLayout
+                            android:id="@+id/song_grid3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="5"
+                            android:useDefaultMargins="false"
+                            android:rowCount="10"
+                            android:alignmentMode="alignMargins"
+                            android:horizontalSpacing="14dp"
+                            android:verticalSpacing="14dp">
+                    </GridLayout>
+                    <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
+                </LinearLayout>
+            </org.ast.findmaimaidx.utill.ZoomableViewGroup>
+        </ScrollView>
+
+
+
+        <!-- 底部装饰信息区域 -->
+        <LinearLayout
+                android:id="@+id/bottom_info_layout"
+                android:layout_width="match_parent"
+                android:layout_height="10mm"
+                android:layout_alignParentBottom="true"
+                android:orientation="horizontal"
+                android:background="#FFFFFF">
+
+            <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                <GridLayout
-                        android:id="@+id/song_grid4"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp">
-                </GridLayout>
-                <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
-
-                <GridLayout
-                        android:id="@+id/song_grid5"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp">
-                </GridLayout>
-                <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
-
-                <GridLayout
-                        android:id="@+id/song_grid6"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp">
-                </GridLayout>
-                <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
-
-                <GridLayout
-                        android:id="@+id/song_grid7"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp">
-                </GridLayout>
-                <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
-
-                <GridLayout
-                        android:id="@+id/song_grid8"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp">
-                </GridLayout>
-                <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
-
-                <GridLayout
-                        android:id="@+id/song_grid9"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp"/>
-                <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
-
-                <GridLayout
-                        android:id="@+id/song_grid10"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp">
-                </GridLayout>
-                <View android:layout_width="wrap_content" android:layout_height="3mm"></View>
-
-                <GridLayout
-                        android:id="@+id/song_grid1"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp">
-                </GridLayout>
-                <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
-                <GridLayout
-                        android:id="@+id/song_grid2"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp">
-                </GridLayout>
-                <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
-                <GridLayout
-                        android:id="@+id/song_grid3"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="5"
-                        android:useDefaultMargins="false"
-                        android:rowCount="10"
-                        android:alignmentMode="alignMargins"
-                        android:horizontalSpacing="14dp"
-                        android:verticalSpacing="14dp">
-                </GridLayout>
-                <View android:layout_width="wrap_content" android:layout_height="1mm"></View>
-            </LinearLayout>
-        </org.ast.findmaimaidx.utill.ZoomableViewGroup>
-    </ScrollView>
-
-
-
-    <!-- 底部装饰信息区域 -->
-    <LinearLayout
-            android:id="@+id/bottom_info_layout"
-            android:layout_width="match_parent"
-            android:layout_height="10mm"
-            android:layout_alignParentBottom="true"
-            android:orientation="horizontal"
-            android:background="#FFFFFF">
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="      Design by Spasol"
-                android:textSize="10sp"
-                android:textColor="#888888"
-                android:paddingTop="8dp" />
-        <Button android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5mm"
-                android:textSize="10sp"
-                android:text="scores" android:id="@+id/scores" tools:ignore="DuplicateIds">
-        </Button>
-        <Button android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:text="Save" android:id="@+id/saveButton" tools:ignore="DuplicateIds">
-        </Button>
-        <Button android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:text="Update" android:id="@+id/updateButton" tools:ignore="DuplicateIds">
-        </Button>
-    </LinearLayout>
-
+                    android:text="      Design by Spasol"
+                    android:textSize="10sp"
+                    android:textColor="#888888"
+                    android:paddingTop="8dp" />
+            <Button android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5mm"
+                    android:textSize="10sp"
+                    android:text="scores" android:id="@+id/scores" tools:ignore="DuplicateIds">
+            </Button>
+            <Button android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="10sp"
+                    android:text="Save" android:id="@+id/saveButton" tools:ignore="DuplicateIds">
+            </Button>
+            <Button android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="10sp"
+                    android:text="Update" android:id="@+id/updateButton" tools:ignore="DuplicateIds">
+            </Button>
+        </LinearLayout>
 </RelativeLayout>
