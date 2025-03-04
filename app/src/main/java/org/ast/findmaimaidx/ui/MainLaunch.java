@@ -960,7 +960,7 @@ public class MainLaunch extends AppCompatActivity {
                 x = String.valueOf(longitude);
                 y = String.valueOf(latitude);
                 String url = "https://restapi.amap.com/v3/geocode/regeo?key=234cad2e2f0706e54c92591647a363c3&location=" + longitude + "," + latitude;
-                Log.d("Location",  url);
+                Log.d("Location", url);
                 // 发起网络请求
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder().url(url).build();
@@ -969,7 +969,7 @@ public class MainLaunch extends AppCompatActivity {
                     String responseData = response.body().string();
                     // 使用 Gson 解析 JSON
                     Gson gson = new Gson();
-                    Log.d("Location",  responseData);
+                    Log.d("Location", responseData);
                     AmapReverseGeocodeResponse geocodeResponse = gson.fromJson(responseData, AmapReverseGeocodeResponse.class);
                     if (geocodeResponse.getStatus().equals("1")) { // 状态码 "1" 表示成功
                         AmapReverseGeocodeResponse.Regeocode regeocode = geocodeResponse.getRegeocode();
@@ -977,12 +977,11 @@ public class MainLaunch extends AppCompatActivity {
                         // 解析地址信息
                         String address = regeocode.getFormattedAddress();
                         String province = addressComponent.getProvince();
-                        String city ;
+                        String city;
                         try {
-                            city = addressComponent.getCity().get(0).replace("市","");
-
-                        }catch (Exception e) {
-                            city = addressComponent.getProvince().replace("市","");
+                            city = addressComponent.getCity().get(0).replace("市", "");
+                        } catch (Exception e) {
+                            city = addressComponent.getProvince().replace("市", "");
                         }
                         // 更新 UI
                         String finalCity = city;
@@ -994,19 +993,48 @@ public class MainLaunch extends AppCompatActivity {
                             extracted();
                         });
                     } else {
-                        Log.d("Location", "逆地理编码失败");
-                        setDefaultLocation(); // 设置默认位置
+                        Log.d("Location", "高德地图 API 调用失败，尝试使用 Android 自带 Geocoder");
+                        fallbackToGeocoder(latitude, longitude); // 调用备用方案
                     }
                 } else {
-                    Log.d("Location", "逆地理编码失败");
-                    setDefaultLocation(); // 设置默认位置
+                    Log.d("Location", "高德地图 API 调用失败，尝试使用 Android 自带 Geocoder");
+                    fallbackToGeocoder(latitude, longitude); // 调用备用方案
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.d("Location", "逆地理编码失败");
-                setDefaultLocation(); // 设置默认位置
+                Log.d("Location", "高德地图 API 调用失败，尝试使用 Android 自带 Geocoder");
+                fallbackToGeocoder(latitude, longitude); // 调用备用方案
             }
         }).start();
+    }
+
+    // 备用方案：使用 Android 自带的 Geocoder 进行逆地理编码
+    private void fallbackToGeocoder(double latitude, double longitude) {
+        try {
+            Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                String detail = address.getAddressLine(0);
+                String province = address.getAdminArea();
+                String city = address.getLocality();
+                // 更新 UI
+                runOnUiThread(() -> {
+                    addressTextView.setText(" " + detail);
+                    tot = detail;
+                    this.province = province;
+                    this.city = city;
+                    extracted();
+                });
+            } else {
+                Log.d("Location", "Android 自带 Geocoder 获取地址失败");
+                setDefaultLocation(); // 设置默认位置
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d("Location", "Android 自带 Geocoder 获取地址失败");
+            setDefaultLocation(); // 设置默认位置
+        }
     }
 
     // 设置默认位置
@@ -1015,6 +1043,7 @@ public class MainLaunch extends AppCompatActivity {
         y = String.valueOf(39.906217);
         addressTextView.setText("未知定位,默认设置北京市");
     }
+
     //手动刷新定位
     private void extracted() {
         //tot = tot.split("\"")[1];
