@@ -5,8 +5,10 @@
                 android:layout_height="match_parent"
                 tools:context=".map2d.BasicMapActivity">
 
-    <com.amap.api.maps2d.MapView
-            android:id="@+id/mapView"
+    <com.baidu.mapapi.map.MapView
+            android:id="@+id/bmapView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:clickable="true" />
+
 </RelativeLayout>

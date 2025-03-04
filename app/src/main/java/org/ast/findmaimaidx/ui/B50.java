@@ -232,29 +232,52 @@ public class B50 extends AppCompatActivity {
                                     PhotoView photoView =  findViewById(R.id.photo_view);
                                     String url =  "http://cdn.godserver.cn/resource/b50/" + response.body().string() + ".png";
                                     runOnUiThread(() -> {
-                                        Glide.with(B50.this)
-                                                .asBitmap() // 强制加载为 Bitmap
-                                                .load(url)
-                                                .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
-                                                .into(new CustomTarget<Bitmap>() {
-                                                    @Override
-                                                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                                        photoView.setImageBitmap(resource);
-                                                        photoView.setVisibility(View.VISIBLE);
-                                                    }
+                                        try {
+                                            Glide.with(B50.this)
+                                                    .asBitmap() // 强制加载为 Bitmap
+                                                    .load(url)
+                                                    .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                                                    .into(new CustomTarget<Bitmap>() {
+                                                        @Override
+                                                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                                            photoView.setImageBitmap(resource);
+                                                            photoView.setVisibility(View.VISIBLE);
+                                                        }
 
-                                                    @Override
-                                                    public void onLoadCleared(@Nullable Drawable placeholder) {
-                                                        photoView.setImageBitmap(null);
-                                                    }
+                                                        @Override
+                                                        public void onLoadCleared(@Nullable Drawable placeholder) {
+                                                            photoView.setImageBitmap(null);
+                                                        }
 
-                                                    @Override
-                                                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
-                                                        super.onLoadFailed(errorDrawable);
-                                                        Toast.makeText(B50.this, "图片加载失败", Toast.LENGTH_SHORT).show();
+                                                        @Override
+                                                        public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                                                            super.onLoadFailed(errorDrawable);
+                                                            Toast.makeText(B50.this, "图片加载失败", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                            //设置图像长按保存
+                                            photoView.setOnLongClickListener(new View.OnLongClickListener() {
+                                                @Override
+                                                public boolean onLongClick(View v) {
+                                                    try {
+                                                        BitmapDrawable bitmapDrawable = (BitmapDrawable) photoView.getDrawable();
+                                                        Bitmap bitmap = bitmapDrawable.getBitmap();
+                                                        if (bitmap != null) {
+                                                            saveImage(bitmap);
+                                                            Toast.makeText(B50.this, "保存成功", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    }catch (Exception e) {
+                                                        e.printStackTrace();
                                                     }
-                                                });
+                                                    return true;
+                                                }
+                                            });
+                                        }catch (Exception e) {
+                                            Log.d("异常退出", e.toString());
+                                        }
+
                                     });
+                                    //
                                 }
 
                                 @Override

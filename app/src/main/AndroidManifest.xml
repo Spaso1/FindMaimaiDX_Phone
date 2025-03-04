@@ -50,8 +50,9 @@
         </provider>
 
         <meta-data
-            android:name="com.amap.api.v2.apikey"
-            android:value="4a0a6436895193dc149bd1b90e943512" />
+                android:name="com.baidu.lbsapi.API_KEY"
+                android:value="lzzpL36kTbcmfQvhWDJOZwa3glQlYBbm"/>
+
         <activity
             android:hardwareAccelerated="true"
             android:name=".ui.MainLaunch"
