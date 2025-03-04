@@ -107,6 +107,8 @@ public class PageActivity extends AppCompatActivity {
         meituan = getIntent().getStringExtra("meituan");
         douyin = getIntent().getStringExtra("douyin");
         numberPeo = findViewById(R.id.numberPeo);
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(" " + name);
         TextView textView = findViewById(R.id.nameTextView);
         textView.setText(name);
         TextView textView2 = findViewById(R.id.addressTextView);
@@ -378,7 +380,10 @@ public class PageActivity extends AppCompatActivity {
                         "})()");
             }
         });
+        webView2.loadUrl(imageUrl2); // 加载网页
 
+        checkAndIntial();
+        getContent();
         /**
          * 定位
          */
@@ -400,10 +405,7 @@ public class PageActivity extends AppCompatActivity {
                 .icon(descriptor); // 使用自定义图标
         baiduMap.addOverlay(markerOptions);
 
-        webView2.loadUrl(imageUrl2); // 加载网页
 
-        checkAndIntial();
-        getContent();
 
     }
     @SuppressLint("MissingInflatedId")

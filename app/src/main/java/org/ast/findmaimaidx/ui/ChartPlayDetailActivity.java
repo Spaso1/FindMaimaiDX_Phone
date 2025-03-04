@@ -1,5 +1,6 @@
 package org.ast.findmaimaidx.ui;
 
+import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.content.*;
 import android.content.pm.PackageManager;
@@ -35,6 +36,7 @@ public class ChartPlayDetailActivity extends AppCompatActivity {
     private File downloadFile;
     private static final int FOLDER_PICK_REQUEST_CODE = 1001; // 可以是任意不冲突的整数值
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

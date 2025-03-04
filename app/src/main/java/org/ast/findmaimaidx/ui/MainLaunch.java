@@ -49,6 +49,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.ast.findmaimaidx.R;
+import org.ast.findmaimaidx.been.AmapReverseGeocodeResponse;
 import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Geocode;
 import org.ast.findmaimaidx.been.Market;
@@ -554,7 +555,14 @@ public class MainLaunch extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        toolbar.setOnClickListener(v -> {
+            Log.i("MainLaunch", "onClick: ");
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
         // 创建 ActionBarDrawerToggle 并将其与 DrawerLayout 和 Toolbar 关联
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -586,7 +594,6 @@ public class MainLaunch extends AppCompatActivity {
                     ClipData clipData = ClipData.newPlainText("Github", "https://github.com/Spaso1/FindMaimaiDX_Phone");
                     clipboard.setPrimaryClip(clipData);
                     Toast.makeText(this, "GitHub地址已复制到剪贴板", Toast.LENGTH_SHORT).show();
-                    MainLaunch.gotoQQ(this);
                     // Handle the share action
                 } else if (id == R.id.nav_send) {
                     ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
@@ -628,6 +635,9 @@ public class MainLaunch extends AppCompatActivity {
 
                     intent2.putParcelableArrayListExtra("place_list_key", aL);
                     startActivity(intent2);
+                } else if (id ==R.id.nav_paika) {
+                    Intent intent4 = new Intent(MainLaunch.this, PaikaActivity.class);
+                    startActivity(intent4);
                 }
 
                 drawerLayout.closeDrawer(GravityCompat.START);
@@ -906,90 +916,29 @@ public class MainLaunch extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 0x123 && grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            //创建locationManger对象
+            // 创建 LocationManager 对象
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            //获取最新的定位信息
+            // 获取最新的定位信息
             Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            try {
-                x = String.valueOf(lastKnownLocation.getLongitude());
-                y = String.valueOf(lastKnownLocation.getLatitude());
-                if (lastKnownLocation != null) {
-                    Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
-                    try {
-                        List<Address> addresses = geocoder.getFromLocation(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(), 1);
-                        if (addresses.size() > 0) {
-                            Address address = addresses.get(0);
-                            String detail = address.getAddressLine(0);
-                            addressTextView.setText(" "+detail);
-                            tot = detail;
-                            province = address.getAdminArea();
-                            city = address.getLocality();
-                            extracted();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.d("Location","定位失败");
-                        x = String.valueOf(116.3912757);
-                        y = String.valueOf(39.906217);
-
-                        addressTextView.setText(" 未知定位,默认设置北京市");
-                        tot = "北京市";
-                        province ="北京市";
-                        city = "北京市";
-                        extracted();
-                    }
-                }
-            }catch (Exception e) {
-                Log.d("Location","定位失败");
-                x = String.valueOf(39.906217);
-                y = String.valueOf(116.3912757);
-                addressTextView.setText(" 未知定位,默认设置北京市");
-                tot = "北京市";
-                province ="北京市";
-                city = "北京市";
-                extracted();
+            if (lastKnownLocation != null) {
+                // 调用高德地图 API 进行逆地理编码
+                reverseGeocode(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+            } else {
+                Log.d("Location", "无法获取最新定位信息");
+                setDefaultLocation(); // 设置默认位置
             }
-
-
         }
+
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 12000, 16f, new LocationListener() {
                 @Override
                 public void onLocationChanged(@NonNull Location location) {
                     Log.d("Location", "onLocationChanged");
-                    if(flag) {
-                        Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
-                        x = String.valueOf(location.getLongitude());
-                        y = String.valueOf(location.getLatitude());
-                        if (location != null) {
-                            Geocoder geocoder = new Geocoder(MainLaunch.this, Locale.getDefault());
-                            try {
-                                List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                                if (addresses.size() > 0) {
-                                    Address address = addresses.get(0);
-                                    String detail = address.getAddressLine(0);
-                                    addressTextView.setText(" "+detail);
-                                    tot = detail;
-                                    province = address.getAdminArea();
-                                    city = address.getLocality();
-                                    extracted();
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                Log.d("Location","GPS定位失败");
-                                x = String.valueOf(39.906217);
-                                y = String.valueOf(116.3912757);
-                                addressTextView.setText("未知定位,默认设置北京市");
-                                tot = "北京市";
-                                province ="北京市";
-                                city = "北京市";
-                                extracted();
-                            }
-                        }
-                        Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT);
-
+                    if (flag) {
+                        Toast.makeText(MainLaunch.this, "定位成功", Toast.LENGTH_SHORT).show();
+                        // 调用高德地图 API 进行逆地理编码
+                        reverseGeocode(location.getLatitude(), location.getLongitude());
                     }
-
                 }
 
                 @Override
@@ -997,11 +946,74 @@ public class MainLaunch extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "关闭定位", Toast.LENGTH_SHORT).show();
                 }
             });
-        }catch (Exception e) {
-            Log.d("Location","GPS定位失败");
+        } catch (Exception e) {
+            Log.d("Location", "GPS定位失败");
+            setDefaultLocation(); // 设置默认位置
         }
-        //每隔三秒获取一次GPS信息
+    }
 
+    // 调用高德地图 API 进行逆地理编码
+    private void reverseGeocode(double latitude, double longitude) {
+        new Thread(() -> {
+            try {
+                // 构建请求 URL
+                x = String.valueOf(longitude);
+                y = String.valueOf(latitude);
+                String url = "https://restapi.amap.com/v3/geocode/regeo?key=234cad2e2f0706e54c92591647a363c3&location=" + longitude + "," + latitude;
+                Log.d("Location",  url);
+                // 发起网络请求
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder().url(url).build();
+                Response response = client.newCall(request).execute();
+                if (response.isSuccessful()) {
+                    String responseData = response.body().string();
+                    // 使用 Gson 解析 JSON
+                    Gson gson = new Gson();
+                    Log.d("Location",  responseData);
+                    AmapReverseGeocodeResponse geocodeResponse = gson.fromJson(responseData, AmapReverseGeocodeResponse.class);
+                    if (geocodeResponse.getStatus().equals("1")) { // 状态码 "1" 表示成功
+                        AmapReverseGeocodeResponse.Regeocode regeocode = geocodeResponse.getRegeocode();
+                        AmapReverseGeocodeResponse.AddressComponent addressComponent = regeocode.getAddressComponent();
+                        // 解析地址信息
+                        String address = regeocode.getFormattedAddress();
+                        String province = addressComponent.getProvince();
+                        String city ;
+                        try {
+                            city = addressComponent.getCity().get(0).replace("市","");
+
+                        }catch (Exception e) {
+                            city = addressComponent.getProvince().replace("市","");
+                        }
+                        // 更新 UI
+                        String finalCity = city;
+                        runOnUiThread(() -> {
+                            addressTextView.setText(" " + address);
+                            tot = address;
+                            this.province = province;
+                            this.city = finalCity;
+                            extracted();
+                        });
+                    } else {
+                        Log.d("Location", "逆地理编码失败");
+                        setDefaultLocation(); // 设置默认位置
+                    }
+                } else {
+                    Log.d("Location", "逆地理编码失败");
+                    setDefaultLocation(); // 设置默认位置
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.d("Location", "逆地理编码失败");
+                setDefaultLocation(); // 设置默认位置
+            }
+        }).start();
+    }
+
+    // 设置默认位置
+    private void setDefaultLocation() {
+        x = String.valueOf(116.3912757);
+        y = String.valueOf(39.906217);
+        addressTextView.setText("未知定位,默认设置北京市");
     }
     //手动刷新定位
     private void extracted() {

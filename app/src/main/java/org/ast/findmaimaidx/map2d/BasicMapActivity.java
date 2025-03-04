@@ -78,10 +78,14 @@ public class BasicMapActivity extends AppCompatActivity {
 
     // 在 addMarker 方法中设置 snippet
     private void addMarker(LatLng latLng, String title, String snippet) {
-        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromResource(R.drawable.sd2);
+        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromResource(R.drawable.sd);
         MarkerOptions markerOptions = new MarkerOptions();
+        Bundle bundle = new Bundle();
+        bundle.putString("snippet", snippet);
+        bundle.putString("title", title);
         markerOptions.position(latLng)
                 .title(title)
+                .extraInfo(bundle)
                 .icon(descriptor);
         baiduMap.addOverlay(markerOptions);
     }
@@ -91,10 +95,10 @@ public class BasicMapActivity extends AppCompatActivity {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.marker_info_dialog, null);
         TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
         TextView snippetTextView = dialogView.findViewById(R.id.snippetTextView);
-
-        titleTextView.setText(marker.getTitle());
+        Bundle extraInfo = marker.getExtraInfo();
+        titleTextView.setText(extraInfo.getString("title"));
         // 获取 snippet
-        snippetTextView.setText(marker.getTitle());
+        snippetTextView.setText(extraInfo.getString("snippet"));
 
         new AlertDialog.Builder(this)
                 .setView(dialogView)

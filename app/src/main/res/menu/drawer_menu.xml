@@ -14,6 +14,9 @@
                 android:id="@+id/nav_map"
                 android:title="地图"/>
         <item
+            android:id="@+id/nav_paika"
+            android:title="排卡"/>
+        <item
             android:id="@+id/nav_gallery"
             android:title="设置"/>
     </group>
