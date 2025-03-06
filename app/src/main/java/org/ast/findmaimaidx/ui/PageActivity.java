@@ -34,6 +34,7 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.*;
@@ -534,7 +535,7 @@ public class PageActivity extends AppCompatActivity {
                 .build();
         adminIt.setOnClickListener(v -> {
             // 创建一个可以输入数量的弹窗,在点击确定后执行指定操作
-            AlertDialog.Builder builder = new AlertDialog.Builder(PageActivity.this);
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(PageActivity.this);
             LinearLayout layout = new LinearLayout(PageActivity.this);
             layout.setOrientation(LinearLayout.VERTICAL);
             layout.setPadding(16, 16, 16, 16);

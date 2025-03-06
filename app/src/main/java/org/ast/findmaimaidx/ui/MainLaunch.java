@@ -33,6 +33,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
@@ -141,16 +142,16 @@ public class MainLaunch extends AppCompatActivity {
 
         button2.setOnClickListener(v -> {
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            MaterialAlertDialogBuilder menu = new MaterialAlertDialogBuilder(this);
 // 设置对话框标题
-            builder.setTitle("选择");
+            menu.setTitle("选择");
             System.out.println(Arrays.toString(items[0]));
-            builder.setItems(items[0], (dialog, item) -> {
+            menu.setItems(items[0], (dialog, item) -> {
                 switch (item) {
                     case 0:
-                        AlertDialog.Builder builder23 = new AlertDialog.Builder(this);
-                        builder23.setTitle("选择");
-                        builder23.setItems(new String[]{"QQ", "邮箱"}, (dialog2, item2) -> {
+                        MaterialAlertDialogBuilder share = new MaterialAlertDialogBuilder(this);
+                        share.setTitle("选择");
+                        share.setItems(new String[]{"QQ", "邮箱"}, (dialog2, item2) -> {
                             switch (item2) {
                                 case 0:
                                     //复制qq群号
@@ -193,8 +194,7 @@ public class MainLaunch extends AppCompatActivity {
                                     break;
                             }
                         });
-                        AlertDialog dialog23 = builder23.create();
-                        dialog23.show();
+                        share.show();
                         break;
                     case 1:
                         Intent intent = new Intent(MainLaunch.this, B50.class);
@@ -230,7 +230,7 @@ public class MainLaunch extends AppCompatActivity {
                         break;
                     case 3:
                         // 创建一个AlertDialog.Builder
-                        AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+                        MaterialAlertDialogBuilder builder2 = new MaterialAlertDialogBuilder(this);
                         final EditText input = new EditText(this);
                         builder2.setTitle("请输入完整地址")
                                 .setView(input)
@@ -267,8 +267,7 @@ public class MainLaunch extends AppCompatActivity {
                                 });
 
                         // 创建并显示对话框
-                        AlertDialog dialog2 = builder2.create();
-                        dialog2.show();
+                        builder2.show();
                         break;
                     case 4:
                         Intent intent2 = new Intent(MainLaunch.this, BasicMapActivity.class);
@@ -296,7 +295,7 @@ public class MainLaunch extends AppCompatActivity {
                         break;
 
                     case 8:
-                        AlertDialog.Builder builder_addplace = new AlertDialog.Builder(this);
+                        MaterialAlertDialogBuilder builder_addplace = new MaterialAlertDialogBuilder(this);
                         builder_addplace.setTitle("添加机厅");
 
 // Inflate the custom layout
@@ -349,10 +348,7 @@ public class MainLaunch extends AppCompatActivity {
                         });
 
 // Create and show the AlertDialog
-                        AlertDialog alertDialog = builder_addplace.create();
-                        alertDialog.show();
-
-
+                        builder_addplace.show();
                 }
             }).show();
         });
@@ -658,152 +654,137 @@ public class MainLaunch extends AppCompatActivity {
     }
     @SuppressLint("StaticFieldLeak")
     private void sendGetRequest() {
-        try {
-            new AsyncTask<Void, Void, String>() {
-                @Override
-                protected String doInBackground(Void... voids) {
-                    OkHttpClient client = new OkHttpClient();
-                    try {
-                        String web = "http://mai.godserver.cn:11451/api/mai/v1/search?prompt1=" + city.split("市")[0] + "&status=市";
-                        if(!isFlag) {
-                            web = "http://mai.godserver.cn:11451/api/mai/v1/search?data_place=" + tagplace;
-                        }
-                        @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
-                                .url(web)
-                                .build();
+        OkHttpClient client = new OkHttpClient();
 
-                        try (Response response = client.newCall(request).execute()) {
-                            if (((Response) response).isSuccessful()) {
-                                List<String> cookies = response.headers("Set-Cookie");
-                                for (String cookie : cookies) {
-                                    if (cookie.startsWith("JSESSIONID=")) {
-                                        sessionId = cookie.split(";")[0];
-                                        break;
-                                    }
-                                }
-                                return response.body().string();
-                            } else {
-                                Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show();
-
-                                return "Error: " + response.code();
-                            }
-                        } catch (Exception e) {
-                            Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show();
-                            Log.e("OkHttp", "Error: " + e.getMessage());
-                            return "Error: " + e.getMessage();
-                        }
-                    }catch (Exception e) {
-                        return "BedWeb";
-                    }
-                }
-
-                @Override
-                protected void onPostExecute(String result) {
-                    a.clear();
-                    b.clear();
-                    if (!result.equals("BedWeb")) {
-                        a = parseJsonToPlaceList(result);
-                        // 设置适配器
-
-                        for (Place p : a) {
-                            try {
-                                if(p.getName().equals("个人位置")) {
-                                    x = p.getX() + "";
-                                    y = p.getY() + "";
-                                    tot = p.getAddress();
-                                    city = p.getCity();
-                                    province = p.getProvince();
-                                }
-                                if (p.getIsUse() == 1) {
-                                    b.add(p);
-                                }else if(isAdmin) {
-                                    p.setName("已弃用-"+p.getName());
-                                    b.add(p);
-                                }
-                            }catch (Exception e) {
-
-                            }
-                        }
-                        a.clear();
-                        TreeMap<Double, Place> treeMap = new TreeMap<>();
-
-                        for (Place p : b) {
-                            double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
-
-                            if(shoucang.contains(p.getId() + "")) {
-                                p.setName(p.getName() + " 收藏" + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
-                                treeMap.put(distance - 1000, p);
-
-                            }else {
-                                p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
-                                treeMap.put(distance, p);
-                            }
-                            if(p.getNumJ()>0) {
-                                p.setName(p.getName() + "\uD83D\uDCB3");
-                            }
-                        }
-                        for (Double key : treeMap.keySet()) {
-                            a.add(treeMap.get(key));
-                        }
-                        boolean flag2 = true;
-                        if(flag2) {
-                            if (isPad) {
-                                adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
-                                    @Override
-                                    public void onItemClick(Place place) {
-                                        startPadPage(place);
-                                    }
-                                });
-                            }else {
-                                adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
-                                    @Override
-                                    public void onItemClick(Place place) {
-                                        Intent intent = new Intent(MainLaunch.this, PageActivity.class);
-                                        intent.putExtra("id", place.getId());
-                                        intent.putExtra("name", place.getName());
-                                        intent.putExtra("address", place.getAddress());
-                                        intent.putExtra("province", place.getProvince());
-                                        intent.putExtra("city", place.getCity());
-                                        intent.putExtra("area", place.getArea());
-                                        intent.putExtra("x", place.getX());
-                                        intent.putExtra("y", place.getY());
-                                        intent.putExtra("count", place.getCount());
-                                        intent.putExtra("bad", place.getBad());
-                                        intent.putExtra("good", place.getGood());
-                                        intent.putExtra("num", place.getNum());
-                                        intent.putExtra("numJ", place.getNumJ());
-                                        intent.putExtra("meituan", place.getMeituan_link());
-                                        intent.putExtra("douyin", place.getDouyin_link());
-                                        startActivity(intent);
-                                    }
-                                });
-                            }
-                            recyclerView.setAdapter(adapter);
-                            // 设置Toolbar
-                            Toolbar toolbar = findViewById(R.id.toolbar);
-                            setSupportActionBar(toolbar);// 设置Toolbar标题
-
-                            if (getSupportActionBar() != null) {
-                                getSupportActionBar().setTitle("FindMaimaiDX - " + a.size() + " 店铺" + "\n" + tot);
-                            }
-
-                            for (Place p : a) {
-                                if (p.getX() == 0.0) {
-                                    //Log.i(p.getId() + "", p.getName() + "没有坐标");
-                                }
-                            }
-                        }
-                    }else {
-                        Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT).show();//最终实现处
-                    }
-
-                }
-            }.execute();
-        }catch (Exception e) {
-            Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT).show();
-
+        String web = "http://mai.godserver.cn:11451/api/mai/v1/search?prompt1=" + city.split("市")[0] + "&status=市";
+        if (!isFlag) {
+            web = "http://mai.godserver.cn:11451/api/mai/v1/search?data_place=" + tagplace;
         }
 
+        Request request = new Request.Builder()
+                .url(web)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("OkHttp", "Error: " + e.getMessage());
+                runOnUiThread(() -> Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String result = response.body().string();
+                    if (!result.equals("BedWeb")) {
+                        List<Place> places = parseJsonToPlaceList(result);
+                        if (places != null) {
+                            updateUI(places);
+                        }
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT).show());
+                    }
+                } else {
+                    runOnUiThread(() -> Toast.makeText(MainLaunch.this, "致命错误,服务器未启动", Toast.LENGTH_SHORT).show());
+                }
+            }
+        });
+    }
+
+    private void updateUI(List<Place> places) {
+        a.clear();
+        b.clear();
+
+        for (Place p : places) {
+            try {
+                if (p.getName().equals("个人位置")) {
+                    x = String.valueOf(p.getX());
+                    y = String.valueOf(p.getY());
+                    tot = p.getAddress();
+                    city = p.getCity();
+                    province = p.getProvince();
+                }
+                if (p.getIsUse() == 1) {
+                    b.add(p);
+                } else if (isAdmin) {
+                    p.setName("已弃用-" + p.getName());
+                    b.add(p);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        a.clear();
+        TreeMap<Double, Place> treeMap = new TreeMap<>();
+
+        for (Place p : b) {
+            double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
+
+            if (shoucang.contains(p.getId() + "")) {
+                p.setName(p.getName() + " 收藏" + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                treeMap.put(distance - 1000, p);
+            } else {
+                p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                treeMap.put(distance, p);
+            }
+            if (p.getNumJ() > 0) {
+                p.setName(p.getName() + "\uD83D\uDCB3");
+            }
+        }
+
+        for (Double key : treeMap.keySet()) {
+            a.add(treeMap.get(key));
+        }
+
+        boolean flag2 = true;
+        if (flag2) {
+            if (isPad) {
+                adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(Place place) {
+                        startPadPage(place);
+                    }
+                });
+            } else {
+                adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(Place place) {
+                        Intent intent = new Intent(MainLaunch.this, PageActivity.class);
+                        intent.putExtra("id", place.getId());
+                        intent.putExtra("name", place.getName());
+                        intent.putExtra("address", place.getAddress());
+                        intent.putExtra("province", place.getProvince());
+                        intent.putExtra("city", place.getCity());
+                        intent.putExtra("area", place.getArea());
+                        intent.putExtra("x", place.getX());
+                        intent.putExtra("y", place.getY());
+                        intent.putExtra("count", place.getCount());
+                        intent.putExtra("bad", place.getBad());
+                        intent.putExtra("good", place.getGood());
+                        intent.putExtra("num", place.getNum());
+                        intent.putExtra("numJ", place.getNumJ());
+                        intent.putExtra("meituan", place.getMeituan_link());
+                        intent.putExtra("douyin", place.getDouyin_link());
+                        startActivity(intent);
+                    }
+                });
+            }
+            recyclerView.setAdapter(adapter);
+            // 设置Toolbar
+            Toolbar toolbar = findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar); // 设置Toolbar标题
+
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("FindMaimaiDX - " + a.size() + " 店铺" + "\n" + tot);
+            }
+
+            for (Place p : a) {
+                if (p.getX() == 0.0) {
+                    // Log.i(p.getId() + "", p.getName() + "没有坐标");
+                }
+            }
+        }
     }
     private void startPadPage(Place place) {
 
