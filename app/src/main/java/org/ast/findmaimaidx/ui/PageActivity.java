@@ -739,7 +739,7 @@ public class PageActivity extends AppCompatActivity {
     }
 
     private void startGeoIntent(){
-        String uri = "geo:" + tagXY[1] + "," + tagXY[0];
+        String uri = "geo:" + tagXY[1] + "," + tagXY[0] + "?q=" + tagplace;
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
         startActivity(intent);
     }
