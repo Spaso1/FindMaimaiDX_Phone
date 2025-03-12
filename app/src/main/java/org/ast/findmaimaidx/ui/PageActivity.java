@@ -181,7 +181,7 @@ public class PageActivity extends AppCompatActivity {
                 tagXY[0] = x;
                 tagXY[1] = y;
                 tagplace = name;
-                showNavigationOptions();
+                startGeoIntent();
             }
         });
         /**
