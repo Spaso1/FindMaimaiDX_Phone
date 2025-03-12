@@ -181,7 +181,7 @@ public class PageActivity extends AppCompatActivity {
                 tagXY[0] = x;
                 tagXY[1] = y;
                 tagplace = name;
-                showNavigationOptions();
+                startGeoIntent();
             }
         });
         /**
@@ -716,7 +716,7 @@ public class PageActivity extends AppCompatActivity {
         });
     }
     private void showNavigationOptions() {
-        final CharSequence[] items = {"Google Maps", "高德地图", "百度地图(暂时不可用)"};
+        final CharSequence[] items = {"Google Maps", "高德地图", "百度地图(暂时不可用)", "原生方法"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("选择导航应用")
@@ -731,9 +731,17 @@ public class PageActivity extends AppCompatActivity {
                         case 2:
                             startBaiduMaps();
                             break;
+                        case 3:
+                            startGeoIntent();
                     }
                 })
                 .show();
+    }
+
+    private void startGeoIntent(){
+        String uri = "geo:" + tagXY[1] + "," + tagXY[0] + "?q=" + tagplace;
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+        startActivity(intent);
     }
 
     private void startGoogleMaps() {
