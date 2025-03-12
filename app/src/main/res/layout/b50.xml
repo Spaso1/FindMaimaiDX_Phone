@@ -4,6 +4,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/main"
+    android:fitsSystemWindows="true"
                 tools:context=".ui.B50">
 
     <!-- 顶部用户信息区域 -->
