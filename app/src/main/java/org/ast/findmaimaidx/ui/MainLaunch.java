@@ -4,14 +4,33 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
-import android.location.*;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
-import android.os.*;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
@@ -21,17 +40,22 @@ import android.view.ViewTreeObserver;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.*;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.Toolbar;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -42,14 +66,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.ast.findmaimaidx.R;
+import org.ast.findmaimaidx.adapter.PlaceAdapter;
 import org.ast.findmaimaidx.been.AmapReverseGeocodeResponse;
 import org.ast.findmaimaidx.been.DistanceCalculator;
 import org.ast.findmaimaidx.been.Geocode;
@@ -58,16 +76,31 @@ import org.ast.findmaimaidx.been.Place;
 import org.ast.findmaimaidx.map2d.BasicMapActivity;
 import org.ast.findmaimaidx.service.LocationUpdateService;
 import org.ast.findmaimaidx.utill.AddressParser;
-import org.ast.findmaimaidx.adapter.PlaceAdapter;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.TreeMap;
 
-import static androidx.core.location.LocationManagerCompat.requestLocationUpdates;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class MainLaunch extends AppCompatActivity {
+    public static List<Market> marketList = new ArrayList<>();
+    public static String province;
+    public static String city;
+    public static List<Place> a = new ArrayList<>();
+    public static List<Place> b = new ArrayList<>();
+    public static List<TextView> textViews = new ArrayList<>();
     private Handler handler = new Handler(Looper.getMainLooper());
     private String sessionId;
     private LocationManager locationManager;
@@ -78,24 +111,71 @@ public class MainLaunch extends AppCompatActivity {
     private String x;
     private String y;
     private PlaceAdapter adapter;
-    public static List<Market> marketList = new ArrayList<>();
     private Context context;
-    public static String province;
-    public static String city;
-    public static List<Place> a = new ArrayList<>();
-    public static List<Place> b = new ArrayList<>();
     private BroadcastReceiver locationReceiver;
-    public static List<TextView> textViews = new ArrayList<>();
     private boolean flag = true;
     private double tagXY[] = new double[2];
     private String tagplace;
     private boolean isFlag = true;
-    private SharedPreferences shoucang ;
+    private SharedPreferences shoucang;
     private SharedPreferences settingProperties;
     private boolean isPad = false;
-    private LinearLayout t31 ;
+    private LinearLayout t31;
     private DrawerLayout drawerLayout;
 
+    public static List<Geocode> parseJsonToGeocodeList(String jsonString) {
+        Gson gson = new Gson();
+        JsonArray jsonArray = gson.fromJson(jsonString, JsonArray.class);
+        List<Geocode> Geocodes = new ArrayList<>();
+        for (JsonElement jsonElement : jsonArray) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            Geocode geocode = new Geocode();
+            // 获取 marketName
+            String formatted_address = jsonObject.get("formatted_address").getAsString();
+            geocode.setFormatted_address(formatted_address);
+            geocode.setProvince(jsonObject.get("province").getAsString());
+            geocode.setCity(jsonObject.get("city").getAsString());
+            geocode.setDistrict(jsonObject.get("district").getAsString());
+            geocode.setCountry(jsonObject.get("country").getAsString());
+            geocode.setLevel(jsonObject.get("level").getAsString());
+            geocode.setCitycode(jsonObject.get("citycode").getAsString());
+            // 获取 x, y
+            String location = jsonObject.get("location").getAsString();
+            String[] coordinates = location.split(",");
+            geocode.setLocation(location);
+            Geocodes.add(geocode);
+        }
+        return Geocodes;
+    }
+
+    /**
+     * 打开QQ
+     *
+     * @param context
+     */
+    public static void gotoQQ(Context context) {
+        try {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setComponent(new ComponentName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.SplashActivity"));
+            if (!(context instanceof Activity)) {
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(context, "未安装QQ", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private static List<Market> parseJsonToPlaceList2(String jsonString) {
+        Gson gson = new Gson();
+        Type placeListType = new TypeToken<List<Market>>() {
+        }.getType();
+        return gson.fromJson(jsonString, placeListType);
+    }
 
     @Override
     @SuppressLint({"MissingInflatedId", "Range", "UnspecifiedRegisterReceiverFlag", "SetTextI18n"})
@@ -109,10 +189,10 @@ public class MainLaunch extends AppCompatActivity {
         int height = display.getHeight();
         Log.d("MainLaunch", "onCreate: " + width + " " + height);
         isPad = false;
-        if(width>=height) {
+        if (width >= height) {
             isPad = true;
         }
-        if(isPad) {
+        if (isPad) {
             setContentView(R.layout.activity_mainpadlayout);
         }
         //设置随机数
@@ -122,23 +202,23 @@ public class MainLaunch extends AppCompatActivity {
             // 获取传递过来的数据
             Intent intent = getIntent();
             userInput = intent.getStringExtra("address");
-            if(intent.getStringExtra("address") != null) {
+            if (intent.getStringExtra("address") != null) {
                 Log.d("MainLaunch", "userInput: " + userInput);
                 tagplace = userInput;
                 isFlag = false;
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        if(isFlag) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},0x123);
-        }else {
+        if (isFlag) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0x123);
+        } else {
             extracted();
         }
 
         addressTextView = findViewById(R.id.textView);
         FloatingActionButton button2 = findViewById(R.id.fab);
-        final CharSequence[][] items = {{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "排卡","设置及更多"}};
+        final CharSequence[][] items = {{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "排卡", "设置及更多"}};
 
         button2.setOnClickListener(v -> {
 
@@ -198,7 +278,7 @@ public class MainLaunch extends AppCompatActivity {
                         break;
                     case 1:
                         Intent intent = new Intent(MainLaunch.this, B50.class);
-                        intent.putExtra("sessionId",sessionId);
+                        intent.putExtra("sessionId", sessionId);
                         startActivity(intent);
                         break;
                     case 2:
@@ -357,8 +437,8 @@ public class MainLaunch extends AppCompatActivity {
         /**
          * 设置侦测
          */
-        boolean setting_autobeta1 = settingProperties.getBoolean("setting_autobeta1",false);
-        if(setting_autobeta1) {
+        boolean setting_autobeta1 = settingProperties.getBoolean("setting_autobeta1", false);
+        if (setting_autobeta1) {
             // 启动位置更新服务
             Intent serviceIntent = new Intent(this, LocationUpdateService.class);
             startService(serviceIntent);
@@ -369,19 +449,19 @@ public class MainLaunch extends AppCompatActivity {
                 public void onReceive(Context context, Intent intent) {
                     double latitude = intent.getDoubleExtra("latitude", 0.0);
                     double longitude = intent.getDoubleExtra("longitude", 0.0);
-                    Log.d("机厅位置","位置更新服务");
+                    Log.d("机厅位置", "位置更新服务");
                 }
             };
             try {
                 registerReceiver(locationReceiver, new IntentFilter("LOCATION_UPDATE"));
-            }catch (Exception e) {
+            } catch (Exception e) {
 
             }
-            Log.d("机厅位置","启动位置更新服务");
+            Log.d("机厅位置", "启动位置更新服务");
             Toast.makeText(MainLaunch.this, "已启动位置更新服务", Toast.LENGTH_SHORT).show();
         }
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        if (settingProperties.getString("image_uri", null) != null ) {
+        if (settingProperties.getString("image_uri", null) != null) {
             Uri uri = Uri.parse(settingProperties.getString("image_uri", null));
             try {
                 Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
@@ -389,11 +469,11 @@ public class MainLaunch extends AppCompatActivity {
                     // 获取RecyclerView的尺寸
                     int recyclerViewWidth = 0;
                     int recyclerViewHeight = 0;
-                    if(isPad) {
+                    if (isPad) {
                         LinearLayout linearLayout = findViewById(R.id.pad);
                         recyclerViewWidth = linearLayout.getWidth();
                         recyclerViewHeight = linearLayout.getHeight();
-                    }else {
+                    } else {
                         recyclerViewWidth = recyclerView.getWidth();
                         recyclerViewHeight = recyclerView.getHeight();
                     }
@@ -440,7 +520,7 @@ public class MainLaunch extends AppCompatActivity {
                         BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
 
                         // 设置recyclerView的背景
-                        if(!isPad) {
+                        if (!isPad) {
                             recyclerView.setBackground(bitmapDrawable);
                         } else {
                             LinearLayout linearLayout = findViewById(R.id.pad);
@@ -454,11 +534,11 @@ public class MainLaunch extends AppCompatActivity {
                                 recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                                 int recyclerViewWidth = 0;
                                 int recyclerViewHeight = 0;
-                                if(isPad) {
+                                if (isPad) {
                                     LinearLayout linearLayout = findViewById(R.id.pad);
                                     recyclerViewWidth = linearLayout.getWidth();
                                     recyclerViewHeight = linearLayout.getHeight();
-                                }else {
+                                } else {
                                     recyclerViewWidth = recyclerView.getWidth();
                                     recyclerViewHeight = recyclerView.getHeight();
                                 }
@@ -505,12 +585,13 @@ public class MainLaunch extends AppCompatActivity {
                                 BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
 
                                 // 设置recyclerView的背景
-                                if(!isPad) {
+                                if (!isPad) {
                                     recyclerView.setBackground(bitmapDrawable);
                                 } else {
                                     LinearLayout linearLayout = findViewById(R.id.pad);
                                     linearLayout.setBackground(bitmapDrawable);
-                                }                            }
+                                }
+                            }
                         });
                     }
                 }
@@ -533,15 +614,16 @@ public class MainLaunch extends AppCompatActivity {
             public void onFailure(Call call, IOException e) {
                 Log.e("MainLaunch", "onFailure: " + e.getMessage());
             }
+
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
                     assert response.body() != null;
                     String res = response.body().string();
-                    if(res.equals("1")) {
+                    if (res.equals("1")) {
                         System.out.println("1");
                         isAdmin = true;
-                        items[0] = new CharSequence[]{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "排卡","设置及更多","添加机厅"};
+                        items[0] = new CharSequence[]{"联系作者", "b50", "自动刷新定位", "手动选择定位", "地图", "切换到中二", "排卡", "设置及更多", "添加机厅"};
                     }
                     System.out.println(res);
                 }
@@ -582,7 +664,7 @@ public class MainLaunch extends AppCompatActivity {
                     // Handle the gallery action
                 } else if (id == R.id.nav_slideshow) {
                     Intent intent = new Intent(MainLaunch.this, B50.class);
-                    intent.putExtra("sessionId",sessionId);
+                    intent.putExtra("sessionId", sessionId);
                     startActivity(intent);
                     // Handle the slideshow action
                 } else if (id == R.id.nav_share) {
@@ -598,7 +680,7 @@ public class MainLaunch extends AppCompatActivity {
                     Toast.makeText(this, "QQ群号已复制到剪贴板", Toast.LENGTH_SHORT).show();
                     MainLaunch.gotoQQ(this);
                     // Handle the send action
-                }else if (id == R.id.nav_auto) {
+                } else if (id == R.id.nav_auto) {
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     }
                     Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -623,7 +705,7 @@ public class MainLaunch extends AppCompatActivity {
                         e.printStackTrace();
                         addressTextView.setText("Error getting address");
                     }
-                }else if (id == R.id.nav_map) {
+                } else if (id == R.id.nav_map) {
                     Intent intent2 = new Intent(MainLaunch.this, BasicMapActivity.class);
                     intent2.putExtra("x", x);
                     intent2.putExtra("y", y);
@@ -631,7 +713,7 @@ public class MainLaunch extends AppCompatActivity {
 
                     intent2.putParcelableArrayListExtra("place_list_key", aL);
                     startActivity(intent2);
-                } else if (id ==R.id.nav_paika) {
+                } else if (id == R.id.nav_paika) {
                     Intent intent4 = new Intent(MainLaunch.this, PaikaActivity.class);
                     startActivity(intent4);
                 }
@@ -639,11 +721,12 @@ public class MainLaunch extends AppCompatActivity {
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             });
-        }catch (Exception e) {
+        } catch (Exception e) {
 
         }
 
     }
+
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -652,6 +735,7 @@ public class MainLaunch extends AppCompatActivity {
             super.onBackPressed();
         }
     }
+
     @SuppressLint("StaticFieldLeak")
     private void sendGetRequest() {
         OkHttpClient client = new OkHttpClient();
@@ -679,7 +763,7 @@ public class MainLaunch extends AppCompatActivity {
                     if (!result.equals("BedWeb")) {
                         List<Place> places = parseJsonToPlaceList(result);
                         if (places != null) {
-                            updateUI(places);
+                            runOnUiThread(() -> updateUI(places));
                         }
                     } else {
                         runOnUiThread(() -> Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT).show());
@@ -786,6 +870,7 @@ public class MainLaunch extends AppCompatActivity {
             }
         }
     }
+
     private void startPadPage(Place place) {
 
         TextView name = findViewById(R.id.pag2_nameTextView);
@@ -800,10 +885,10 @@ public class MainLaunch extends AppCompatActivity {
         area.setText(place.getArea());
         TextView num = findViewById(R.id.pag2_num5);
         num.setText("国机 " + place.getNum());
-        if(place.getNumJ()>0) {
+        if (place.getNumJ() > 0) {
             TextView numJ = findViewById(R.id.pag2_num6);
             numJ.setText("\uD83D\uDCB3" + place.getNumJ());
-        }else {
+        } else {
             TextView numJ = findViewById(R.id.pag2_num6);
             numJ.setText("");
         }
@@ -818,7 +903,7 @@ public class MainLaunch extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                        ClipData clipData = ClipData.newPlainText("text", address2 );
+                        ClipData clipData = ClipData.newPlainText("text", address2);
                         clipboardManager.setPrimaryClip(clipData);
                         Toast.makeText(MainLaunch.this, "机厅地址信息已经复制!", Toast.LENGTH_SHORT).show();
 
@@ -830,15 +915,15 @@ public class MainLaunch extends AppCompatActivity {
         SharedPreferences.Editor editor2 = shoucang.edit();
         int id2 = place.getId();
         com.google.android.material.switchmaterial.SwitchMaterial switch1 = findViewById(R.id.pag2_switch1);
-        if(shoucang.contains(id2 + "")) {
+        if (shoucang.contains(id2 + "")) {
             switch1.setChecked(true);
         }
-        switch1.setOnClickListener(new View.OnClickListener(){
+        switch1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(switch1.isChecked()) {
-                    editor2.putString(id2 + "","1");
-                }else {
+                if (switch1.isChecked()) {
+                    editor2.putString(id2 + "", "1");
+                } else {
                     editor2.remove(id2 + "");
                 }
                 editor2.apply();
@@ -880,18 +965,20 @@ public class MainLaunch extends AppCompatActivity {
         });
         webView2.loadUrl(imageUrl2); // 加载网页
         t31 = findViewById(R.id.pag2_hor);
-        findnear(place, "mai",t31);
+        findnear(place, "mai", t31);
     }
+
     private List<Place> parseJsonToPlaceList(String jsonString) {
         Gson gson = new Gson();
         Type placeListType = new TypeToken<List<Place>>() {
         }.getType();
-        if(jsonString.equals("BedWeb")) {
+        if (jsonString.equals("BedWeb")) {
             Toast.makeText(MainLaunch.this, "网络错误(服务器维护?)", Toast.LENGTH_SHORT);
             return null;
         }
         return gson.fromJson(jsonString, placeListType);
     }
+
     @SuppressLint("MissingPermission")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -1029,10 +1116,14 @@ public class MainLaunch extends AppCompatActivity {
     private void extracted() {
         //tot = tot.split("\"")[1];
         Log.i("TAG", "x=" + x + ";y=" + y);
+        if (x == null || y == null) {
+            Toast.makeText(this, "请确认输入地址是否正确", Toast.LENGTH_SHORT).show();
+            return;
+        }
         //tot = "天津市东丽区民航大学";
-        if(!isFlag) {
+        if (!isFlag) {
 
-        }else {
+        } else {
             try {
                 AddressParser.parseAddress(tot);
             } catch (Exception e) {
@@ -1045,30 +1136,7 @@ public class MainLaunch extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(MainLaunch.this));
 
     }
-    public static List<Geocode> parseJsonToGeocodeList(String jsonString) {
-        Gson gson = new Gson();
-        JsonArray jsonArray = gson.fromJson(jsonString, JsonArray.class);
-        List<Geocode> Geocodes = new ArrayList<>();
-        for (JsonElement jsonElement : jsonArray) {
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
-            Geocode geocode = new Geocode();
-            // 获取 marketName
-            String formatted_address = jsonObject.get("formatted_address").getAsString();
-            geocode.setFormatted_address(formatted_address);
-            geocode.setProvince(jsonObject.get("province").getAsString());
-            geocode.setCity(jsonObject.get("city").getAsString());
-            geocode.setDistrict(jsonObject.get("district").getAsString());
-            geocode.setCountry(jsonObject.get("country").getAsString());
-            geocode.setLevel(jsonObject.get("level").getAsString());
-            geocode.setCitycode(jsonObject.get("citycode").getAsString());
-            // 获取 x, y
-            String location = jsonObject.get("location").getAsString();
-            String[] coordinates = location.split(",");
-            geocode.setLocation(location);
-            Geocodes.add(geocode);
-        }
-        return Geocodes;
-    }
+
     private String getAppVersionName() {
         try {
             PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -1079,30 +1147,9 @@ public class MainLaunch extends AppCompatActivity {
         }
     }
 
-    /**
-     * 打开QQ
-     * @param context
-     */
-    public static void gotoQQ(Context context) {
-        try {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_LAUNCHER);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.setComponent(new ComponentName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.SplashActivity"));
-            if (!(context instanceof Activity)) {
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            }
-            context.startActivity(intent);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(context, "未安装QQ", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private void addPlace(Place place) {
         String url = "http://mai.godserver.cn:11451/api/mai/v1/place";
-        String body = new Gson().toJson(place,Place.class);
+        String body = new Gson().toJson(place, Place.class);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), body);
         Request request = new Request.Builder()
                 .url(url)
@@ -1116,6 +1163,7 @@ public class MainLaunch extends AppCompatActivity {
                 Toast.makeText(MainLaunch.this, "添加失败", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
+
             @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -1124,13 +1172,14 @@ public class MainLaunch extends AppCompatActivity {
                     runOnUiThread(() -> {
                         Toast.makeText(MainLaunch.this, "添加成功", Toast.LENGTH_SHORT).show();
                     });
-                }else {
+                } else {
                     Toast.makeText(MainLaunch.this, "添加失败", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
-    public void findnear(Place place_centor,String type_code,LinearLayout t31) {
+
+    public void findnear(Place place_centor, String type_code, LinearLayout t31) {
         OkHttpClient client = new OkHttpClient();
         String web = "http://mai.godserver.cn:11451/api/" + type_code + "/v1/near?id=" + place_centor.getId();
         Log.d("Web", web);
@@ -1167,6 +1216,7 @@ public class MainLaunch extends AppCompatActivity {
             }
         });
     }
+
     @SuppressLint("SetTextI18n")
     private void handleResponse(String result) {
         t31.setVisibility(View.VISIBLE);
@@ -1214,6 +1264,7 @@ public class MainLaunch extends AppCompatActivity {
         }
         Log.d("Market3", t31.getHeight() + "---");
     }
+
     private void showNavigationOptions() {
         final CharSequence[] items = {"Google Maps", "高德地图", "百度地图(暂时不可用)"};
 
@@ -1244,22 +1295,17 @@ public class MainLaunch extends AppCompatActivity {
 
     private void startAmap() {
         // 高德地图
-        Intent intent = new Intent("android.intent.action.VIEW", android.net.Uri.parse("androidamap://route?sourceApplication=appName&slat=&slon=&sname=我的位置&dlat=" + tagXY[1] +"&dlon="+ tagXY[0]+"&dname=" +tagplace + "&dev=0&t=2"));
+        Intent intent = new Intent("android.intent.action.VIEW", android.net.Uri.parse("androidamap://route?sourceApplication=appName&slat=&slon=&sname=我的位置&dlat=" + tagXY[1] + "&dlon=" + tagXY[0] + "&dname=" + tagplace + "&dev=0&t=2"));
         MainLaunch.this.startActivity(intent);
     }
 
     private void startBaiduMaps() {
         Toast.makeText(PageActivity.context, "111", Toast.LENGTH_SHORT).show();
-        String uri = "baidumap://map/direction?destination=latlng:" + tagXY[0] + "," + tagXY[1] +"&mode=driving&src=appName";
-        Intent intent = new Intent("com.baidu.tieba",  android.net.Uri.parse(uri));
+        String uri = "baidumap://map/direction?destination=latlng:" + tagXY[0] + "," + tagXY[1] + "&mode=driving&src=appName";
+        Intent intent = new Intent("com.baidu.tieba", android.net.Uri.parse(uri));
         startActivity(intent);
     }
-    private static List<Market> parseJsonToPlaceList2(String jsonString) {
-        Gson gson = new Gson();
-        Type placeListType = new TypeToken<List<Market>>() {
-        }.getType();
-        return gson.fromJson(jsonString, placeListType);
-    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
