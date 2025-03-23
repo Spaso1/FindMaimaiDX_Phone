@@ -633,7 +633,12 @@ public class MainLaunch extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setOnClickListener(v -> {
+
+        // 创建 ActionBarDrawerToggle 并将其与 DrawerLayout 和 Toolbar 关联
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
+        toggle.setToolbarNavigationClickListener(v -> {
             Log.i("MainLaunch", "onClick: ");
             if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                 drawerLayout.closeDrawer(GravityCompat.START);
@@ -641,9 +646,7 @@ public class MainLaunch extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
-        // 创建 ActionBarDrawerToggle 并将其与 DrawerLayout 和 Toolbar 关联
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
         try {
             drawerLayout.addDrawerListener(toggle);
             toggle.syncState();
