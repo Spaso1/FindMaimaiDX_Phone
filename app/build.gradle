@@ -9,7 +9,7 @@ android {
         applicationId "org.ast.findmaimaidx"
         minSdk 28
         //noinspection OldTargetApi,OldTargetApi
-        targetSdk 35
+        targetSdk 34
         versionCode 2
         versionName "1.5.3r"
 
