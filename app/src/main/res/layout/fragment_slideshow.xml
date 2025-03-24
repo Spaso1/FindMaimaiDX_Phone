@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.slideshow.SlideshowFragment">
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+                android:id="@+id/scrollView"
+                android:layout_height="match_parent"
+                android:background="@color/colorOnPrimary"
+                android:fillViewport="true">
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+            <!-- 开关按钮示例 -->
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchBeta1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/textcolorPrimary"
+                    android:text="@string/beta"
+                    android:textSize="20sp"
+                    android:checked="false"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"/>
+
+            <RadioGroup
+                    android:id="@+id/radioGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                          android:textColor="@color/textcolorPrimary"
+                          android:textSize="20sp"
+                          android:text="查分器"/>
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/org"
+                        android:checked="true"
+                        android:textColor="@color/textcolorPrimary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/org" />
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radioButton1"
+                        android:checked="true"
+                        android:textColor="@color/textcolorPrimary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/shuiyu_option" />
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radioButton2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textcolorPrimary"
+                        android:text="@string/lx_option" />
+            </RadioGroup>
+            <!-- 分割线 -->
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/dividerVertical"
+                    android:layout_marginTop="16dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="16dp"
+                    app:endIconMode="password_toggle"
+                    android:paddingBottom="16dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/qqbot"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="qqbot"
+                        android:inputType="textPassword"/>  <!-- 修改为 textPassword -->
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/shuiyu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="水鱼用户名"
+                        android:inputType="textPersonName"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp">
+                <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/luoxue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="落雪个人API"
+                        android:inputType="textPersonName"/>
+            </com.google.android.material.textfield.TextInputLayout>
+            <!-- 按钮示例 -->
+            <com.google.android.material.button.MaterialButton
+                    android:id="@+id/changePhoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="更改主界面背景图"
+                    android:textColor="@android:color/white"
+
+                    android:backgroundTint="?attr/colorPrimary"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                    android:id="@+id/openQQbot"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="#QQ机器人相关#"
+                    android:textColor="@android:color/white"
+
+                    android:backgroundTint="?attr/colorPrimary"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton
+                        android:id="@+id/save_settings_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="保存数据"
+                        android:backgroundTint="?attr/colorPrimary"
+                        android:textColor="@android:color/white"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"/>
+
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content"             android:textColor="@color/textcolorPrimary"
+                      android:layout_height="wrap_content" android:text="@string/settin_body"/>
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/textcolorPrimary"
+                    android:id="@+id/uuid"/>
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/dividerVertical"
+                    android:layout_marginTop="16dp"/>
+            <TextView android:layout_width="wrap_content"         android:textColor="@color/textcolorPrimary"
+                      android:layout_height="wrap_content" android:textSize="16dp" android:id="@+id/vits" />
+            <WebView android:layout_width="match_parent" android:layout_height="600dp" android:id="@+id/develop"
+                     tools:ignore="WebViewLayout"/>
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

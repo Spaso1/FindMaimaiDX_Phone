@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">FindMaimaiDX</string>
+    <string name="menu_item_switch">Proxy</string>
+    <string name="menu_item_about">About</string>
+    <string name="menu_item_exit">Exit</string>
+    <string name="config_url">Config URL</string>
+    <string name="config_not_set_value">Not set</string>
+    <string name="config_url_scan">Scan an QR code</string>
+    <string name="config_url_manual">Type manually</string>
+    <string name="config_url_scan_hint">Scan the QR code of your config url</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_more">More&#8230;</string>
+    <string name="vpn_connected_status">connected</string>
+    <string name="vpn_disconnected_status">disconnected</string>
+    <string name="exit_confirm_info">This will disconnect the VPN connection, Are you sure to exit?</string>
+    <string name="err_invalid_url">The config URL is invalid.</string>
+    <string name="config_url_hint">URL or local file path</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="username">水鱼查分器账号</string>
+    <string name="password">水鱼查分器密码</string>
+    <string name="settings">设置</string>
+    <string name="notifications">通知</string>
+    <string name="profile_name">用户名</string>
+    <string name="save_settings">保存设置</string>
+    <string name="beta">实时机厅人数测算 (BETA)</string>
+    <string name="shuiyu_option">水鱼</string>
+    <string name="lx_option">落雪</string>
+    <string name="settin_body">项目地址:https://github.com/Spaso1/FindMaimaiDX_Phone/ 个人开发,欢迎合作或者提意见!遵从MIT 协议,您可以在随意修改软件源码.</string>
+    <string name="org">原生</string>
+    <string name="location_disabled">设备定位已关闭，请打开定位以获取当前位置信息</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="menu_home">主页</string>
+    <string name="menu_gallery">歌曲成绩</string>
+    <string name="menu_slideshow">设置</string>
+    <string name="nav_header_title">FindMaimaiDX</string>
+    <string name="nav_header_subtitle">Reisa</string>
+    <string name="action_settings">设置</string>
+
+
+</resources>

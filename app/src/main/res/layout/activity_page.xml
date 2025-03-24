@@ -1,0 +1,224 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:id="@+id/background"
+    android:background="@color/colorOnPrimary"
+    tools:ignore="WebViewLayout">
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        tools:ignore="MissingConstraints">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="7mm"
+            android:tooltipText="FindMaimai"
+            android:background="@color/colorPrimary"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+            android:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"/>
+    </com.google.android.material.appbar.AppBarLayout>
+    <TextView
+        android:id="@+id/nameTextView"
+        android:textColor="@color/textcolorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:paddingLeft="16sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        />
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:paddingLeft="16sp"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/provinceTextView"
+            android:textColor="@color/textcolorPrimary"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:paddingLeft="15mm"
+            android:textColor="@color/textcolorPrimary"
+
+            android:id="@+id/num5"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/numberPeo"
+            android:layout_width="23dp"
+            android:textColor="@color/textcolorPrimary"
+
+            android:layout_height="22dp"
+            android:paddingLeft="5mm"
+            android:textSize="12sp" />
+    </LinearLayout>
+    <LinearLayout android:layout_width="wrap_content"         android:paddingLeft="16sp" android:layout_height="wrap_content" android:orientation="horizontal">
+        <TextView
+            android:id="@+id/cityTextView"
+            android:textColor="@color/textcolorPrimary"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:paddingLeft="15mm"
+            android:textColor="@color/textcolorPrimary"
+
+            android:id="@+id/num6"
+            android:textSize="16sp"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="wrap_content"         android:paddingLeft="16sp" android:layout_height="wrap_content" >
+        <TextView
+            android:id="@+id/areaTextView"
+            android:layout_width="wrap_content"
+            android:textColor="@color/textcolorPrimary"
+
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:paddingLeft="15mm"
+            android:id="@+id/num7"
+            android:textColor="@color/textcolorPrimary"
+
+            android:textSize="16sp"/>
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:text="收藏"
+            android:textColor="@color/textcolorPrimary"
+
+            android:layout_width="match_parent"
+            android:layout_marginLeft="10mm"
+            android:layout_height="wrap_content" android:id="@+id/switch1"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10sp"
+        >
+        <WebView         android:paddingLeft="16sp" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:id="@+id/imageView1"/>
+        <View android:layout_width="wrap_content" android:layout_height="3dp" />
+        <WebView         android:paddingLeft="16sp" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:id="@+id/imageView2"/>
+    </LinearLayout>
+
+    <TextView
+        android:paddingLeft="16sp"
+        android:id="@+id/addressTextView"
+        android:layout_width="wrap_content"
+        android:textColor="@color/textcolorPrimary"
+
+        android:layout_height="wrap_content"
+        android:textSize="16sp" />
+    <com.baidu.mapapi.map.MapView
+        android:paddingLeft="16sp"
+        android:id="@+id/bmapView"
+        android:layout_width="match_parent"
+        android:layout_height="30mm"
+        android:clickable="true" />
+    <LinearLayout         android:paddingLeft="16sp" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bi"
+            android:text="购币链接"
+            android:paddingLeft="16sp"
+            android:layout_width="wrap_content"
+            android:layout_weight="0.7"
+            android:layout_height="wrap_content"/>
+        <View
+            android:layout_width="10dp"
+            android:layout_height="match_parent"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/share"
+            android:text="分享 "
+            android:paddingLeft="16sp"
+            android:layout_weight="0.3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <LinearLayout         android:paddingLeft="16sp" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/likeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="赞"
+            android:paddingLeft="16sp"
+            android:layout_marginLeft="2mm"
+            android:layout_centerInParent="true"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/disButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="踩"        android:paddingLeft="16sp"
+            android:layout_marginLeft="2mm"
+            android:layout_centerInParent="true"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16sp"
+            android:text="大众评价"
+            android:layout_marginLeft="2mm"
+            android:layout_centerInParent="true"/>
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent"         android:paddingLeft="16sp" android:layout_height="wrap_content" android:orientation="horizontal">
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:id="@+id/admin"
+            android:paddingLeft="16sp"
+            android:text="机厅信息更改"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="match_parent"         android:paddingLeft="16sp" android:layout_height="wrap_content" android:orientation="horizontal">
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="机厅数据更新"
+            android:layout_weight="0.6"
+            android:id="@+id/updateButton"/>
+        <View
+            android:layout_width="10dp"
+            android:layout_height="match_parent"/>
+        <com.google.android.material.button.MaterialButton
+            android:text="导航"
+            android:layout_width="wrap_content"
+            android:layout_weight="0.4"
+            android:layout_height="wrap_content" android:id="@+id/button"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="wrap_content"
+        android:paddingLeft="16sp"
+        android:layout_height="60dp"
+        android:orientation="horizontal">
+        <TextView
+            android:text="TextView"
+            android:layout_width="match_parent"
+            android:textColor="@color/textcolorPrimary"
+            android:layout_height="wrap_content" android:id="@+id/textView2"/>
+        <com.google.android.material.button.MaterialButton android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/add" android:layout_marginLeft="30mm"
+            android:text="录入商超"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:paddingLeft="16sp"
+        android:background="@android:color/transparent"
+        android:layout_width="match_parent"
+        android:textColor="@color/textcolorPrimary"
+        android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:textColor="@color/textcolorPrimary"
+            android:background="@android:color/transparent"
+            android:id="@+id/hor"/>
+    </ScrollView>
+</LinearLayout>

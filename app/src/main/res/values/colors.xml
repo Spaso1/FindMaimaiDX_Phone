@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#D5C4ED</color>
+    <color name="purple_500">#D5C4ED</color>
+    <color name="purple_700">#D5C4ED</color>
+    <color name="teal_200">#D5C4ED</color>
+    <color name="night">#D5C4ED</color>
+
+    <color name="teal_700">#D5C4ED</color>
+    <color name="black">#8A8282</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="primary">#D5C4ED</color>
+    <color name="primary_dark">#D5C4ED</color>
+    <color name="primary_light">#D1C4E9</color>
+    <color name="accent">#D5C4ED</color>
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#727272</color>
+    <color name="icons">#FFFFFF</color>
+    <color name="divider">#B6B6B6</color>
+    <color name="colorPrimary">#D5C4ED</color>
+    <color name="colorPrimaryVariant">#D5C4ED</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorSecondary">#D5C4ED</color>
+    <color name="colorSecondaryVariant">#D5C4ED</color>
+    <color name="colorOnSecondary">#000000</color>
+    <color name="lineBaseGreen">#1DF687</color>
+    <color name="VlineBaseGreen">#C2F6C4</color>
+    <color name="textcolorPrimary">#D5C4ED</color>
+    <color name="border_color">#000000</color> <!-- 黑色 -->
+
+    <color name="red">#F44336</color>
+</resources>
