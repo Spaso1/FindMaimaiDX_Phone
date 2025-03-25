@@ -1,8 +1,11 @@
 package org.astral.findmaimaiultra.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Menu;
+import android.widget.Toast;
+import com.bumptech.glide.Glide;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import androidx.navigation.NavController;
@@ -27,19 +30,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.appBarMain.toolbar);
-        binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+                R.id.nav_home, R.id.nav_gallery, R.id.nav_music,R.id.nav_slideshow)
                 .setOpenableLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -51,7 +47,25 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+        //点击效果
+        menu.findItem(R.id.action_settings).setOnMenuItemClickListener(item -> {
+            //切换到设置页面
+            Navigation.findNavController(this, R.id.nav_host_fragment_content_main).navigate(R.id.nav_slideshow);
+            return true;
+        });
+        menu.findItem(R.id.action_paika).setOnMenuItemClickListener(item -> {
+            Intent paika = new Intent(this, PaikaActivity.class);
+            startActivity(paika);
+            return true;
+        });
+        menu.findItem(R.id.action_update).setOnMenuItemClickListener(item -> {
+            Intent update = new Intent(this, UpdateActivity.class);
+
+            Toast.makeText(this, "敬请期待", Toast.LENGTH_SHORT).show();
+            //startActivity(update);
+            return true;
+        });
+        return false;
     }
 
     @Override

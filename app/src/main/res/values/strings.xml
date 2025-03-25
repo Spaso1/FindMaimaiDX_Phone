@@ -33,7 +33,8 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="menu_home">主页</string>
-    <string name="menu_gallery">歌曲成绩</string>
+    <string name="menu_gallery">地图</string>
+    <string name="menu_music">歌曲成绩</string>
     <string name="menu_slideshow">设置</string>
     <string name="nav_header_title">FindMaimaiDX</string>
     <string name="nav_header_subtitle">Reisa</string>

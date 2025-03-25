@@ -16,7 +16,11 @@
             android:name="org.astral.findmaimaiultra.ui.gallery.GalleryFragment"
             android:label="@string/menu_gallery"
             tools:layout="@layout/fragment_gallery"/>
-
+    <fragment
+            android:id="@+id/nav_music"
+            android:name="org.astral.findmaimaiultra.ui.music.MusicFragment"
+            android:label="@string/menu_music"
+            tools:layout="@layout/fragment_gallery"/>
     <fragment
             android:id="@+id/nav_slideshow"
             android:name="org.astral.findmaimaiultra.ui.slideshow.SlideshowFragment"

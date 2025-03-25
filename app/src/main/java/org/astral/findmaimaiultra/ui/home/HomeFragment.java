@@ -253,11 +253,12 @@ public class HomeFragment extends Fragment {
                     // 设置 Toolbar 标题
                     String navHomeLabel = getString(R.string.menu_home);
                     Toolbar toolbar = ((MainActivity) requireActivity()).findViewById(R.id.toolbar);
-                    toolbar.setTitle("FindMaimaiDX - " + a.size() + " 店铺" + "\n" + tot);
+                    if(!(toolbar.getTitle().equals("歌曲成绩") || toolbar.getTitle().equals("地图")|| toolbar.getTitle().equals("设置"))) {
+                        toolbar.setTitle("FindMaimaiDX - " + a.size() + " 店铺" + "\n" + tot);
+                    }
 
                     // 更新 SharedViewModel 中的 Map
-                    sharedViewModel.addToMap("places", new Gson().toJson(a));
-
+                    sharedViewModel.setPlacelist(new ArrayList<>(a));
                     // 通知适配器数据已更改
                     adapter.notifyDataSetChanged();
                 }
@@ -306,7 +307,6 @@ public class HomeFragment extends Fragment {
                 public void onLocationChanged(@NonNull Location location) {
                     Log.d("Location", "onLocationChanged");
                     if (flag) {
-                        Toast.makeText(context, "定位成功", Toast.LENGTH_SHORT).show();
                         // 调用高德地图 API 进行逆地理编码
                         reverseGeocode(location.getLatitude(), location.getLongitude());
                     }
@@ -392,12 +392,17 @@ public class HomeFragment extends Fragment {
                 String province = address.getAdminArea();
                 String city = address.getLocality();
                 // 更新 UI
-                requireActivity().runOnUiThread(() -> {
-                    tot = detail;
-                    this.province = province;
-                    this.city = city;
-                    extracted();
-                });
+                try {
+                    requireActivity().runOnUiThread(() -> {
+                        tot = detail;
+                        this.province = province;
+                        this.city = city;
+                        extracted();
+                    });
+                }catch (Exception e) {
+
+                }
+
             } else {
                 Log.d("Location", "Android 自带 Geocoder 获取地址失败");
                 setDefaultLocation(); // 设置默认位置

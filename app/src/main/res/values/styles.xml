@@ -4,4 +4,13 @@
     <style name="BorderStyle">
         <item name="android:background">@drawable/border</item>
     </style>
+    <style name="CustomDialogStyle" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="shapeAppearance">@style/ShapeAppearance.App.Dialog</item>
+    </style>
+
+    <style name="ShapeAppearance.App.Dialog" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
 </resources>

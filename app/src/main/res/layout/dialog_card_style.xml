@@ -1,0 +1,23 @@
+<!-- res/layout/dialog_card_style.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/layout_buttons"
+            android:padding="8dp">
+
+            <!-- 动态添加的按钮将放在这里 -->
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

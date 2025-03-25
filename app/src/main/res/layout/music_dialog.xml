@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+              android:padding="16dp">
+
+    <ImageView
+            android:id="@+id/dialog_music_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:scaleType="centerCrop"/>
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="16dp">
+
+        <TextView
+                android:id="@+id/dialog_music_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="歌曲名称"
+                android:textColor="@color/primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        <TextView
+                android:id="@+id/dialog_music_achievement"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary"
+
+                android:text="达成率"
+                android:textSize="16sp" />
+
+        <TextView
+                android:id="@+id/dialog_music_rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary"
+
+                android:text="评分"
+                android:textSize="16sp" />
+
+        <TextView
+                android:id="@+id/dialog_music_level_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary"
+
+                android:text="等级信息"
+                android:textSize="16sp" />
+
+        <ImageView
+                android:id="@+id/dialog_music_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary"
+                android:textSize="16sp" />
+
+        <ImageView
+                android:id="@+id/dialog_music_combo_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary"
+
+                android:text="连击状态"
+                android:textSize="16sp" />
+
+        <TextView
+                android:id="@+id/dialog_music_play_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary"
+
+                android:text="播放次数"
+                android:textSize="16sp" />
+
+    </LinearLayout>
+
+</LinearLayout>
