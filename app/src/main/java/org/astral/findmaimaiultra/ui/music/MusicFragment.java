@@ -166,6 +166,13 @@ public class MusicFragment extends Fragment {
         ImageView musicComboStatusTextView = dialogView.findViewById(R.id.dialog_music_combo_status);
         TextView musicPlayCountTextView = dialogView.findViewById(R.id.dialog_music_play_count);
 
+        if (musicRating.getType() == null
+        || musicRating.getMusicName() == null){
+            Toast.makeText(getContext(), "数据错误，可能是你点了不该点的卡片或者没导入成绩", Toast.LENGTH_SHORT)
+                    .show();
+            return;
+        }
+
         // 设置图像曲绘
         int id = musicRating.getMusicId();
         if (id > 10000) {

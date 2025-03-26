@@ -1,8 +1,13 @@
 package org.astral.findmaimaiultra.ui.slideshow;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.content.*;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -19,49 +24,54 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.yalantis.ucrop.UCrop;
+
 import org.astral.findmaimaiultra.been.Release;
 import org.astral.findmaimaiultra.databinding.FragmentSlideshowBinding;
 import org.astral.findmaimaiultra.service.GitHubApiService;
 import org.astral.findmaimaiultra.ui.LinkQQBot;
 import org.astral.findmaimaiultra.utill.GitHubApiClient;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Objects;
 
-import static android.app.Activity.RESULT_OK;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SlideshowFragment extends Fragment {
-    private SharedPreferences settingProperties;
     private static final int PICK_IMAGE_REQUEST = 1;
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
+    private SharedPreferences settingProperties;
     private TextInputEditText shuiyuEditText;
     private TextInputEditText luoxueEditText;
     private TextInputEditText userId;
     private String x;
     private String y;
     private FragmentSlideshowBinding binding;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         settingProperties = requireActivity().getSharedPreferences("setting", Context.MODE_PRIVATE);
     }
+
     private void show(String text) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show());
         }
     }
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         SlideshowViewModel slideshowViewModel =
@@ -74,7 +84,7 @@ public class SlideshowFragment extends Fragment {
         switchMaterial.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = settingProperties.edit();
             if (isChecked) {
-                show( "已开启实验性功能,可能并不起作用");
+                show("已开启实验性功能,可能并不起作用");
                 editor.putBoolean("setting_autobeta1", true);
             } else {
                 editor.putBoolean("setting_autobeta1", false);
@@ -133,6 +143,7 @@ public class SlideshowFragment extends Fragment {
         webView.loadUrl(url); // 加载网页
         return root;
     }
+
     private void openFileChooser() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
@@ -278,6 +289,7 @@ public class SlideshowFragment extends Fragment {
             }
         }
     }
+
     private void getLatestRelease() {
         GitHubApiService service = GitHubApiClient.getClient();
         Call<Release> call = service.getLatestRelease("Spaso1", "FindMaimaiDX_Phone"); // 替换为你的仓库信息
@@ -293,13 +305,13 @@ public class SlideshowFragment extends Fragment {
                         String name = release.getName();
                         String body = release.getBody();
                         String htmlUrl = release.getHtmlUrl();
-                        TextView textView = binding.vits;
-                        textView.setText(textView.getText() + tagName + "\n" + name + "\n" + body);
+                        if (isAdded()) {
+                            TextView textView = binding.vits;
+                            textView.setText(textView.getText() + tagName + "\n" + name + "\n" + body);
+                        }
                         //Toast.makeText(SettingActivity.this, "Latest Release:\nTag Name: " + tagName + "\nName: " + name + "\nBody: " + body + "\nHTML URL: " + htmlUrl, Toast.LENGTH_SHORT).show();
-                    } else {
-                    }
-                } else {
-                }
+                    }else{}
+                }else{}
             }
 
             @Override
@@ -327,9 +339,11 @@ public class SlideshowFragment extends Fragment {
         float height = displayMetrics.heightPixels;
         return new float[]{width, height};
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
         binding = null;
     }
 }
