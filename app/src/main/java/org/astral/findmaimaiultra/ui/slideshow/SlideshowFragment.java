@@ -310,8 +310,8 @@ public class SlideshowFragment extends Fragment {
                             textView.setText(textView.getText() + tagName + "\n" + name + "\n" + body);
                         }
                         //Toast.makeText(SettingActivity.this, "Latest Release:\nTag Name: " + tagName + "\nName: " + name + "\nBody: " + body + "\nHTML URL: " + htmlUrl, Toast.LENGTH_SHORT).show();
-                    }
-                }
+                    }else{}
+                }else{}
             }
 
             @Override
