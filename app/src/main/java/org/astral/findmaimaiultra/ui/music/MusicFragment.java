@@ -165,7 +165,9 @@ public class MusicFragment extends Fragment {
         ImageView musicTypeImageView = dialogView.findViewById(R.id.dialog_music_type);
         ImageView musicComboStatusTextView = dialogView.findViewById(R.id.dialog_music_combo_status);
         TextView musicPlayCountTextView = dialogView.findViewById(R.id.dialog_music_play_count);
-
+        if (musicRating.getMusicName().equals("空-请去导入成绩")) {
+            return;
+        }
         // 设置图像曲绘
         int id = musicRating.getMusicId();
         if (id > 10000) {

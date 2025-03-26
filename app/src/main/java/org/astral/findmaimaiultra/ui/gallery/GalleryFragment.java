@@ -41,8 +41,15 @@ public class GalleryFragment extends Fragment {
         binding = FragmentGalleryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-        double x = Double.parseDouble(Objects.requireNonNull(sharedViewModel.getSharedMap().getValue().get("x")));
-        double y = Double.parseDouble(Objects.requireNonNull(sharedViewModel.getSharedMap().getValue().get("y")));
+        double x = 116.3912757;
+        double y = 39.906217;
+        try {
+            x = Double.parseDouble(Objects.requireNonNull(sharedViewModel.getSharedMap().getValue().get("x")));
+            y = Double.parseDouble(Objects.requireNonNull(sharedViewModel.getSharedMap().getValue().get("y")));
+        }catch (Exception e) {
+            Toast.makeText(getContext(), "经纬度获取失败", Toast.LENGTH_SHORT).show();
+        }
+
 
         mapView = binding.bmapView;
         mapView.onCreate(getContext(),savedInstanceState);

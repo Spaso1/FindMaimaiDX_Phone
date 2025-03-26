@@ -1,16 +1,12 @@
 package org.astral.findmaimaiultra.ui.slideshow;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.provider.Settings;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,32 +15,33 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
-import com.yalantis.ucrop.UCrop;
 import org.astral.findmaimaiultra.been.Release;
 import org.astral.findmaimaiultra.databinding.FragmentSlideshowBinding;
 import org.astral.findmaimaiultra.service.GitHubApiService;
+import org.astral.findmaimaiultra.ui.ImagePickerListener;
 import org.astral.findmaimaiultra.ui.LinkQQBot;
 import org.astral.findmaimaiultra.utill.GitHubApiClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.Objects;
 
 import static android.app.Activity.RESULT_OK;
 
 public class SlideshowFragment extends Fragment {
     private SharedPreferences settingProperties;
-    private static final int PICK_IMAGE_REQUEST = 1;
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
     private TextInputEditText shuiyuEditText;
     private TextInputEditText luoxueEditText;
@@ -52,16 +49,59 @@ public class SlideshowFragment extends Fragment {
     private String x;
     private String y;
     private FragmentSlideshowBinding binding;
+    private ImagePickerListener imagePickerListener;
+
+    private static final String[] REQUIRED_PERMISSIONS = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof ImagePickerListener) {
+            imagePickerListener = (ImagePickerListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement ImagePickerListener");
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         settingProperties = requireActivity().getSharedPreferences("setting", Context.MODE_PRIVATE);
+
+        if (allPermissionsGranted()) {
+            // 初始化代码
+        } else {
+            requestPermissions();
+        }
     }
+
     private void show(String text) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show());
         }
     }
+
+    private boolean allPermissionsGranted() {
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(requireContext(), permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(
+                requireActivity(),
+                REQUIRED_PERMISSIONS,
+                REQUEST_CODE_PERMISSIONS
+        );
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         SlideshowViewModel slideshowViewModel =
@@ -74,7 +114,7 @@ public class SlideshowFragment extends Fragment {
         switchMaterial.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = settingProperties.edit();
             if (isChecked) {
-                show( "已开启实验性功能,可能并不起作用");
+                show("已开启实验性功能,可能并不起作用");
                 editor.putBoolean("setting_autobeta1", true);
             } else {
                 editor.putBoolean("setting_autobeta1", false);
@@ -102,7 +142,7 @@ public class SlideshowFragment extends Fragment {
             saveSettings(switchMaterial.isChecked(), shuiyuEditText.getText().toString(), luoxueEditText.getText().toString(), userId.getText().toString());
         });
         MaterialButton changeButton = binding.changePhoto;
-        changeButton.setOnClickListener(v -> openFileChooser());
+        changeButton.setOnClickListener(v -> imagePickerListener.openFileChooser());
         TextView uuid = binding.uuid;
         @SuppressLint("HardwareIds") String androidId = Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         uuid.setText("Android ID:" + androidId);
@@ -133,13 +173,6 @@ public class SlideshowFragment extends Fragment {
         webView.loadUrl(url); // 加载网页
         return root;
     }
-    private void openFileChooser() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.setType("image/*");
-        if (intent.resolveActivity(getContext().getPackageManager()) != null) {
-            startActivityForResult(intent, PICK_IMAGE_REQUEST);
-        }
-    }
 
     private String getAppVersionName() {
         try {
@@ -148,75 +181,6 @@ public class SlideshowFragment extends Fragment {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
             return null;
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d("SettingActivity", "onActivityResult called with requestCode: " + requestCode + ", resultCode: " + resultCode);
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri uri = data.getData();
-            startCropActivity(uri);
-        } else if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
-            handleCroppedImage(data);
-        } else if (requestCode == UCrop.REQUEST_CROP && resultCode == UCrop.RESULT_ERROR) {
-            final Throwable cropError = UCrop.getError(data);
-            Log.e("SettingActivity", "Cropping failed: ", cropError);
-        } else {
-            Log.w("SettingActivity", "Unexpected result from image picker or cropper");
-        }
-    }
-
-    private void startCropActivity(Uri uri) {
-        Uri destinationUri = Uri.fromFile(new File(requireActivity().getCacheDir(), "cropped_image.jpg"));
-
-        UCrop.Options options = new UCrop.Options();
-        options.setCompressionQuality(90);
-        options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
-
-        // 计算屏幕宽高比
-        float[] aspectRatio = getScreenAspectRatio();
-
-        UCrop.of(uri, destinationUri)
-                .withAspectRatio(aspectRatio[0], aspectRatio[1]) // 设置裁剪比例为屏幕比例
-                .withMaxResultSize(getScreenWidth(), getScreenHeight()) // 设置最大结果尺寸
-                .withOptions(options)
-                .start(getActivity());
-    }
-
-    private void handleCroppedImage(Intent data) {
-        Uri croppedUri = UCrop.getOutput(data);
-        if (croppedUri != null) {
-            try {
-                Bitmap photo = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), croppedUri);
-                if (photo != null) {
-                    File croppedFile = new File(getContext().getExternalFilesDir(null), "cropped_image.jpg");
-                    try (FileOutputStream out = new FileOutputStream(croppedFile)) {
-                        photo.compress(Bitmap.CompressFormat.JPEG, 90, out);
-                        SharedPreferences.Editor editor = settingProperties.edit();
-                        editor.putString("image_uri", croppedUri.toString());
-                        editor.apply();
-                        show("成功");
-                        Log.d("SettingActivity", "图片已保存到: " + croppedFile.getAbsolutePath());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        show("失败");
-                        Log.e("SettingActivity", "保存图片失败: ", e);
-                    }
-                } else {
-                    show("无法获取裁剪后的图片");
-                    Log.w("SettingActivity", "无法获取裁剪后的图片");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                show("无法获取裁剪后的图片");
-                Log.e("SettingActivity", "无法获取裁剪后的图片: ", e);
-            }
-        } else {
-            show("无法找到裁剪后的图片");
-            Log.w("SettingActivity", "无法找到裁剪后的图片");
         }
     }
 
@@ -278,6 +242,7 @@ public class SlideshowFragment extends Fragment {
             }
         }
     }
+
     private void getLatestRelease() {
         GitHubApiService service = GitHubApiClient.getClient();
         Call<Release> call = service.getLatestRelease("Spaso1", "FindMaimaiDX_Phone"); // 替换为你的仓库信息
@@ -289,16 +254,18 @@ public class SlideshowFragment extends Fragment {
                 if (response.isSuccessful()) {
                     Release release = response.body();
                     if (release != null) {
-                        String tagName = release.getTagName();
-                        String name = release.getName();
-                        String body = release.getBody();
-                        String htmlUrl = release.getHtmlUrl();
-                        TextView textView = binding.vits;
-                        textView.setText(textView.getText() + tagName + "\n" + name + "\n" + body);
-                        //Toast.makeText(SettingActivity.this, "Latest Release:\nTag Name: " + tagName + "\nName: " + name + "\nBody: " + body + "\nHTML URL: " + htmlUrl, Toast.LENGTH_SHORT).show();
-                    } else {
+                        try {
+                            String tagName = release.getTagName();
+                            String name = release.getName();
+                            String body = release.getBody();
+                            String htmlUrl = release.getHtmlUrl();
+                            TextView textView = binding.vits;
+                            textView.setText(textView.getText() + tagName + "\n" + name + "\n" + body);
+                            //Toast.makeText(SettingActivity.this, "Latest Release:\nTag Name: " + tagName + "\nName: " + name + "\nBody: " + body + "\nHTML URL: " + htmlUrl, Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Log.d("SettingActivity", "获取最新版本失败: ", e);
+                        }
                     }
-                } else {
                 }
             }
 
@@ -308,25 +275,6 @@ public class SlideshowFragment extends Fragment {
         });
     }
 
-    private int getScreenWidth() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.widthPixels;
-    }
-
-    private int getScreenHeight() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.heightPixels;
-    }
-
-    private float[] getScreenAspectRatio() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        float width = displayMetrics.widthPixels;
-        float height = displayMetrics.heightPixels;
-        return new float[]{width, height};
-    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();

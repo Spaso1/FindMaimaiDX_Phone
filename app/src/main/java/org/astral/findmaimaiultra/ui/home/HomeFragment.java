@@ -7,7 +7,8 @@ import android.app.AlertDialog;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
+import android.graphics.*;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -21,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -80,6 +82,8 @@ public class HomeFragment extends Fragment {
     private boolean isFlag = true;
     private SharedPreferences shoucang;
     private SharedPreferences settingProperties;
+    private SharedPreferences settingProperties2;
+
     private FragmentHomeBinding binding;
     private SharedViewModel sharedViewModel;
     @Override
@@ -90,6 +94,8 @@ public class HomeFragment extends Fragment {
         if (context != null) {
             shoucang = context.getSharedPreferences("shoucang_prefs", Context.MODE_PRIVATE);
             settingProperties = context.getSharedPreferences("setting_prefs", Context.MODE_PRIVATE);
+            settingProperties2 = context.getSharedPreferences("setting", Context.MODE_PRIVATE);
+
         }
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
@@ -118,6 +124,124 @@ public class HomeFragment extends Fragment {
             // 使用 savedData
         }
 
+        if (settingProperties2.getString("image_uri", null) != null ) {
+            Uri uri = Uri.parse(settingProperties2.getString("image_uri", null));
+            try {
+                Bitmap bitmap = BitmapFactory.decodeStream(getContext().getContentResolver().openInputStream(uri));
+                if (bitmap != null) {
+                    // 获取RecyclerView的尺寸
+                    int recyclerViewWidth = 0;
+                    int recyclerViewHeight = 0;
+                    recyclerViewWidth = recyclerView.getWidth();
+                    recyclerViewHeight = recyclerView.getHeight();
+                    if (recyclerViewWidth > 0 && recyclerViewHeight > 0) {
+                        // 计算缩放比例
+                        float scaleWidth = ((float) recyclerViewWidth) / bitmap.getWidth();
+                        float scaleHeight = ((float) recyclerViewHeight) / bitmap.getHeight();
+
+                        // 选择较大的缩放比例以保持图片的原始比例
+                        float scaleFactor = Math.max(scaleWidth, scaleHeight);
+
+                        // 计算新的宽度和高度
+                        int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                        int newHeight = (int) (bitmap.getHeight() * scaleFactor);
+
+                        // 缩放图片
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+                        // 计算裁剪区域
+                        int x = (scaledBitmap.getWidth() - recyclerViewWidth) / 2;
+                        int y = (scaledBitmap.getHeight() - recyclerViewHeight) / 2;
+
+                        // 处理x和y为负数的情况
+                        x = Math.max(x, 0);
+                        y = Math.max(y, 0);
+
+                        // 裁剪图片
+                        Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, x, y, recyclerViewWidth, recyclerViewHeight);
+
+                        // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                        Bitmap transparentBitmap = Bitmap.createBitmap(croppedBitmap.getWidth(), croppedBitmap.getHeight(), croppedBitmap.getConfig());
+
+                        // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                        Canvas canvas = new Canvas(transparentBitmap);
+
+                        // 创建一个 Paint 对象，并设置透明度
+                        Paint paint = new Paint();
+                        paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                        // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                        canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                        // 创建BitmapDrawable并设置其边界为RecyclerView的尺寸
+                        BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+
+                        // 设置recyclerView的背景
+                        recyclerView.setBackground(bitmapDrawable);
+
+                    } else {
+                        // 如果RecyclerView的尺寸未确定，可以使用ViewTreeObserver来监听尺寸变化
+                        recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                int recyclerViewWidth = 0;
+                                int recyclerViewHeight = 0;
+                                recyclerViewWidth = recyclerView.getWidth();
+                                recyclerViewHeight = recyclerView.getHeight();
+
+                                // 计算缩放比例
+                                float scaleWidth = ((float) recyclerViewWidth) / bitmap.getWidth();
+                                float scaleHeight = ((float) recyclerViewHeight) / bitmap.getHeight();
+
+                                // 选择较大的缩放比例以保持图片的原始比例
+                                float scaleFactor = Math.max(scaleWidth, scaleHeight);
+
+                                // 计算新的宽度和高度
+                                int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                                int newHeight = (int) (bitmap.getHeight() * scaleFactor);
+
+                                // 缩放图片
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+                                // 计算裁剪区域
+                                int x = (scaledBitmap.getWidth() - recyclerViewWidth) / 2;
+                                int y = (scaledBitmap.getHeight() - recyclerViewHeight) / 2;
+
+                                // 处理x和y为负数的情况
+                                x = Math.max(x, 0);
+                                y = Math.max(y, 0);
+
+                                // 裁剪图片
+                                Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, x, y, recyclerViewWidth, recyclerViewHeight);
+
+                                // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                                Bitmap transparentBitmap = Bitmap.createBitmap(croppedBitmap.getWidth(), croppedBitmap.getHeight(), croppedBitmap.getConfig());
+
+                                // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                                Canvas canvas = new Canvas(transparentBitmap);
+
+                                // 创建一个 Paint 对象，并设置透明度
+                                Paint paint = new Paint();
+                                paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                                // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                                canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                                // 创建BitmapDrawable并设置其边界为RecyclerView的尺寸
+                                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+                                recyclerView.setBackground(bitmapDrawable);
+
+                            }
+                        });
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(requireContext(), "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
+            }
+        }
         return root;
     }
 
@@ -296,6 +420,7 @@ public class HomeFragment extends Fragment {
                 // 调用高德地图 API 进行逆地理编码
                 reverseGeocode(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
             } else {
+                Toast.makeText(requireActivity().getApplicationContext(), "无法获取最新定位信息", Toast.LENGTH_SHORT).show();
                 Log.d("Location", "无法获取最新定位信息");
                 setDefaultLocation(); // 设置默认位置
             }
@@ -418,6 +543,9 @@ public class HomeFragment extends Fragment {
     private void setDefaultLocation() {
         x = String.valueOf(116.3912757);
         y = String.valueOf(39.906217);
+        tot = "北京";
+        city = "北京市";
+        extracted();
     }
 
     //手动刷新定位
