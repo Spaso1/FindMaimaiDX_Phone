@@ -5,6 +5,10 @@
           android:title="@string/action_settings"
           android:orderInCategory="100"
           app:showAsAction="never"/>
+    <item android:id="@+id/action_updatePlace"
+          android:title="新增机厅"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
     <item android:id="@+id/action_paika"
           android:title="排卡"
           android:orderInCategory="100"
@@ -13,4 +17,5 @@
           android:title="上传成绩"
           android:orderInCategory="100"
           app:showAsAction="never"/>
+
 </menu>
