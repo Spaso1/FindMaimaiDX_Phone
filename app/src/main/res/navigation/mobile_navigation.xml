@@ -20,7 +20,12 @@
             android:id="@+id/nav_music"
             android:name="org.astral.findmaimaiultra.ui.music.MusicFragment"
             android:label="@string/menu_music"
-            tools:layout="@layout/fragment_gallery"/>
+            tools:layout="@layout/fragment_music"/>
+    <fragment
+            android:id="@+id/nav_pixiv"
+            android:name="org.astral.findmaimaiultra.ui.pixiv.PixivFragment"
+            android:label="@string/menu_pixiv"
+            tools:layout="@layout/fragment_pixiv"/>
     <fragment
             android:id="@+id/nav_slideshow"
             android:name="org.astral.findmaimaiultra.ui.slideshow.SlideshowFragment"
