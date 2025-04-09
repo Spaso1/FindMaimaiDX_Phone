@@ -70,7 +70,7 @@ public class LinkQQBot extends AppCompatActivity {
                 return;
             }
             try {
-                sendApiRequest(key.getText().toString(), safecode.getText().toString());
+                sendApiRequest(key.getText().toString(), safecode.getText().toString(),1);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -122,7 +122,7 @@ public class LinkQQBot extends AppCompatActivity {
         });
     }
 
-    private void sendApiRequest(String key,String safecode) throws Exception {
+    private void sendApiRequest(String key,String safecode,int code) throws Exception {
         String url = "http://mai.godserver.cn:11451/api/qq/safeCoding?result=" + key + "&safecode=" + safecode;
 
         Request request = new Request.Builder()
@@ -143,6 +143,14 @@ public class LinkQQBot extends AppCompatActivity {
                     runOnUiThread(() -> {
                         Toast.makeText(LinkQQBot.this, "Response: " + responseData, Toast.LENGTH_LONG).show();
                         Log.d("TAG", "Response: " + responseData);
+                        if(responseData.equals("错误") && code==1) {
+                            try {
+                                sendApiRequest(safecode,key,2);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                            return;
+                        }
                         userId.setText(responseData);
                         SharedPreferences.Editor editor = sp.edit();
                         editor.putString("userId", responseData);

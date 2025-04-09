@@ -15,6 +15,7 @@ import android.location.Address;
 import android.location.*;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -25,6 +26,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -60,10 +63,9 @@ import org.astral.findmaimaiultra.utill.AddressParser;
 import org.astral.findmaimaiultra.utill.SharedViewModel;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.io.EOFException;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -280,7 +282,8 @@ public class PixivFragment extends Fragment {
         share.setOnClickListener(v -> {
             // 获取要打开的链接
             String url = "http://tokyo.1.godserver.cn:45678/api/v1/pixiv/photos?id=" + id; // 假设 getShareUrl() 返回要打开的链接
-            openBrowser(getContext(), url);
+            Log.d("PixivFragment12121212", "openIllustData: " + url);
+            download(url);
         });
 
         // 设置动画效果
@@ -350,42 +353,75 @@ public class PixivFragment extends Fragment {
         // 显示对话框
         dialog.show();
     }
+    private void download(String url) {
+        //复制
+        ClipboardManager clipboardManager = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clipData = ClipData.newPlainText("text", url);
+        clipboardManager.setPrimaryClip(clipData);
+        Toast.makeText(requireContext(), "图片链接已经复制!", Toast.LENGTH_SHORT).show();
 
-    public void openBrowser(Context context, String url) {
-        Uri uri = Uri.parse(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        startActivity(intent);
+        //Intent打开链接
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(requireContext(), "无法打开链接", Toast.LENGTH_SHORT).show();
+        }
     }
-    private void loadImage(ImageView imageView, String url,LinearLayout li) {
+    private OkHttpClient createOkHttpClient() {
+        return new OkHttpClient.Builder()
+                .connectTimeout(60, TimeUnit.SECONDS) // 连接超时时间
+                .readTimeout(60, TimeUnit.SECONDS)    // 读取超时时间
+                .writeTimeout(60, TimeUnit.SECONDS)   // 写入超时时间
+                .build();
+    }
+    private void loadImage(ImageView imageView, String url, LinearLayout li) {
+        // 创建自定义的 OkHttpClient
+        OkHttpClient okHttpClient = createOkHttpClient();
+
+        // 创建请求
         Request request = new Request.Builder()
                 .url(url)
                 .build();
-        Log.d("Web", url);
 
-        OkHttpClient client =  new OkHttpClient();
-        client.newBuilder().connectTimeout(180, TimeUnit.SECONDS);
-        client.newBuilder().readTimeout(180, TimeUnit.SECONDS);
-        client.newBuilder().writeTimeout(180, TimeUnit.SECONDS);
-        client.newCall(request).enqueue(new Callback() {
+        // 显示加载中的 Snackbar
+        Snackbar snackbar = Snackbar.make(requireView(), "加载中", Snackbar.LENGTH_INDEFINITE);
+        snackbar.show();
+
+        // 发送请求
+        okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
-                Log.e("PixivAdapter", "Failed to load image: " + e.getMessage());
+                handler.post(() -> {
+                    Toast.makeText(requireContext(), "图片加载失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    snackbar.dismiss();
+                });
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    byte[] imageBytes = response.body().bytes();
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                    InputStream inputStream = response.body().byteStream();
+                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                     if (bitmap != null) {
-                        imageView.post(() -> imageView.setImageBitmap(bitmap));
+                        handler.post(() -> {
+                            imageView.setImageBitmap(bitmap);
+                            li.addView(imageView);
+                            snackbar.dismiss();
+                        });
+                    } else {
+                        handler.post(() -> {
+                            Toast.makeText(requireContext(), "图片加载失败", Toast.LENGTH_SHORT).show();
+                            snackbar.dismiss();
+                        });
                     }
-                    requireActivity().runOnUiThread(() -> {
-                        li.addView(imageView);
-                    });
                 } else {
-                    Log.e("PixivAdapter", "Failed to load image: " + response.code());
+                    handler.post(() -> {
+                        Toast.makeText(requireContext(), "请求失败: " + response.code(), Toast.LENGTH_SHORT).show();
+                        snackbar.dismiss();
+                    });
                 }
             }
         });
