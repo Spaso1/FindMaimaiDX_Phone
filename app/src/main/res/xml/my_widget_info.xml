@@ -1,0 +1,14 @@
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:minWidth="140dp"
+                    android:minHeight="140dp"
+                    android:updatePeriodMillis="3600000"
+                    android:initialLayout="@layout/widget_2x2"
+                    android:resizeMode="horizontal|vertical"
+                    android:widgetCategory="home_screen"
+                    android:previewImage="@drawable/rounded_background"
+                    android:configure="org.astral.findmaimaiultra.ui.widget.WidgetConfigureActivity">
+
+    <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+    </intent-filter>
+</appwidget-provider>

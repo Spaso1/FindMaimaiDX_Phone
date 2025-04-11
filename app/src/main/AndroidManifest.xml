@@ -69,6 +69,15 @@
                     android:name="android.support.FILE_PROVIDER_PATHS"
                     android:resource="@xml/file_paths" />
         </provider>
+        <receiver android:name=".ui.widget.MyWidgetProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                    android:name="android.appwidget.provider"
+                    android:resource="@xml/my_widget_info" />
+        </receiver>
+        <service android:name=".ui.widget.MyWidgetService" />
 
         <meta-data
                 android:name="com.baidu.lbsapi.API_KEY"
@@ -123,6 +132,21 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
+        <service android:name=".ui.widget.WidgetUpdateService" android:exported="true" android:enabled="true"/>
+
+        <!-- WidgetConfigureActivity -->
+        <activity android:name=".ui.widget.WidgetConfigureActivity" />
+
+        <!-- WidgetProvider -->
+        <receiver android:name=".ui.widget.MyWidgetProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                    android:name="android.appwidget.provider"
+                    android:resource="@xml/my_widget_info" />
+        </receiver>
 
         <service android:name="org.astral.findmaimaiultra.utill.updater.server.HttpServerService"
                  android:exported="true" />

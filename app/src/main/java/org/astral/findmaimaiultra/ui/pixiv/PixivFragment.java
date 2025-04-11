@@ -311,11 +311,12 @@ public class PixivFragment extends Fragment {
                 Log.d("PixivFragment111111111", "onResponse: " + res);
                 if (response.isSuccessful()) {
                     PagePixivResponse photoResponse = new Gson().fromJson(res, PagePixivResponse.class);
-                    TextView user = view.findViewById(R.id.user);
-                    user.setText(photoResponse.getBody().getUserName());
-                    TextView des = view.findViewById(R.id.des);
-                    des.setText(photoResponse.getBody().getDescription());
-
+                    requireActivity().runOnUiThread(() -> {
+                        TextView user = view.findViewById(R.id.user);
+                        user.setText(photoResponse.getBody().getUserName());
+                        TextView des = view.findViewById(R.id.des);
+                        des.setText(photoResponse.getBody().getDescription());
+                    });
                 }
             }
 
@@ -407,9 +408,11 @@ public class PixivFragment extends Fragment {
                     Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                     if (bitmap != null) {
                         handler.post(() -> {
-                            imageView.setImageBitmap(bitmap);
-                            li.addView(imageView);
-                            snackbar.dismiss();
+                            requireActivity().runOnUiThread(() -> {
+                                imageView.setImageBitmap(bitmap);
+                                li.addView(imageView);
+                                snackbar.dismiss();
+                            });
                         });
                     } else {
                         handler.post(() -> {

@@ -53,6 +53,7 @@ public class AddressParser {
                         HomeFragment.province = "天津市";
                     }
                 }
+
             }
         }catch (Exception e) {
         }

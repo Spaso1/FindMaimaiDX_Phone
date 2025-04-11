@@ -267,8 +267,18 @@ public class HomeFragment extends Fragment {
     @SuppressLint("StaticFieldLeak")
     private void sendGetRequest() {
         OkHttpClient client = new OkHttpClient();
+        String tag = "";
+        String web = "";
+        try {
+            tag = city.split("市")[0];
+            web = "http://mai.godserver.cn:11451/api/mai/v1/search?prompt1=" +  tag+ "&status=市";
+        }catch ( Exception e) {
+            tag = "xy("+ x +","+ y +")";
+            web = "http://mai.godserver.cn:11451/api/mai/v1/search?prompt1=" +  tag+ "&status=xy";
+        }
 
-        String web = "http://mai.godserver.cn:11451/api/mai/v1/search?prompt1=" + city.split("市")[0] + "&status=市";
+        Log.d("WebWebWebWebWebWebWebWebWebWeb   ", web);
+
         if (!isFlag) {
             web = "http://mai.godserver.cn:11451/api/mai/v1/search?data_place=" + tagplace;
         }
@@ -348,54 +358,44 @@ public class HomeFragment extends Fragment {
 
         boolean flag2 = true;
         if (flag2) {
-            adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
-                @Override
-                public void onItemClick(Place place) {
-                    Intent intent = new Intent(context, PageActivity.class);
-                    intent.putExtra("id", place.getId());
-                    intent.putExtra("name", place.getName());
-                    intent.putExtra("address", place.getAddress());
-                    intent.putExtra("province", place.getProvince());
-                    intent.putExtra("city", place.getCity());
-                    intent.putExtra("area", place.getArea());
-                    intent.putExtra("x", place.getX());
-                    intent.putExtra("y", place.getY());
-                    intent.putExtra("count", place.getCount());
-                    intent.putExtra("bad", place.getBad());
-                    intent.putExtra("good", place.getGood());
-                    intent.putExtra("num", place.getNum());
-                    intent.putExtra("numJ", place.getNumJ());
-                    intent.putExtra("meituan", place.getMeituan_link());
-                    intent.putExtra("douyin", place.getDouyin_link());
-                    startActivity(intent);
-                }
-            });
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(Place place) {
+                            Intent intent = new Intent(context, PageActivity.class);
+                            intent.putExtra("id", place.getId());
+                            intent.putExtra("name", place.getName());
+                            intent.putExtra("address", place.getAddress());
+                            intent.putExtra("province", place.getProvince());
+                            intent.putExtra("city", place.getCity());
+                            intent.putExtra("area", place.getArea());
+                            intent.putExtra("x", place.getX());
+                            intent.putExtra("y", place.getY());
+                            intent.putExtra("count", place.getCount());
+                            intent.putExtra("bad", place.getBad());
+                            intent.putExtra("good", place.getGood());
+                            intent.putExtra("num", place.getNum());
+                            intent.putExtra("numJ", place.getNumJ());
+                            intent.putExtra("meituan", place.getMeituan_link());
+                            intent.putExtra("douyin", place.getDouyin_link());
+                            startActivity(intent);
+                        }
+                    });
                     recyclerView.setAdapter(adapter);
-                    // 设置 Toolbar 标题
                     String navHomeLabel = getString(R.string.menu_home);
                     Toolbar toolbar = ((MainActivity) requireActivity()).findViewById(R.id.toolbar);
                     if(!(toolbar.getTitle().equals("歌曲成绩") || toolbar.getTitle().equals("地图")|| toolbar.getTitle().equals("设置"))) {
                         toolbar.setTitle("FindMaimaiDX - " + a.size() + " 店铺" + "\n" + tot);
                     }
-
-                    // 更新 SharedViewModel 中的 Map
                     sharedViewModel.setPlacelist(new ArrayList<>(a));
-                    // 通知适配器数据已更改
                     adapter.notifyDataSetChanged();
                 }
             });
-            // 设置Toolbar
-
-            for (Place p : a) {
-                if (p.getX() == 0.0) {
-                    // Log.i(p.getId() + "", p.getName() + "没有坐标");
-                }
-            }
         }
     }
+
 
     private List<Place> parseJsonToPlaceList(String jsonString) {
         Gson gson = new Gson();
