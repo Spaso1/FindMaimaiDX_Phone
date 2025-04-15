@@ -16,6 +16,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.adapter.PhotoAdapter;
@@ -36,11 +37,12 @@ public class JMActivity extends AppCompatActivity {
         initRecyclerView();
     }
 
-    @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
+    @SuppressLint({"ClickableViewAccessibility", "SetTextI18n", "ResourceType"})
     private void initRecyclerView() {
         Intent intent = getIntent();
         String res = intent.getStringExtra("album");
         Album a = new Gson().fromJson(res, Album.class);
+        Toast.makeText(this,"加载中", Toast.LENGTH_SHORT).show();
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         photoAdapter = new PhotoAdapter(this, a.getImage_urls(), a.getNums(), a);

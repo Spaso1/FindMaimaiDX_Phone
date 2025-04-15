@@ -54,6 +54,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -486,23 +487,25 @@ public class PixivFragment extends Fragment {
         startActivity(intent);
     }
 
-    private void openJM(IllustData illustData,Snackbar snackbar) {
+    private void openJM(IllustData illustData, Snackbar snackbar) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
         builder.setTitle(illustData.getTitle());
         //snackbar长显示
-        snackbar = Snackbar.make(requireView(), "正在加载", Snackbar.LENGTH_INDEFINITE);
+        Date date = new Date();
+        //如果超过9点
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH");
+        if (Integer.parseInt(simpleDateFormat.format(date))>=21) {
+            snackbar = Snackbar.make(requireView(), "正在加载(夜晚时间段服务器压力较大)", Snackbar.LENGTH_INDEFINITE);
+        } else {
+            snackbar = Snackbar.make(requireView(), "正在加载", Snackbar.LENGTH_INDEFINITE);
+        }
         snackbar.show();
-        OkHttpClient httpClient = new OkHttpClient();
-        //配置超时
-        httpClient.newBuilder().connectTimeout(120, TimeUnit.SECONDS);
-        httpClient.newBuilder().readTimeout(120, TimeUnit.SECONDS);
-        httpClient.newBuilder().writeTimeout(120, TimeUnit.SECONDS);
+        OkHttpClient httpClient = createOkHttpClient(); // 使用 createOkHttpClient 方法创建 OkHttpClient
 
         Request request = new Request.Builder()
                 .url("http://jm.godserver.cn:35621/album/" + illustData.getId() + "/")
                 .build();
         Log.d("MainLaunch", "http://jm.godserver.cn:35621/album/" + illustData.getId() + "/");
-        //配置超时
 
         Snackbar finalSnackbar = snackbar;
         httpClient.newCall(request).enqueue(new Callback() {
@@ -515,12 +518,18 @@ public class PixivFragment extends Fragment {
                     finalSnackbar.dismiss();
                     Album a = new Gson().fromJson(res, Album.class);
                     openJMProject(a);
+                } else {
+                    Log.d("PixivFragment", "onResponse: 请求失败，状态码: " + response.code());
+                    handler.post(() -> {
+                        Toast.makeText(requireContext(), "请求失败: " + response.code(), Toast.LENGTH_SHORT).show();
+                        finalSnackbar.dismiss();
+                    });
                 }
             }
 
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                handler.post(()->{
+                handler.post(() -> {
                     Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                     finalSnackbar.dismiss();
                 });
@@ -528,6 +537,7 @@ public class PixivFragment extends Fragment {
             }
         });
     }
+
     private Bitmap decodeImage(Bitmap imgSrc, int num) {
         if (num == 0) {
             return imgSrc;

@@ -55,6 +55,13 @@ public class PixivAdapter extends RecyclerView.Adapter<PixivAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         IllustData data = dataList.get(position);
         holder.title.setText(data.getTitle());
+
+        // 清除之前的图片和状态
+        holder.backgroundLayout.setImageBitmap(null);
+        holder.backgroundLayout.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        holder.backgroundLayout.setOnLongClickListener(null);
+
+
         // Load image using a library like Glide or Picasso
         if (data.getUrl().startsWith("JM:")) {
             holder.title.setText("[" + data.getId() + "] " +data.getTitle());

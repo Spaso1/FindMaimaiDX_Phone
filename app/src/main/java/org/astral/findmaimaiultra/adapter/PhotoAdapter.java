@@ -63,9 +63,14 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
         int num = nums.get(position);
         String fileName = "image_" + album.getAlbum_id() + "_" + position + ".jpg";
         File cacheFile = FileUtils.getCacheDir(context, fileName);
+        // 清除之前的图片和状态
+        holder.imageView.setImageBitmap(null);
+        holder.imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        holder.imageView.setOnLongClickListener(null);
+
 
         Log.d("HHHHHHHHHH", "Loading image at position: " + loading.toString());
-        if (cacheFile.exists() && (!loading.contains(position))) {
+        if (cacheFile.exists()) {
             Log.d("HHHHHHHHHH", "Loading cached image at position: " + position);
             // 加载缓存的图片并压缩到屏幕大小
             Glide.with(context)
