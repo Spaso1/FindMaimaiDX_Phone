@@ -39,7 +39,7 @@
     <string name="nav_header_title">FindMaimaiDX</string>
     <string name="nav_header_subtitle">Reisa</string>
     <string name="action_settings">设置</string>
-    <string name="menu_pixiv">pixiv</string>
+    <string name="menu_pixiv">Image</string>
 
 
 </resources>

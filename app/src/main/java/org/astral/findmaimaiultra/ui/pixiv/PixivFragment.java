@@ -1,21 +1,14 @@
 package org.astral.findmaimaiultra.ui.pixiv;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.*;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
-import android.location.Address;
-import android.location.*;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -23,51 +16,47 @@ import android.view.*;
 import android.widget.*;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.*;
 import org.astral.findmaimaiultra.R;
-import org.astral.findmaimaiultra.adapter.MusicRatingAdapter;
 import org.astral.findmaimaiultra.adapter.PixivAdapter;
-import org.astral.findmaimaiultra.adapter.PlaceAdapter;
-import org.astral.findmaimaiultra.been.*;
+import org.astral.findmaimaiultra.been.Place;
+import org.astral.findmaimaiultra.been.pixiv.jm.Album;
+import org.astral.findmaimaiultra.been.pixiv.jm.AlbumItem;
+import org.astral.findmaimaiultra.been.pixiv.jm.SearchJM;
 import org.astral.findmaimaiultra.been.pixiv.model.IllustData;
 import org.astral.findmaimaiultra.been.pixiv.model.PixivResponse;
 import org.astral.findmaimaiultra.been.pixiv.model.pages.PagePixivResponse;
 import org.astral.findmaimaiultra.been.pixiv.model.pages.photo.Photo;
 import org.astral.findmaimaiultra.been.pixiv.model.pages.photo.PhotoResponse;
-import org.astral.findmaimaiultra.been.pixiv.model.pages.photo.Urls;
-import org.astral.findmaimaiultra.databinding.FragmentHomeBinding;
 import org.astral.findmaimaiultra.databinding.FragmentPixivBinding;
-import org.astral.findmaimaiultra.ui.MainActivity;
+import org.astral.findmaimaiultra.ui.JMActivity;
 import org.astral.findmaimaiultra.ui.PageActivity;
 import org.astral.findmaimaiultra.ui.home.HomeViewModel;
-import org.astral.findmaimaiultra.utill.AddressParser;
 import org.astral.findmaimaiultra.utill.SharedViewModel;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
 
 public class PixivFragment extends Fragment {
     private RecyclerView recyclerView;
@@ -142,19 +131,29 @@ public class PixivFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(adapter);
         // 设置搜索框的查询监听器
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // 显示 Snackbar 提示“正在搜索”
+                RadioGroup radioGroup = binding.radioGroup2;
+
+                
                 Snackbar snackbar = Snackbar.make(root, "正在搜索...", Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAnchorView(searchView); // 设置 Snackbar 锚定到搜索框
                 snackbar.show();
-
+                //获取单选框
+                int checkedRadioButtonId = radioGroup.getCheckedRadioButtonId();
                 adapter.update(new ArrayList<>());
                 adapter.notifyDataSetChanged();
-
                 // 当用户提交查询时调用 fetchData 方法
-                fetchData(query, 1, snackbar);
+                if (checkedRadioButtonId == R.id.pb) {
+                    fetchData(query, 1, snackbar);
+                } else if (checkedRadioButtonId == R.id.jmb) {
+                    fetchDataJM(query, 1, snackbar);
+                }else if (checkedRadioButtonId == R.id.maimai) {
+                    fetchDataMai(query, 1, snackbar);
+                }
                 // 显示搜索结果布局，隐藏 RecyclerView
                 path1.setVisibility(View.GONE);
                 path2.setVisibility(View.VISIBLE);
@@ -171,7 +170,106 @@ public class PixivFragment extends Fragment {
         return root;
     }
 
+    private void fetchDataMai(String query, int i, Snackbar snackbar) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("http://mai.godserver.cn:11451/api/mai/v1/searchAll?query=" + query )
+                .build();
+        snackbar.dismiss();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String json = response.body().string();
+                if (response.isSuccessful()) {
+                    List<Place> dataList = new Gson().fromJson(json, new TypeToken<List<Place>>() {
+                    }.getType());
+                    List<IllustData> dataList2 = new ArrayList<>();
+                    for (Place place : dataList) {
+                        IllustData illustData = new IllustData();
+                        illustData.setId("Place:"+place.getId());
+                        illustData.setTitle(place.getName());
+                        illustData.setAlt(place.getProvince());
+                        illustData.setUrl(place.getAddress());
+                        illustData.setDescription(new Gson().toJson(place,Place.class));
+                        dataList2.add(illustData);
+                    }
+                    handler.post(() -> {
+                        path2.setVisibility(View.VISIBLE);
+                        recyclerView.setVisibility(View.VISIBLE);
+                        adapter.update(dataList2);
+                        adapter.notifyDataSetChanged();
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+
+            }
+        });
+    }
+
+    private void fetchDataJM(String query, int i, Snackbar snackbar) {
+        OkHttpClient client = new OkHttpClient();
+        int type =0;
+        Request request = new Request.Builder()
+                .url("http://jm.godserver.cn:35621/search?search_query=" + query + "&page=1")
+                .build();
+        if (query.matches("\\d+")) {
+            request = new Request.Builder()
+                    .url("jm.godserver.cn:35621/album/" + query + "/")
+                    .build();
+            type = 1;
+        }
+        snackbar = Snackbar.make(requireView(), "加载中", Snackbar.LENGTH_SHORT);
+        snackbar.show();
+        int finalType = type;
+        Snackbar finalSnackbar = snackbar;
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String json = response.body().string();
+                if (response.isSuccessful()) {
+                    if(finalType == 0) {
+                        System.out.println(json);
+                        Gson gson = new Gson();
+                        Type listType = new TypeToken<List<AlbumItem>>() {}.getType();
+                        List<AlbumItem> albumItems = gson.fromJson(json, listType);
+
+                        List<IllustData> dataList = new ArrayList<>();
+                        for (AlbumItem item : albumItems) {
+                            IllustData illustData = new IllustData();
+                            illustData.setId(item.getAlbum_id());
+                            illustData.setTitle(item.getTitle());
+                            illustData.setUrl("JM:" + item.getAlbum_id());
+                            System.out.println(item.getAlbum_id());
+                            dataList.add(illustData);
+                        }
+
+                        handler.post(() -> {
+                            path2.setVisibility(View.VISIBLE);
+                            recyclerView.setVisibility(View.VISIBLE);
+                            adapter.update(dataList);
+                            adapter.notifyDataSetChanged();
+                            // 隐藏 Snackbar
+                            finalSnackbar.dismiss();
+                        });
+                    }else if (finalType == 1) {
+                        Album albumItem = new Gson().fromJson(json, Album.class);
+                        openJMProject(albumItem);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+
+            }
+        });
+    }
+
     private void fetchData(String word, int page, Snackbar snackbar) {
+
         OkHttpClient client = new OkHttpClient();
         //设置超时时间60s
         client.newBuilder().connectTimeout(60, TimeUnit.SECONDS);
@@ -257,6 +355,18 @@ public class PixivFragment extends Fragment {
 
     @SuppressLint("MissingInflatedId")
     private void openIllustData(IllustData illustData) {
+        if (illustData.getUrl().startsWith("JM:")) {
+            Snackbar snackbar = Snackbar.make(binding.getRoot(), "正在获取数据", Snackbar.LENGTH_LONG);
+            snackbar.show();
+            openJM(illustData,snackbar);
+            return;
+        }
+        if (illustData.getId().startsWith("Place:")) {
+            Snackbar snackbar = Snackbar.make(binding.getRoot(), "正在获取数据", Snackbar.LENGTH_SHORT);
+            snackbar.show();
+            openPlace(illustData);
+            return;
+        }
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
         builder.setTitle(illustData.getTitle());
         Log.d("PixivFragment", "openIllustData: " + illustData.getTitle());
@@ -354,6 +464,159 @@ public class PixivFragment extends Fragment {
         // 显示对话框
         dialog.show();
     }
+
+    private void openPlace(IllustData illustData) {
+        Place place = new Gson().fromJson(illustData.getDescription(), Place.class);
+        Intent intent = new Intent(context, PageActivity.class);
+        intent.putExtra("id", place.getId());
+        intent.putExtra("name", place.getName());
+        intent.putExtra("address", place.getAddress());
+        intent.putExtra("province", place.getProvince());
+        intent.putExtra("city", place.getCity());
+        intent.putExtra("area", place.getArea());
+        intent.putExtra("x", place.getX());
+        intent.putExtra("y", place.getY());
+        intent.putExtra("count", place.getCount());
+        intent.putExtra("bad", place.getBad());
+        intent.putExtra("good", place.getGood());
+        intent.putExtra("num", place.getNum());
+        intent.putExtra("numJ", place.getNumJ());
+        intent.putExtra("meituan", place.getMeituan_link());
+        intent.putExtra("douyin", place.getDouyin_link());
+        startActivity(intent);
+    }
+
+    private void openJM(IllustData illustData,Snackbar snackbar) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+        builder.setTitle(illustData.getTitle());
+        //snackbar长显示
+        snackbar = Snackbar.make(requireView(), "正在加载", Snackbar.LENGTH_INDEFINITE);
+        snackbar.show();
+        OkHttpClient httpClient = new OkHttpClient();
+        //配置超时
+        httpClient.newBuilder().connectTimeout(120, TimeUnit.SECONDS);
+        httpClient.newBuilder().readTimeout(120, TimeUnit.SECONDS);
+        httpClient.newBuilder().writeTimeout(120, TimeUnit.SECONDS);
+
+        Request request = new Request.Builder()
+                .url("http://jm.godserver.cn:35621/album/" + illustData.getId() + "/")
+                .build();
+        Log.d("MainLaunch", "http://jm.godserver.cn:35621/album/" + illustData.getId() + "/");
+        //配置超时
+
+        Snackbar finalSnackbar = snackbar;
+        httpClient.newCall(request).enqueue(new Callback() {
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String res = response.body().string();
+                if (response.isSuccessful()) {
+                    Log.d("PixivFragment", "onResponse: " + res);
+                    finalSnackbar.dismiss();
+                    Album a = new Gson().fromJson(res, Album.class);
+                    openJMProject(a);
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                handler.post(()->{
+                    Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    finalSnackbar.dismiss();
+                });
+                Log.d("PixivFragment", "onFailure: " + e.getMessage());
+            }
+        });
+    }
+    private Bitmap decodeImage(Bitmap imgSrc, int num) {
+        if (num == 0) {
+            return imgSrc;
+        }
+
+        int w = imgSrc.getWidth();
+        int h = imgSrc.getHeight();
+
+        // 创建新的解密图片
+        Bitmap imgDecode = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(imgDecode);
+
+        int over = h % num;
+        for (int i = 0; i < num; i++) {
+            int move = h / num;
+            int ySrc = h - (move * (i + 1)) - over;
+            int yDst = move * i;
+
+            if (i == 0) {
+                move += over;
+            } else {
+                yDst += over;
+            }
+
+            Rect srcRect = new Rect(0, ySrc, w, ySrc + move);
+            Rect dstRect = new Rect(0, yDst, w, yDst + move);
+
+            canvas.drawBitmap(imgSrc, srcRect, dstRect, null);
+        }
+
+        return imgDecode;
+    }
+
+    private void loadImageFromUrl(String url, int num, LinearLayout li) {
+        // 使用 Glide 加载图片
+        Glide.with(requireContext())
+                .asBitmap()
+                .load(url)
+                .into(new CustomTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        Bitmap decodedBitmap = decodeImage(resource, num); // 假设 num 为 4，根据实际情况调整
+
+                        // 更新 UI
+                        handler.post(() -> {
+                            ImageView photoView = new ImageView(getContext());
+                            photoView.setImageBitmap(decodedBitmap);
+                            photoView.setScaleType(ImageView.ScaleType.CENTER_CROP); // 设置图片缩放类型
+                            photoView.setAdjustViewBounds(true); // 调整视图边界
+
+                            // 设置布局参数
+                            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT
+                            );
+                            layoutParams.setMargins(0, 0, 0, 0); // 设置间距为0
+                            photoView.setLayoutParams(layoutParams);
+
+                            li.addView(photoView);
+                            Log.d("t111111111", url);
+                        });
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable Drawable placeholder) {
+                        // 处理加载清除的情况
+                    }
+
+                    @Override
+                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                        super.onLoadFailed(errorDrawable);
+                        handler.post(() -> {
+                            Toast.makeText(requireContext(), "图片加载失败", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
+    }
+
+
+    @SuppressLint("MissingInflatedId")
+    private void openJMProject(Album a) {
+        Intent intent = new Intent(requireContext(), JMActivity.class);
+        intent.putExtra("album", new Gson().toJson(a));
+        startActivity(intent);
+    }
+
+
+
+
     private void download(String url) {
         //复制
         ClipboardManager clipboardManager = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);

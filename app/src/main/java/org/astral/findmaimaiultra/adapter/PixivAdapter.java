@@ -1,5 +1,6 @@
 package org.astral.findmaimaiultra.adapter;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -49,15 +50,21 @@ public class PixivAdapter extends RecyclerView.Adapter<PixivAdapter.ViewHolder> 
         return new ViewHolder(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         IllustData data = dataList.get(position);
         holder.title.setText(data.getTitle());
         // Load image using a library like Glide or Picasso
-        String imageUrl = "http://43.153.174.191:45678/api/v1/pixiv/toTencent?id=" + data.getId();
-
-        if (imageUrl != null) {
-            loadImage(holder.backgroundLayout, imageUrl);
+        if (data.getUrl().startsWith("JM:")) {
+            holder.title.setText("[" + data.getId() + "] " +data.getTitle());
+        }else if (data.getId().startsWith("Place:")) {
+            holder.title.setText(data.getTitle() + " - " + data.getAlt());
+        }else {
+            String imageUrl = "http://43.153.174.191:45678/api/v1/pixiv/toTencent?id=" + data.getId();
+            if (imageUrl != null) {
+                loadImage(holder.backgroundLayout, imageUrl);
+            }
         }
 
         holder.itemView.setOnClickListener(v -> {

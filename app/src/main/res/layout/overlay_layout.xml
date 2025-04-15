@@ -1,0 +1,11 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/overlay"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="#80000000"
+             android:visibility="gone"
+             android:clickable="true"
+             android:focusable="true">
+    <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:id="@+id/title"/>
+    <!-- 你可以在这里添加其他 UI 元素，例如按钮或文本 -->
+</FrameLayout>
