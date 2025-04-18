@@ -44,6 +44,10 @@
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="18sp"
                           android:textColor="@color/colorSecondaryVariant"
                           android:id="@+id/dec"/>
+                <com.google.android.material.button.MaterialButton android:layout_width="match_parent"
+                                                                   android:layout_height="wrap_content"
+                                                                   android:text="下载全部本子"
+                                                                   android:id="@+id/download"/>
             </LinearLayout>
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

@@ -218,19 +218,25 @@ public class PixivFragment extends Fragment {
                 .build();
         if (query.matches("\\d+")) {
             request = new Request.Builder()
-                    .url("jm.godserver.cn:35621/album/" + query + "/")
+                    .url("http://jm.godserver.cn:35621/album/" + query + "/")
                     .build();
             type = 1;
         }
-        snackbar = Snackbar.make(requireView(), "加载中", Snackbar.LENGTH_SHORT);
+        snackbar = Snackbar.make(requireView(), "加载中", Snackbar.LENGTH_INDEFINITE);
+        //snackbar长时间显示
+
         snackbar.show();
         int finalType = type;
         Snackbar finalSnackbar = snackbar;
+        Log.d("TAG", "fetchDataJM: " + type);
+        Log.d("TAG", "fetchDataJM: " + query);
+        Log.d("URL", "fetchDataJM: " + request.url());
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String json = response.body().string();
                 if (response.isSuccessful()) {
+                    finalSnackbar.dismiss();
                     if(finalType == 0) {
                         System.out.println(json);
                         Gson gson = new Gson();
@@ -255,7 +261,13 @@ public class PixivFragment extends Fragment {
                             // 隐藏 Snackbar
                             finalSnackbar.dismiss();
                         });
-                    }else if (finalType == 1) {
+                    }else {
+                        handler.post(() -> {
+                            path2.setVisibility(View.GONE);
+                            recyclerView.setVisibility(View.GONE);
+                            path2.setVisibility(View.VISIBLE);
+                        });
+                        Log.d("fetchDataJM", "onResponse: " + json);
                         Album albumItem = new Gson().fromJson(json, Album.class);
                         openJMProject(albumItem);
                     }
@@ -264,13 +276,25 @@ public class PixivFragment extends Fragment {
 
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-
+                handler.post(() -> {
+                    // 处理失败情况
+                    Toast.makeText(requireContext(), "超时", Toast.LENGTH_SHORT).show();
+                    finalSnackbar.dismiss();
+                });
             }
         });
     }
 
     private void fetchData(String word, int page, Snackbar snackbar) {
+        if (word.matches("\\d+")) {
+            IllustData illustData = new IllustData();
+            illustData.setId(word);
+            illustData.setTitle(word);
+            illustData.setUrl(word);
 
+            openIllustData(illustData);
+            return;
+        }
         OkHttpClient client = new OkHttpClient();
         //设置超时时间60s
         client.newBuilder().connectTimeout(60, TimeUnit.SECONDS);
@@ -427,6 +451,8 @@ public class PixivFragment extends Fragment {
                         user.setText(photoResponse.getBody().getUserName());
                         TextView des = view.findViewById(R.id.des);
                         des.setText(photoResponse.getBody().getDescription());
+                        builder.setTitle(photoResponse.getBody().getIllustTitle());
+
                     });
                 }
             }

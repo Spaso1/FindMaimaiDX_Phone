@@ -98,6 +98,7 @@ public class HomeFragment extends Fragment {
 
         }
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
     }
 
     @Override

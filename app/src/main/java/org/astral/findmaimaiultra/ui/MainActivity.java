@@ -2,12 +2,17 @@ package org.astral.findmaimaiultra.ui;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -36,6 +41,11 @@ import org.astral.findmaimaiultra.ui.home.HomeFragment;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -44,15 +54,26 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
     private SharedPreferences settingProperties;
+    private NfcAdapter nfcAdapter;
+    private PendingIntent pendingIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (nfcAdapter == null) {
+            Toast.makeText(this, "NFC is not available on this device", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_IMMUTABLE);
+        handleNfcIntent(getIntent());
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         settingProperties = getSharedPreferences("setting", Context.MODE_PRIVATE);
-
         setSupportActionBar(binding.appBarMain.toolbar);
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
@@ -67,6 +88,122 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
         NavigationUI.setupWithNavController(navigationView, navController);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (nfcAdapter != null) {
+            nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (nfcAdapter != null) {
+            nfcAdapter.disableForegroundDispatch(this);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        Log.d("111111111", "onNewIntent: " + intent.getAction());
+        handleNfcIntent(intent);
+        super.onNewIntent(intent);
+    }
+
+    private void handleNfcIntent(Intent intent) {
+        String action = intent.getAction();
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action) || NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
+            Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+            if (rawMsgs != null) {
+                NdefMessage[] msgs = new NdefMessage[rawMsgs.length];
+                for (int i = 0; i < rawMsgs.length; i++) {
+                    msgs[i] = (NdefMessage) rawMsgs[i];
+                }
+                // Process the messages
+                List<String> nfcData = processNdefMessages(msgs);
+                for (String data : nfcData) {
+                    if(data.contains("paika")) {
+                        Intent intent2 = new Intent(this, PaikaActivity.class);
+                        intent2.putExtra("data", data);
+                        startActivity(intent2);
+                    }
+                    // 在这里处理NFC数据
+                }
+            }
+        }
+    }
+
+    private List<String> processNdefMessages(NdefMessage[] msgs) {
+        List<String> nfcData = new ArrayList<>();
+        if (msgs == null || msgs.length == 0) return nfcData;
+
+        for (NdefMessage msg : msgs) {
+            NdefRecord[] records = msg.getRecords();
+            for (NdefRecord record : records) {
+                String recordData = parseNdefRecord(record);
+                if (recordData != null) {
+                    nfcData.add(recordData);
+                }
+            }
+        }
+        return nfcData;
+    }
+
+    private String parseNdefRecord(NdefRecord record) {
+        if (record.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(record.getType(), NdefRecord.RTD_URI)) {
+            return parseUri(record);
+        } else if (record.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(record.getType(), NdefRecord.RTD_TEXT)) {
+            return parseText(record);
+        } else {
+            // 处理其他类型的记录
+            return new String(record.getPayload(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private String parseUri(NdefRecord record) {
+        byte[] uriField = record.getPayload();
+        String prefix = ((char) (uriField[0] & 0x0F)) + "";
+        byte[] fullUri = new byte[uriField.length - 1];
+        System.arraycopy(uriField, 1, fullUri, 0, uriField.length - 1);
+        return prefix + new String(fullUri, StandardCharsets.UTF_8);
+    }
+
+    private String parseText(NdefRecord record) {
+        byte[] payload = record.getPayload();
+        if (payload.length < 2) {
+            Log.w("NfcBroadcastReceiver", "Invalid payload length for text record");
+            return null;
+        }
+
+        // 第一个字节的高4位表示字符编码（0表示UTF-8，1表示UTF-16）
+        String textEncoding = ((payload[0] & 0200) == 0) ? "UTF-8" : "UTF-16";
+        int languageCodeLength = payload[0] & 0077;
+
+        if (languageCodeLength > payload.length - 1) {
+            Log.w("NfcBroadcastReceiver", "Invalid language code length");
+            return null;
+        }
+
+        // 解析语言代码（通常不需要，除非你有特殊需求）
+        String languageCode = new String(payload, 1, languageCodeLength, StandardCharsets.US_ASCII);
+
+        // 解析文本数据
+        int textStartIndex = 1 + languageCodeLength;
+        int textLength = payload.length - textStartIndex;
+
+        if (textLength <= 0) {
+            Log.w("NfcBroadcastReceiver", "No text data found");
+            return null;
+        }
+
+        try {
+            return new String(payload, textStartIndex, textLength, Charset.forName(textEncoding));
+        } catch (Exception e) {
+            Log.w("NfcBroadcastReceiver", "Unsupported charset: " + textEncoding, e);
+            return null;
+        }
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -93,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
         });
         return false;
     }
+
     private void updatePlace() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         LinearLayout layout = new LinearLayout(this);

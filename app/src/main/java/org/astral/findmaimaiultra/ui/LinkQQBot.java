@@ -22,7 +22,9 @@ import com.google.gson.Gson;
 import okhttp3.*;
 import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.been.faker.RegionData;
+import org.astral.findmaimaiultra.been.faker.UserData;
 import org.astral.findmaimaiultra.been.faker.UserRegion;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -158,6 +160,7 @@ public class LinkQQBot extends AppCompatActivity {
                         Toast.makeText(LinkQQBot.this, "设置已保存,您的UsrId已写入硬盘!", Toast.LENGTH_SHORT).show();
                         try {
                             getUserRegionData(responseData);
+                            getUserData(responseData);
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -165,6 +168,34 @@ public class LinkQQBot extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> Toast.makeText(LinkQQBot.this, "Request not successful", Toast.LENGTH_SHORT).show());
                 }
+            }
+        });
+    }
+    private void getUserData(String userId) throws Exception {
+        String url = "http://mai.godserver.cn:11451/api/qq/userData?qq=" + userId ;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String json = response.body().string();
+                    UserData userData = new Gson().fromJson(json, UserData.class);
+                    SharedPreferences.Editor editor = sp.edit();
+                    editor.putString("paikaname", userData.getUserName());
+                    editor.putInt("iconId",userData.getIconId());
+                    editor.putString("rating", userData.getPlayerRating() + "");
+                    editor.apply();
+                    Log.d("TAG", "onResponse: " + userData.getUserName());
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Log.d("TAG", "onFailure: " + e.getMessage());
             }
         });
     }
