@@ -47,4 +47,13 @@
             android:textColor="@color/white"
             app:backgroundTint="@color/colorPrimary"
             tools:ignore="MissingConstraints"/>
+
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/qrscan"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="扫码加入排卡"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/divider"
+            tools:ignore="MissingConstraints"/>
 </LinearLayout>

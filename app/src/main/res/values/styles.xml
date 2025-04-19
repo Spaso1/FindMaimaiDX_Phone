@@ -18,4 +18,7 @@
     <style name="DialogAnimation">        <item name="android:windowEnterAnimation">@anim/dialog_enter</item>
         <item name="android:windowExitAnimation">@anim/dialog_exit</item>
     </style>
+    <style name="MenuBackgroundStyle">
+        <item name="android:background">@color/menu_background_color</item>
+    </style>
 </resources>
