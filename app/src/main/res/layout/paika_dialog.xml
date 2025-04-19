@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:padding="16dp">
+
+    <TextView
+            android:id="@+id/dialogTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="操作选择"
+            android:textSize="20sp"
+            android:textColor="@color/textcolorPrimary"/>
+
+    <TextView
+            android:id="@+id/dialogMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="请选择一个操作"
+            android:textSize="16sp"
+            android:textColor="@color/textcolorPrimary"
+            android:layout_marginTop="8dp"/>
+
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/addButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="排卡"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/VlineBaseGreen"/>
+
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/leaveButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="退勤"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/red"
+            tools:ignore="MissingConstraints"/>
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/leaveRoomButton"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="退出房间"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/colorPrimary"
+            tools:ignore="MissingConstraints"/>
+
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/qrscan"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="扫码加入排卡"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/divider"
+            tools:ignore="MissingConstraints"/>
+</LinearLayout>
