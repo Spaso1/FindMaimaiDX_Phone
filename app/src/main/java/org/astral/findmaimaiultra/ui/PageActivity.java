@@ -923,6 +923,11 @@ public class PageActivity extends AppCompatActivity {
                             tagplace = marketList.get(finalI).getMarketName().split(" ")[0];
                             //导航
                             Toast.makeText(PageActivity.context, "即将导航" + marketList.get(finalI).getMarketName(), Toast.LENGTH_SHORT).show();
+                            //判断经纬度大小合不合法
+                            if (tagXY[0] > 180 || tagXY[0] < -180 || tagXY[1] > 180 || tagXY[1] < -180) {
+                                Toast.makeText(PageActivity.context, "经纬度不合法", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
                             showNavigationOptions();
                         });
                         textViews.add(t);

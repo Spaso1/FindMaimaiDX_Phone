@@ -54,6 +54,17 @@ public class PixivAdapter extends RecyclerView.Adapter<PixivAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         IllustData data = dataList.get(position);
+
+        holder.backgroundLayout.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(data);
+            }
+        });
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(data);
+            }
+        });
         holder.title.setText(data.getTitle());
 
         // 清除之前的图片和状态
@@ -73,12 +84,6 @@ public class PixivAdapter extends RecyclerView.Adapter<PixivAdapter.ViewHolder> 
                 loadImage(holder.backgroundLayout, imageUrl);
             }
         }
-
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onItemClick(data);
-            }
-        });
     }
 
     @Override

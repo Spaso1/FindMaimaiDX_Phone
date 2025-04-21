@@ -13,6 +13,10 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            android:scrollbars="vertical"
+            android:scrollbarSize="8dp"
+            android:scrollbarFadeDuration="300"
+            android:scrollbarTrackVertical="@color/primary"
             app:layout_constraintEnd_toEndOf="parent"/>
 
 
@@ -38,17 +42,34 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="32sp"
-                          android:textColor="@color/colorSecondaryVariant"
-                          android:id="@+id/menu"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="18sp"
-                          android:textColor="@color/colorSecondaryVariant"
-                          android:id="@+id/dec"/>
-                <com.google.android.material.button.MaterialButton android:layout_width="match_parent"
-                                                                   android:layout_height="wrap_content"
-                                                                   android:text="下载全部本子"
-                                                                   android:id="@+id/download"/>
+
+                <TextView
+                        android:id="@+id/menu"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="32sp"
+                        android:textColor="@color/colorSecondaryVariant" />
+
+                <TextView
+                        android:id="@+id/dec"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="18sp"
+                        android:textColor="@color/colorSecondaryVariant" />
+
+                <SeekBar
+                        android:id="@+id/seekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:max="100" /> <!-- 最大值为 100，表示百分比 -->
+
+                <com.google.android.material.button.MaterialButton
+                        android:id="@+id/download"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="下载全部本子" />
             </LinearLayout>
+
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

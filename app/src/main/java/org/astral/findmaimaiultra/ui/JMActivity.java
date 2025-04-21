@@ -14,10 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -58,30 +55,81 @@ public class JMActivity extends AppCompatActivity {
 
         initRecyclerView();
     }
-    @SuppressLint({"ClickableViewAccessibility", "SetTextI18n", "ResourceType"})
     private void initRecyclerView() {
         Intent intent = getIntent();
         String res = intent.getStringExtra("album");
         Album a = new Gson().fromJson(res, Album.class);
         album = a;
-        Toast.makeText(this,"加载中", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "加载中", Toast.LENGTH_SHORT).show();
+
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setVerticalScrollBarEnabled(true);
+
         photoAdapter = new PhotoAdapter(this, a.getImage_urls(), a.getNums(), a);
         photoAdapter.clearLoad();
+        recyclerView.setAdapter(photoAdapter);
+
         MaterialButton downloadButton = findViewById(R.id.download);
         downloadButton.setOnClickListener(v -> downloadAllImages());
-        recyclerView.setAdapter(photoAdapter);
+
         bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottom_sheet));
         bottomSheetBehavior.setPeekHeight(dpToPx(80));
+
         TextView menu = findViewById(R.id.menu);
         menu.setText(a.getName());
+
         TextView dec = findViewById(R.id.dec);
-        dec.setText(a.getAuthors().toString().replaceAll( "\\[","").replaceAll( "]","")
-                + " / " + a.getActors().toString().replaceAll( "\"","") .replaceAll( "\\[","").replaceAll( "]","")
-                + " \n " + a.getTags().toString().replaceAll( "\"","") .replaceAll( "\\[","").replaceAll( "]","")
-                + " \n " + a.getAlbum_id().replaceAll( "\"","").replaceAll( "\\[","").replaceAll( "]",""));
+        dec.setText(a.getAuthors().toString().replaceAll("\\[", "").replaceAll("]", "")
+                + " / " + a.getActors().toString().replaceAll("\"", "").replaceAll("\\[", "").replaceAll("]", "")
+                + " \n " + a.getTags().toString().replaceAll("\"", "").replaceAll("\\[", "").replaceAll("]", "")
+                + " \n " + a.getAlbum_id().replaceAll("\"", "").replaceAll("\\[", "").replaceAll("]", ""));
+
+        // 初始化 SeekBar
+        SeekBar seekBar = findViewById(R.id.seekBar);
+        seekBar.setMax(100); // 最大值为 100，表示百分比
+
+        // 设置 SeekBar 监听器
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    // 用户拖动 SeekBar 时，跳转到 RecyclerView 的指定位置
+                    int totalItems = recyclerView.getAdapter().getItemCount();
+                    int targetPosition = (int) (progress / 100.0 * totalItems);
+                    recyclerView.scrollToPosition(targetPosition);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // 无需处理
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // 无需处理
+            }
+        });
+
+        // 设置 RecyclerView 滚动监听器，更新 SeekBar
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (layoutManager != null) {
+                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+                    int totalItems = recyclerView.getAdapter().getItemCount();
+                    if (totalItems > 0) {
+                        int progress = (int) (firstVisibleItemPosition / (float) totalItems * 100);
+                        seekBar.setProgress(progress);
+                    }
+                }
+            }
+        });
     }
+
 
     private void downloadAllImages() {
         String folderName = album.getName();

@@ -128,7 +128,7 @@ public class PixivFragment extends Fragment {
             // 使用 savedData
         }
         adapter = new PixivAdapter(new ArrayList<>());
-        adapter.setOnItemClickListener(illustData -> openIllustData(illustData));
+        adapter.setOnItemClickListener(this::openIllustData);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(adapter);
         // 设置搜索框的查询监听器
@@ -341,6 +341,11 @@ public class PixivFragment extends Fragment {
                                 handler.post(() -> {
                                     adapter.update(dataList);
                                     adapter.notifyDataSetChanged();
+                                    //设置点击效果
+                                    adapter.setOnItemClickListener(illustData -> {
+                                        openIllustData(illustData);
+                                    });
+
                                     // 隐藏 Snackbar
                                     snackbar.dismiss();
                                 });
@@ -380,6 +385,7 @@ public class PixivFragment extends Fragment {
 
     @SuppressLint("MissingInflatedId")
     private void openIllustData(IllustData illustData) {
+        Log.d("PixivFragment", "openIllustData: " + illustData.getTitle());
         if (illustData.getUrl().startsWith("JM:")) {
             Snackbar snackbar = Snackbar.make(binding.getRoot(), "正在获取数据", Snackbar.LENGTH_LONG);
             snackbar.show();
@@ -521,9 +527,9 @@ public class PixivFragment extends Fragment {
         //如果超过9点
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH");
         if (Integer.parseInt(simpleDateFormat.format(date))>=21) {
-            snackbar = Snackbar.make(requireView(), "正在加载(夜晚时间段服务器压力较大)", Snackbar.LENGTH_INDEFINITE);
+            snackbar = Snackbar.make(requireView(), "正在加载(夜晚时间段服务器压力较大),注意:本程序原理是无视章节获取全部内容,如果内容过多很可能超时!", Snackbar.LENGTH_INDEFINITE);
         } else {
-            snackbar = Snackbar.make(requireView(), "正在加载", Snackbar.LENGTH_INDEFINITE);
+            snackbar = Snackbar.make(requireView(), "正在加载,注意:本程序原理是无视章节获取全部内容,如果内容过多很可能超时!", Snackbar.LENGTH_INDEFINITE);
         }
         snackbar.show();
         OkHttpClient httpClient = createOkHttpClient(); // 使用 createOkHttpClient 方法创建 OkHttpClient
