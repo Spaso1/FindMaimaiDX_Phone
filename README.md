@@ -53,6 +53,7 @@ FindMaimaiUltra 是一个 Android 应用程序，用于查询和展示 Maimai（
 ## 排卡功能开发
 目前Host: https://mais.godserver.cn
 
+`队列第一第二是上级位置`
 
 | 功能描述         | 请求方式     | 请求 URL                                                              | 参数说明                                                | 返回值示例 |
 |--------------|----------|---------------------------------------------------------------------|-----------------------------------------------------|------|
@@ -61,10 +62,6 @@ FindMaimaiUltra 是一个 Android 应用程序，用于查询和展示 Maimai（
 | 排卡插队位置       | `PUT`    | `/api/mai/v1/party?party={party}&people={people}&changeToPeople={changeToPeople}` | `party`: 房间名称 `people`:排卡名称 `changeToPeople`:插队对象名称 | `["a1","a2","a3"}]` |
 | 退勤           | `DELETE` | `/api/mai/v1/party?party={party}&people={people}` | `party`: 房间名称 `people`:排卡名称                         | `["a1","a2","a3"}]` |
 | 完成一次上机       | `POST`   | `/api/mai/v1/partyPlay?party={party}` | `party`: 房间名称                                       | `["a2","a3","a1"}]` |
-| 指定对象上机       | `DELETE` | `/api/mai/v1/partyPlay?party={party}&people={people}` | `party`: 房间名称 `people`:上机对象                         | `a3` |
-| 获取房间正在上机对象   | `GET`    | `/api/mai/v1/partyPlay?party={party}` | `party`: 房间名称                                       | `["a2","a3","a1"}]` |
-| 获取排卡对象的卡     | `GET`    | `/api/mai/v1/player?party={party}&people={people}` | `party`: 房间名称 `people`:上机对象                         | `default` |
-| 提交排卡对象的卡     | `POST`   | `/api/mai/v1/player?party={party}&people={people}&card={card}` | `party`: 房间名称 `people`:上机对象 `card`:卡名                         | `default` |  
 
 ## 依赖项
 
