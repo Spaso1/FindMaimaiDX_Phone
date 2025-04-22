@@ -457,7 +457,7 @@ public class PageActivity extends AppCompatActivity {
         RequestBody body = RequestBody.create(json, MediaType.parse("application/json; charset=utf-8"));
 
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/mai/v1/placeContent")
+                .url("https://mais.godserver.cn/api/mai/v1/placeContent")
                 .post(body)
                 .build();
 
@@ -489,7 +489,7 @@ public class PageActivity extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient();
         Log.d("TAG", "fetchReviewsFromApi: " + id);
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/mai/v1/placeContent?id=" + id)
+                .url("https://mais.godserver.cn/api/mai/v1/placeContent?id=" + id)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -523,7 +523,7 @@ public class PageActivity extends AppCompatActivity {
 
     private void checkAndIntial() {
         String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        String url = "http://mai.godserver.cn:11451/api/mai/v1/check?androidId=" + androidId;
+        String url = "https://mais.godserver.cn/api/mai/v1/check?androidId=" + androidId;
         Request request = new Request.Builder()
                 .url(url)
                 .build();
@@ -682,7 +682,7 @@ public class PageActivity extends AppCompatActivity {
     }
     public void update(Place place) {
         String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        String url = "http://mai.godserver.cn:11451/api/mai/v1/place?androidId=" + androidId;
+        String url = "https://mais.godserver.cn/api/mai/v1/place?androidId=" + androidId;
         String json = new Gson().toJson(place);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), json);
         Request request = new Request.Builder()
@@ -837,7 +837,7 @@ public class PageActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(Void... voids) {
                 OkHttpClient client = new OkHttpClient();
-                String web = "http://mai.godserver.cn:11451/api/" + type_code + "/v1/place?id=" + id + "&type=" + type;
+                String web = "https://mais.godserver.cn/api/" + type_code + "/v1/place?id=" + id + "&type=" + type;
                 System.out.println(web);
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
@@ -871,7 +871,7 @@ public class PageActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(Void... voids) {
                 OkHttpClient client = new OkHttpClient();
-                String web = "http://mai.godserver.cn:11451/api/" + type_code + "/v1/near?id=" + place_centor.getId();
+                String web = "https://mais.godserver.cn/api/" + type_code + "/v1/near?id=" + place_centor.getId();
                 Log.d("Web", web);
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
@@ -949,7 +949,7 @@ public class PageActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(Void... voids) {
                 OkHttpClient client = new OkHttpClient();
-                String web = "http://mai.godserver.cn:11451/api/" + type_code + "/v1/num?id=" + id + "&num=" + num + "&numJ=" + numJ;
+                String web = "https://mais.godserver.cn/api/" + type_code + "/v1/num?id=" + id + "&num=" + num + "&numJ=" + numJ;
                 Log.d("Web", numJ + "");
                 @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()
                         .url(web)
@@ -1069,7 +1069,7 @@ public class PageActivity extends AppCompatActivity {
 
             // 创建请求
             Request request = new Request.Builder()
-                    .url("http://mai.godserver.cn:11451/api/" + type_code + "/v1/near")
+                    .url("https://mais.godserver.cn/api/" + type_code + "/v1/near")
                     .post(body)
                     .build();
 
@@ -1166,10 +1166,10 @@ public class PageActivity extends AppCompatActivity {
         this.douyin = douyin;
         RequestBody body = RequestBody.create(meituan, MediaType.parse("application/json; charset=utf-8"));
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/" + type_code + "/v1/updateLink?id=" + id + "&meituan=" + meituan + "&douyin=" + douyin)
+                .url("https://mais.godserver.cn/api/" + type_code + "/v1/updateLink?id=" + id + "&meituan=" + meituan + "&douyin=" + douyin)
                 .post(body)
                 .build();
-        Log.d("url",("http://mai.godserver.cn:11451/api/" + type_code + "/v1/updateLink?id=" + id + "&meituan=" + meituan + "&douyin=" + douyin));
+        Log.d("url",("https://mais.godserver.cn/api/" + type_code + "/v1/updateLink?id=" + id + "&meituan=" + meituan + "&douyin=" + douyin));
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {

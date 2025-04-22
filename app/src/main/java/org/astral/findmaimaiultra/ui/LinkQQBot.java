@@ -185,7 +185,7 @@ public class LinkQQBot extends AppCompatActivity {
                     String json = response.body().string();
                     UserData userData = new Gson().fromJson(json, UserData.class);
                     SharedPreferences.Editor editor = sp.edit();
-                    editor.putString("paikaname", userData.getUserName());
+                    editor.putString("https://mais.godserver.cn", userData.getUserName());
                     editor.putInt("iconId",userData.getIconId());
                     editor.putString("rating", userData.getPlayerRating() + "");
                     editor.apply();

@@ -272,16 +272,16 @@ public class HomeFragment extends Fragment {
         String web = "";
         try {
             tag = city.split("市")[0];
-            web = "http://mai.godserver.cn:11451/api/mai/v1/search?prompt1=" +  tag+ "&status=市";
+            web = "https://mais.godserver.cn/api/mai/v1/search?prompt1=" +  tag+ "&status=市";
         }catch ( Exception e) {
             tag = "xy("+ x +","+ y +")";
-            web = "http://mai.godserver.cn:11451/api/mai/v1/search?prompt1=" +  tag+ "&status=xy";
+            web = "https://mais.godserver.cn/api/mai/v1/search?prompt1=" +  tag+ "&status=xy";
         }
 
         Log.d("WebWebWebWebWebWebWebWebWebWeb   ", web);
 
         if (!isFlag) {
-            web = "http://mai.godserver.cn:11451/api/mai/v1/search?data_place=" + tagplace;
+            web = "https://mais.godserver.cn/api/mai/v1/search?data_place=" + tagplace;
         }
 
         Request request = new Request.Builder()
@@ -624,7 +624,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void addPlace(Place place) {
-        String url = "http://mai.godserver.cn:11451/api/mai/v1/place";
+        String url = "https://mais.godserver.cn/api/mai/v1/place";
         String body = new Gson().toJson(place,Place.class);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), body);
         Request request = new Request.Builder()

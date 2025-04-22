@@ -121,7 +121,7 @@ public class MusicFragment extends Fragment {
 
     private void updateScores() {
         OkHttpClient client = new OkHttpClient();
-        String url = "http://mai.godserver.cn:11451/api/qq/getAAALLL?qq=" + userId;
+        String url = "https://mais.godserver.cn/api/qq/getAAALLL?qq=" + userId;
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), "");
         Request request = new Request.Builder()
                 .url(url)

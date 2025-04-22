@@ -417,7 +417,7 @@ public class PaikaActivity extends AppCompatActivity {
 
     private void getData() {
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/mai/v1/party?party=" + use_party)
+                .url("https://mais.godserver.cn/api/mai/v1/party?party=" + use_party)
                 .build();
         OkHttpClient client = new OkHttpClient();
         client.newCall(request).enqueue(new Callback() {
@@ -445,7 +445,7 @@ public class PaikaActivity extends AppCompatActivity {
             return;
         }
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconId)
+                .url("https://mais.godserver.cn/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconId)
                 .post(RequestBody.create("", MediaType.parse("application/json")))
                 .build();
         OkHttpClient client = new OkHttpClient();
@@ -467,7 +467,7 @@ public class PaikaActivity extends AppCompatActivity {
     private void remove() {
         Log.d("123456", "remove");
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconId)
+                .url("https://mais.godserver.cn/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconId)
                 .delete(RequestBody.create("", MediaType.parse("application/json")))
                 .build();
         OkHttpClient client = new OkHttpClient();
@@ -489,7 +489,7 @@ public class PaikaActivity extends AppCompatActivity {
     }
     private void play() {
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/mai/v1/partyPlay?party=" + use_party )
+                .url("https://mais.godserver.cn/api/mai/v1/partyPlay?party=" + use_party )
                 .post(RequestBody.create("", MediaType.parse("application/json")))
                 .build();
         OkHttpClient client = new OkHttpClient();
@@ -594,7 +594,7 @@ public class PaikaActivity extends AppCompatActivity {
                                 });
                                 removeButton.setOnClickListener(v2->{
                                     Request request = new Request.Builder()
-                                            .url("http://mai.godserver.cn:11451/api/mai/v1/party?party=" + use_party + "&people=" +players.get(finalI))
+                                            .url("https://mais.godserver.cn/api/mai/v1/party?party=" + use_party + "&people=" +players.get(finalI))
                                             .delete(RequestBody.create("", MediaType.parse("application/json")))
                                             .build();
                                     OkHttpClient client = new OkHttpClient();
@@ -617,7 +617,7 @@ public class PaikaActivity extends AppCompatActivity {
                                 fuzhushangji.setOnClickListener(v2->{
                                     if (finalI == 2 ) {
                                         Request request = new Request.Builder()
-                                                .url("http://mai.godserver.cn:11451/api/mai/v1/partyPlay?party=" + use_party )
+                                                .url("https://mais.godserver.cn/api/mai/v1/partyPlay?party=" + use_party )
                                                 .post(RequestBody.create("", MediaType.parse("application/json")))
                                                 .build();
                                         OkHttpClient client = new OkHttpClient();
@@ -668,11 +668,11 @@ public class PaikaActivity extends AppCompatActivity {
 
     private void change(String to) {
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconResId + "&changeToPeople=" + to)
+                .url("https://mais.godserver.cn/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconResId + "&changeToPeople=" + to)
                 .put(RequestBody.create("", MediaType.parse("application/json")))
                 .build();
         OkHttpClient client = new OkHttpClient();
-        Log.d("123456", "http://mai.godserver.cn:11451/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconResId + "&changeToPeople=" + to);
+        Log.d("123456", "https://mais.godserver.cn/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconResId + "&changeToPeople=" + to);
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
@@ -692,17 +692,17 @@ public class PaikaActivity extends AppCompatActivity {
     }
     private void change(String to,int type) {
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconResId + "&changeToPeople=" + to)
+                .url("https://mais.godserver.cn/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconResId + "&changeToPeople=" + to)
                 .put(RequestBody.create("", MediaType.parse("application/json")))
                 .build();
         OkHttpClient client = new OkHttpClient();
-        Log.d("123456", "http://mai.godserver.cn:11451/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconResId + "&changeToPeople=" + to);
+        Log.d("123456", "https://mais.godserver.cn/api/mai/v1/party?party=" + use_party + "&people=" + use_name + "()" + iconResId + "&changeToPeople=" + to);
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 if (response.isSuccessful()) {
                     Request request = new Request.Builder()
-                            .url("http://mai.godserver.cn:11451/api/mai/v1/partyPlay?party=" + use_party )
+                            .url("https://mais.godserver.cn/api/mai/v1/partyPlay?party=" + use_party )
                             .post(RequestBody.create("", MediaType.parse("application/json")))
                             .build();
                     OkHttpClient client = new OkHttpClient();

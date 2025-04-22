@@ -174,7 +174,7 @@ public class PixivFragment extends Fragment {
     private void fetchDataMai(String query, int i, Snackbar snackbar) {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("http://mai.godserver.cn:11451/api/mai/v1/searchAll?query=" + query )
+                .url("https://mais.godserver.cn/api/mai/v1/searchAll?query=" + query )
                 .build();
         snackbar.dismiss();
         client.newCall(request).enqueue(new Callback() {
