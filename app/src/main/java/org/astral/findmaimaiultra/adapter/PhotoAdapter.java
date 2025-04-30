@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
@@ -105,45 +106,12 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
                             Log.e("PhotoAdapter", "Image load failed at position: " + position);
                         }
                     });
-        } else if ((!loading.contains(position))) {
-            // 从网络加载并处理图片
-            Glide.with(context)
-                    .asBitmap()
-                    .load(imageUrl)
-                    .override(holder.itemView.getWidth(), holder.itemView.getHeight()) // 压缩图片到屏幕大小
-                    .into(new CustomTarget<Bitmap>() {
-                        @Override
-                        public void onResourceReady(@NonNull Bitmap resource, Transition<? super Bitmap> transition) {
-                            Log.d("PhotoAdapter", "Image loaded successfully at position: " + position);
-                            if (!loading.contains(position)) {
-                                loading.add(position);
-                            }
+        } else {
+            ImageView imageView = holder.imageView;
+            imageView = new ImageView(context);
+            imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.loading));
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-                            Bitmap decodedBitmap = decodeImage(resource, num);
-                            holder.imageView.setImageBitmap(decodedBitmap);
-                            holder.imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
-                            // 保存处理后的图片到缓存
-                            saveBitmapToCache(decodedBitmap, cacheFile);
-
-                            // 设置长按监听器
-                            holder.imageView.setOnLongClickListener(v -> {
-                                saveImageToMediaStore(decodedBitmap, fileName);
-                                return true;
-                            });
-                        }
-
-                        @Override
-                        public void onLoadCleared(Drawable placeholder) {
-                            Log.d("PhotoAdapter", "Image load cleared at position: " + position);
-                        }
-
-                        @Override
-                        public void onLoadFailed(Drawable errorDrawable) {
-                            super.onLoadFailed(errorDrawable);
-                            Log.e("PhotoAdapter", "Image load failed at position: " + position);
-                        }
-                    });
         }
     }
 

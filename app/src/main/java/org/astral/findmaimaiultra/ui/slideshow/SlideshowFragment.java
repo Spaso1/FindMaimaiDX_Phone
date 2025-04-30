@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
@@ -22,6 +23,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -32,6 +34,7 @@ import org.astral.findmaimaiultra.service.GitHubApiService;
 import org.astral.findmaimaiultra.ui.ImagePickerListener;
 import org.astral.findmaimaiultra.ui.LinkQQBot;
 import org.astral.findmaimaiultra.utill.GitHubApiClient;
+import org.w3c.dom.Text;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -50,7 +53,8 @@ public class SlideshowFragment extends Fragment {
     private String y;
     private FragmentSlideshowBinding binding;
     private ImagePickerListener imagePickerListener;
-
+    private int iconId;
+    private String username;
     private static final String[] REQUIRED_PERMISSIONS = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -70,7 +74,8 @@ public class SlideshowFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         settingProperties = requireActivity().getSharedPreferences("setting", Context.MODE_PRIVATE);
-
+        username = settingProperties.getString("paikaname", "");
+        iconId = settingProperties.getInt("iconId", 0);
         if (allPermissionsGranted()) {
             // 初始化代码
         } else {
@@ -171,6 +176,13 @@ public class SlideshowFragment extends Fragment {
             }
         });
         webView.loadUrl(url); // 加载网页
+
+        ImageView user_avatar = binding.useravatar ;
+        Glide.with(this)
+                .load("https://assets2.lxns.net/maimai/icon/" + iconId +".png")
+                .into(user_avatar);
+        TextView user_name = binding.username;
+        user_name.setText(username);
         return root;
     }
 

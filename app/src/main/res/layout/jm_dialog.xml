@@ -16,7 +16,6 @@
             android:scrollbars="vertical"
             android:scrollbarSize="8dp"
             android:scrollbarFadeDuration="300"
-            android:scrollbarTrackVertical="@color/primary"
             app:layout_constraintEnd_toEndOf="parent"/>
 
 

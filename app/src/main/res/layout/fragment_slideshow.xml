@@ -6,6 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.slideshow.SlideshowFragment">
+
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
@@ -13,12 +14,46 @@
                 android:layout_height="match_parent"
                 android:background="@color/colorOnPrimary"
                 android:fillViewport="true">
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
-            <!-- 开关按钮示例 -->
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingBottom="16dp"
+                    tools:ignore="MissingConstraints">
+
+                <!-- 用户头像 -->
+                <ImageView
+                        android:id="@+id/useravatar"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginEnd="16dp" />
+
+                <!-- 用户名容器 -->
+                <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:background="@color/white"
+                >
+
+                    <TextView
+                            android:id="@+id/username"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="未绑定"
+                            android:textSize="20sp"
+                            android:textColor="@color/textcolorPrimary"
+                            android:gravity="center"
+                            android:layout_gravity="center_vertical|start"/> <!-- 距离顶部4dp -->
+                </FrameLayout>
+            </LinearLayout>
+
             <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchBeta1"
                     android:layout_width="match_parent"

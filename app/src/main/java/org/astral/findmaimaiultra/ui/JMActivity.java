@@ -33,11 +33,15 @@ import com.google.gson.Gson;
 import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.adapter.PhotoAdapter;
 import org.astral.findmaimaiultra.been.pixiv.jm.Album;
+import org.astral.findmaimaiultra.utill.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class JMActivity extends AppCompatActivity {
@@ -61,7 +65,7 @@ public class JMActivity extends AppCompatActivity {
         Album a = new Gson().fromJson(res, Album.class);
         album = a;
         Toast.makeText(this, "加载中", Toast.LENGTH_SHORT).show();
-
+        getAll();
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setVerticalScrollBarEnabled(true);
@@ -120,7 +124,7 @@ public class JMActivity extends AppCompatActivity {
                 LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 if (layoutManager != null) {
                     int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-                    int totalItems = recyclerView.getAdapter().getItemCount();
+                    int totalItems = Objects.requireNonNull(recyclerView.getAdapter()).getItemCount();
                     if (totalItems > 0) {
                         int progress = (int) (firstVisibleItemPosition / (float) totalItems * 100);
                         seekBar.setProgress(progress);
@@ -129,7 +133,53 @@ public class JMActivity extends AppCompatActivity {
             }
         });
     }
+    private void getAll() {
+        File file22 = FileUtils.getCacheDir(getBaseContext(), "lock");
+        if (file22.getParentFile().exists()) {
+            //删除文件夹
+            if (file22.getParentFile().delete()) {
+                // 删除成功
+            } else {
+                // 删除失败
+            }
+        }else {
+            file22.getParentFile().mkdirs();
+            Log.d("HHHHHHHHHH", "创建文件夹失败");
+        }
+        ExecutorService executor = Executors.newFixedThreadPool(4); // 创建一个固定大小为4的线程池
 
+        for (int i = 0; i < album.getImage_urls().size(); i++) {
+            int finalI = i;
+            executor.submit(() -> {
+                String imageUrl = album.getImage_urls().get(finalI);
+                int num = album.getNums().get(finalI);
+                String FileName = "image_" + album.getAlbum_id() + "_" + finalI + ".jpg";
+                File file = FileUtils.getCacheDir(getBaseContext(), FileName);
+                Log.d("HHHHHHHHHH", "创建文件失败");
+                Glide.with(this)
+                        .asBitmap()
+                        .load(imageUrl)
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap resource, Transition<? super Bitmap> transition) {
+                                Bitmap decodedBitmap = decodeImage(resource, num);
+                                saveBitmapToFile(decodedBitmap, file);
+                            }
+
+                            @Override
+                            public void onLoadCleared(Drawable placeholder) {
+                            }
+
+                            @Override
+                            public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                                super.onLoadFailed(errorDrawable);
+                            }
+                        });
+            });
+        }
+
+        executor.shutdown(); // 关闭线程池
+    }
 
     private void downloadAllImages() {
         String folderName = album.getName();
