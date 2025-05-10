@@ -29,6 +29,7 @@ import com.baidu.mapapi.map.*;
 import com.baidu.mapapi.model.LatLng;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.*;
@@ -73,6 +74,11 @@ public class PageActivity extends AppCompatActivity {
     public static int id;
     private MapView mapView;
     private BaiduMap baiduMap;
+    private MapView dialogMapView;
+    private BaiduMap dialogBaiduMap;
+    private LatLng selectedLatLng = null;
+    private AlertDialog mapDialog;
+
     @Override
     @SuppressLint({"MissingInflatedId", "Range", "SetTextI18n", "UnspecifiedRegisterReceiverFlag"})
     protected void onCreate(Bundle savedInstanceState) {
@@ -392,7 +398,7 @@ public class PageActivity extends AppCompatActivity {
         baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLngZoom(latLng, 13)); // 缩放级别调整为
 // 添加独特样式的标记
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo); // 自定义图标资源
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 200, 130, true); // 缩放到 100x100 像素
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 300, 130, true); // 缩放到 100x100 像素
         BitmapDescriptor descriptor = BitmapDescriptorFactory.fromBitmap(scaledBitmap);
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)
@@ -400,9 +406,156 @@ public class PageActivity extends AppCompatActivity {
                 .icon(descriptor); // 使用自定义图标
         baiduMap.addOverlay(markerOptions);
 
-
-
+        MaterialButton moveButton =  findViewById(R.id.move);
+        moveButton.setOnClickListener(v -> showBaiduMapDialog());
     }
+    private void showBaiduMapDialog() {
+        // 加载弹窗布局
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_baidu_map, null);
+
+        // 初始化 MapView 和 BaiduMap
+        dialogMapView = dialogView.findViewById(R.id.dialogMapView);
+        dialogMapView.onCreate(this, null);
+        dialogBaiduMap = dialogMapView.getMap();
+
+        // 设置当前地点为中心点
+        LatLng currentLatLng = new LatLng(place.getY(), place.getX()); // 注意：百度地图是 lat, lng
+        dialogBaiduMap.setMapStatus(MapStatusUpdateFactory.newLatLngZoom(currentLatLng, 15));
+
+        // 显示 Snackbar 提示用户点击地图
+        TextView mapTip = dialogView.findViewById(R.id.mapTip);
+        Snackbar.make(PageActivity.this.findViewById(android.R.id.content), "点击地图选择新的位置", Snackbar.LENGTH_LONG).show();
+
+        // 地图点击监听器
+        dialogBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                selectedLatLng = latLng;
+                //选择位置添加一个标记
+                dialogBaiduMap.clear();
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 300, 130, true);
+                BitmapDescriptor descriptor = BitmapDescriptorFactory.fromBitmap(scaledBitmap);
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(latLng)
+                        .title("新位置")
+                        .icon(descriptor);
+                dialogBaiduMap.addOverlay(markerOptions);
+
+                Toast.makeText(PageActivity.this, "已选择新位置：" + latLng.latitude + ", " + latLng.longitude, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onMapPoiClick(MapPoi mapPoi) {}
+        });
+
+        // 确定按钮点击事件
+        MaterialButton confirmBtn = dialogView.findViewById(R.id.dialogConfirmBtn);
+        confirmBtn.setOnClickListener(v -> {
+            if (selectedLatLng != null) {
+                // 更新 Place 的经纬度
+                Log.d("TAG", "old: " + place.getY() + " " + place.getX());
+                place.setX(selectedLatLng.longitude); // 注意：百度是 lat, lng，所以这里 longitude 是 X
+                place.setY(selectedLatLng.latitude);  // latitude 是 Y
+                Log.d("TAG", "onClick: " + selectedLatLng.latitude + " " + selectedLatLng.longitude);
+                // 关闭弹窗并刷新地图
+                mapDialog.dismiss();
+                updateMapLocation(); // 刷新主界面地图标记
+                Toast.makeText(this, "经纬度已更新", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "请先选择一个位置", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // 取消按钮点击事件
+        MaterialButton cancelBtn = dialogView.findViewById(R.id.dialogCancelBtn);
+        cancelBtn.setOnClickListener(v -> mapDialog.dismiss());
+
+        // 构建并显示弹窗
+        mapDialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setTitle("选择新位置")
+                .create();
+        mapDialog.show();
+    }
+    private void updateMapLocation() {
+        mapView.onDestroy();
+        mapView = findViewById(R.id.bmapView);
+        mapView.onCreate(this, null);
+        baiduMap = mapView.getMap();
+
+        LatLng latLng = new LatLng(place.getY(), place.getX());
+        baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLngZoom(latLng, 13));
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 300, 130, true);
+        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromBitmap(scaledBitmap);
+
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(latLng)
+                .title("机厅位置")
+                .icon(descriptor);
+        baiduMap.clear();
+        baiduMap.addOverlay(markerOptions);
+
+        //构造json
+
+        Request request = new Request.Builder()
+                .url("https://mais.godserver.cn/api/mai/v1/place2")
+                .put(RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new Gson().toJson(place)))
+                .build();
+        OkHttpClient client = new OkHttpClient();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(PageActivity.this, "更新位置失败", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    runOnUiThread(() -> {
+                        try {
+                            Log.d("TAG", "onResponse: " + response.body().string());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        Snackbar.make(PageActivity.this.findViewById(android.R.id.content), "位置上传成功", Snackbar.LENGTH_LONG).show();
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        Toast.makeText(PageActivity.this, "更新位置失败", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }
+        });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (dialogMapView != null) {
+            dialogMapView.onResume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (dialogMapView != null) {
+            dialogMapView.onPause();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (dialogMapView != null) {
+            dialogMapView.onDestroy();
+        }
+    }
+
     @SuppressLint("MissingInflatedId")
     private void getContent() {
         MaterialButton button = findViewById(R.id.list);
@@ -792,7 +945,7 @@ public class PageActivity extends AppCompatActivity {
                 protected String doInBackground(Void... voids) {
                     OkHttpClient client = new OkHttpClient();
                     try {
-                        String web = "http://www.godserver.cn:11451/api/mai/v1/placePeo?";
+                        String web = "https://mais.godserver.cn/api/mai/v1/placePeo?";
                         // 将JSON对象转换为RequestBody
                         MediaType JSON = MediaType.get("application/json; charset=utf-8");
                         @SuppressLint("StaticFieldLeak") Request request = new Request.Builder()

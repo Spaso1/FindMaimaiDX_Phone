@@ -13,4 +13,13 @@ public class FileUtils {
         }
         return new File(cacheDir, fileName);
     }
+
+    public static File getBackground(Context context, String fileName) {
+        File cacheDir = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "background");
+        if (!cacheDir.exists()) {
+            cacheDir.mkdirs();
+        }
+        return new File(cacheDir, fileName);
+    }
 }
+

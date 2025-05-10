@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:padding="16dp">
+
+    <TextView
+            android:id="@+id/mapTip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="点击地图选择新的位置"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+
+    <com.baidu.mapapi.map.MapView
+            android:id="@+id/dialogMapView"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:clickable="true" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="16dp">
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/dialogConfirmBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="确定" />
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/dialogCancelBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="取消"
+                android:layout_marginLeft="8dp"/>
+    </LinearLayout>
+</LinearLayout>

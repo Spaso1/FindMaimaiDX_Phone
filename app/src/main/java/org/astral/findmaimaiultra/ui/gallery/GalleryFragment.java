@@ -62,7 +62,7 @@ public class GalleryFragment extends Fragment {
 
         // 添加独特样式的标记
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo); // 自定义图标资源
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 200, 130, true); // 缩放到 100x100 像素
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 300, 130, true); // 缩放到 100x100 像素
         BitmapDescriptor descriptor = BitmapDescriptorFactory.fromBitmap(scaledBitmap);
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)

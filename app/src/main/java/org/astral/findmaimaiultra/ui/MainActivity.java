@@ -37,6 +37,7 @@ import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.been.Place;
 import org.astral.findmaimaiultra.databinding.ActivityMainBinding;
 import org.astral.findmaimaiultra.ui.home.HomeFragment;
+import org.astral.findmaimaiultra.utill.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -438,6 +439,12 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
                         editor.apply();
                         show("成功");
                         Log.d("SettingActivity", "图片已保存到: " + croppedFile.getAbsolutePath());
+
+                        File backgroundFile =FileUtils.getBackground(this, "background.jpg");
+                        try (FileOutputStream out2 = new FileOutputStream(backgroundFile)) {
+                            photo.compress(Bitmap.CompressFormat.JPEG, 90, out2);
+                            Log.d("SettingActivity", "背景图片已保存到: " + backgroundFile.getAbsolutePath());
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                         show("失败");

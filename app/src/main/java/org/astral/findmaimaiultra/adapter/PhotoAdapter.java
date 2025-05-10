@@ -50,6 +50,9 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
         this.nums = nums;
         this.album = a;
     }
+    public void updateItem(int position) {
+        notifyItemChanged(position);
+    }
 
     @NonNull
     @Override

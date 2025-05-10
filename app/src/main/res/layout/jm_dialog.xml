@@ -67,6 +67,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="下载全部本子" />
+                <com.google.android.material.switchmaterial.SwitchMaterial android:layout_width="wrap_content"
+                                                                           android:layout_height="wrap_content"
+                                                                           android:text="收藏"
+                                                                           android:id="@+id/shoucang"/>
             </LinearLayout>
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>

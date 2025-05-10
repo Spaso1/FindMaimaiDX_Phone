@@ -136,17 +136,15 @@ public class JMActivity extends AppCompatActivity {
     private void getAll() {
         File file22 = FileUtils.getCacheDir(getBaseContext(), "lock");
         if (file22.getParentFile().exists()) {
-            //删除文件夹
-            if (file22.getParentFile().delete()) {
-                // 删除成功
-            } else {
-                // 删除失败
+            if (!file22.getParentFile().delete()) {
+                Log.d("HHHHHHHHHH", "删除文件夹失败");
             }
-        }else {
+        } else {
             file22.getParentFile().mkdirs();
             Log.d("HHHHHHHHHH", "创建文件夹失败");
         }
-        ExecutorService executor = Executors.newFixedThreadPool(4); // 创建一个固定大小为4的线程池
+
+        ExecutorService executor = Executors.newFixedThreadPool(4);
 
         for (int i = 0; i < album.getImage_urls().size(); i++) {
             int finalI = i;
@@ -155,7 +153,7 @@ public class JMActivity extends AppCompatActivity {
                 int num = album.getNums().get(finalI);
                 String FileName = "image_" + album.getAlbum_id() + "_" + finalI + ".jpg";
                 File file = FileUtils.getCacheDir(getBaseContext(), FileName);
-                Log.d("HHHHHHHHHH", "创建文件失败");
+
                 Glide.with(this)
                         .asBitmap()
                         .load(imageUrl)
@@ -164,6 +162,9 @@ public class JMActivity extends AppCompatActivity {
                             public void onResourceReady(@NonNull Bitmap resource, Transition<? super Bitmap> transition) {
                                 Bitmap decodedBitmap = decodeImage(resource, num);
                                 saveBitmapToFile(decodedBitmap, file);
+
+                                // 主线程中刷新适配器
+                                runOnUiThread(() -> photoAdapter.updateItem(finalI));
                             }
 
                             @Override
@@ -178,8 +179,9 @@ public class JMActivity extends AppCompatActivity {
             });
         }
 
-        executor.shutdown(); // 关闭线程池
+        executor.shutdown();
     }
+
 
     private void downloadAllImages() {
         String folderName = album.getName();

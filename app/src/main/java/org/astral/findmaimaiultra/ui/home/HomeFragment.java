@@ -53,8 +53,10 @@ import org.astral.findmaimaiultra.databinding.FragmentHomeBinding;
 import org.astral.findmaimaiultra.ui.MainActivity;
 import org.astral.findmaimaiultra.ui.PageActivity;
 import org.astral.findmaimaiultra.utill.AddressParser;
+import org.astral.findmaimaiultra.utill.FileUtils;
 import org.astral.findmaimaiultra.utill.SharedViewModel;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
@@ -126,9 +128,16 @@ public class HomeFragment extends Fragment {
         }
 
         if (settingProperties2.getString("image_uri", null) != null ) {
-            Uri uri = Uri.parse(settingProperties2.getString("image_uri", null));
             try {
-                Bitmap bitmap = BitmapFactory.decodeStream(getContext().getContentResolver().openInputStream(uri));
+                File backgroundFile =FileUtils.getBackground(requireContext(), "background.jpg");
+
+                if (!backgroundFile.exists()) {
+                    Toast.makeText(requireContext(), "文件不存在，请先设置背景图片", Toast.LENGTH_SHORT).show();
+                    return root;
+                }
+
+                Bitmap bitmap = BitmapFactory.decodeFile(backgroundFile.getAbsolutePath());
+
                 if (bitmap != null) {
                     // 获取RecyclerView的尺寸
                     int recyclerViewWidth = 0;
@@ -240,6 +249,7 @@ public class HomeFragment extends Fragment {
 
             } catch (Exception e) {
                 e.printStackTrace();
+
                 Toast.makeText(requireContext(), "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
             }
         }
