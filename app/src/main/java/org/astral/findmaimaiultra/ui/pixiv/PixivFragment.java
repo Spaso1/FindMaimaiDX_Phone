@@ -78,6 +78,10 @@ public class PixivFragment extends Fragment {
     private FragmentPixivBinding binding;
     private SharedViewModel sharedViewModel;
     private PixivAdapter adapter;
+    private ListView shoucangList;
+    // 声明适配器
+    private ArrayAdapter<String> shoucangListAdapter;
+    private List<String> shoucangDataList = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -89,11 +93,12 @@ public class PixivFragment extends Fragment {
         if (context != null) {
             shoucang = context.getSharedPreferences("shoucang_prefs", Context.MODE_PRIVATE);
             settingProperties = context.getSharedPreferences("setting_prefs", Context.MODE_PRIVATE);
-            settingProperties2 = context.getSharedPreferences("setting", Context.MODE_PRIVATE);
+            settingProperties2 = context.getSharedPreferences("shoucang_benzi", Context.MODE_PRIVATE);
         }
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -106,7 +111,7 @@ public class PixivFragment extends Fragment {
         path1 = binding.path1;
         path2 = binding.path2;
         searchView = binding.searchView;
-
+        shoucangList = binding.shoucang;
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -132,6 +137,27 @@ public class PixivFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(adapter);
         // 设置搜索框的查询监听器
+        String dat = settingProperties2.getString("benzi", "[]");
+        List<String> list = new Gson().fromJson(dat, List.class);
+// 替换原有的 for 循环代码
+        shoucangListAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, shoucangDataList);
+        shoucangList.setAdapter(shoucangListAdapter);
+
+        for (String s : list) {
+            String id = s.split("_")[0];
+            String name = s.split("_")[1];
+            if (name.length() > 14) {
+                name = name.substring(0, 14);
+            }
+            shoucangDataList.add("[" + id + "] " + name + "...\n");
+            //加个换行横线
+        }
+        shoucangListAdapter.notifyDataSetChanged();
+        shoucangList.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedItem = shoucangDataList.get(position);
+            String idValue = selectedItem.split("]")[0].replace("[", "");
+            fetchDataJM(idValue, 0, null);
+        });
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

@@ -3,6 +3,7 @@ package org.astral.findmaimaiultra.ui;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -29,6 +30,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.gson.Gson;
 import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.adapter.PhotoAdapter;
@@ -39,6 +41,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,6 +51,7 @@ public class JMActivity extends AppCompatActivity {
     private FrameLayout overlay;
     private boolean isOverlayVisible = false;
     private BottomSheetBehavior<View> bottomSheetBehavior;
+    private SharedPreferences sharedPreferences;
     private PhotoAdapter photoAdapter;
     private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1;
     private Album album;
@@ -56,7 +60,7 @@ public class JMActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.jm_dialog);
-
+        sharedPreferences = getSharedPreferences("shoucang_benzi", MODE_PRIVATE);
         initRecyclerView();
     }
     private void initRecyclerView() {
@@ -76,6 +80,28 @@ public class JMActivity extends AppCompatActivity {
 
         MaterialButton downloadButton = findViewById(R.id.download);
         downloadButton.setOnClickListener(v -> downloadAllImages());
+        SwitchMaterial switchMaterial = findViewById(R.id.shoucang);
+
+        //触发器
+        switchMaterial.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // 触发器被选中时执行的操作
+                    // 在这里添加你的操作代码
+                    Toast.makeText(JMActivity.this, "已收藏", Toast.LENGTH_SHORT).show();
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    String shoucang = sharedPreferences.getString("benzi","[]");
+                    List<String> list = new Gson().fromJson(shoucang, List.class);
+
+                    list.add(a.getAlbum_id() + "_" + a.getName());
+                    editor.putString("benzi", new Gson().toJson(list));
+                    editor.apply();
+                } else {
+                    // 触发器未被选中时执行的操作
+                }
+            }
+        });
 
         bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottom_sheet));
         bottomSheetBehavior.setPeekHeight(dpToPx(80));
@@ -157,6 +183,7 @@ public class JMActivity extends AppCompatActivity {
                 Glide.with(this)
                         .asBitmap()
                         .load(imageUrl)
+                        .override(1080, 1920) // 设置最大宽高
                         .into(new CustomTarget<Bitmap>() {
                             @Override
                             public void onResourceReady(@NonNull Bitmap resource, Transition<? super Bitmap> transition) {
@@ -251,6 +278,7 @@ public class JMActivity extends AppCompatActivity {
         super.onDestroy();
         if (photoAdapter != null) {
             photoAdapter.clearCache();
+            photoAdapter = null;
         }
     }
     private void saveBitmapToFile(Bitmap bitmap, File file) {

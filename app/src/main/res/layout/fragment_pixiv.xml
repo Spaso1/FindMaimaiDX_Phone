@@ -62,8 +62,14 @@
                 android:text="FindMaimai Engine"
                 android:textSize="18sp"
                 android:layout_marginTop="8dp" />
-    </LinearLayout>
 
+        <ListView
+            android:id="@+id/shoucang"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        </ListView>
+    </LinearLayout>
     <!-- Path 2 -->
     <LinearLayout
             android:id="@+id/path2"

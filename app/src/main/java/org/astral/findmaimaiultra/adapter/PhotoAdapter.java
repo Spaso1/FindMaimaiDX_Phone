@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -11,6 +12,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +41,7 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
     private List<String> imageUrls;
     private List<Integer> nums;
     private static List<Integer> loading = new ArrayList<>();
+    private SparseArray<Bitmap> bitmapCache = new SparseArray<>();
 
     public void clearLoad() {
         loading.clear();
@@ -51,8 +54,21 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
         this.album = a;
     }
     public void updateItem(int position) {
-        notifyItemChanged(position);
+        if (bitmapCache.get(position) != null) {
+            notifyItemChanged(position); // 如果已经有 bitmap，直接刷新
+        } else {
+            String fileName = "image_" + album.getAlbum_id() + "_" + position + ".jpg";
+            File cacheFile = FileUtils.getCacheDir(context, fileName);
+            if (cacheFile.exists()) {
+                Bitmap bitmap = BitmapFactory.decodeFile(cacheFile.getAbsolutePath());
+                if (bitmap != null) {
+                    bitmapCache.put(position, bitmap);
+                }
+            }
+            notifyItemChanged(position);
+        }
     }
+
 
     @NonNull
     @Override
@@ -67,56 +83,47 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
         int num = nums.get(position);
         String fileName = "image_" + album.getAlbum_id() + "_" + position + ".jpg";
         File cacheFile = FileUtils.getCacheDir(context, fileName);
+
         // 清除之前的图片和状态
         holder.imageView.setImageBitmap(null);
         holder.imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         holder.imageView.setOnLongClickListener(null);
 
+        // 先检查内存缓存
+        Bitmap cachedBitmap = bitmapCache.get(position);
+        if (cachedBitmap != null) {
+            Log.d("PhotoAdapter", "Displaying from memory cache: " + position);
+            holder.imageView.setImageBitmap(cachedBitmap);
+            holder.imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-        Log.d("HHHHHHHHHH", "Loading image at position: " + loading.toString());
+            holder.imageView.setOnLongClickListener(v -> {
+                saveImageToMediaStore(cachedBitmap, fileName);
+                return true;
+            });
+            return;
+        }
+
+        // 然后检查磁盘缓存
         if (cacheFile.exists()) {
-            Log.d("HHHHHHHHHH", "Loading cached image at position: " + position);
-            // 加载缓存的图片并压缩到屏幕大小
-            Glide.with(context)
-                    .asBitmap()
-                    .load(cacheFile)
-                    .override(holder.itemView.getWidth(), holder.itemView.getHeight()) // 压缩图片到屏幕大小
-                    .into(new CustomTarget<Bitmap>() {
-                        @Override
-                        public void onResourceReady(@NonNull Bitmap resource, Transition<? super Bitmap> transition) {
-                            Log.d("PhotoAdapter", "Image loaded successfully at position: " + position);
-                            if (!loading.contains(position)) {
-                                loading.add(position);
-                            }
-                            holder.imageView.setImageBitmap(resource);
-                            holder.imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            Log.d("PhotoAdapter", "Loading cached image at position: " + position);
+            Bitmap bitmap = BitmapFactory.decodeFile(cacheFile.getAbsolutePath());
+            if (bitmap != null) {
+                bitmapCache.put(position, bitmap);
+                holder.imageView.setImageBitmap(bitmap);
+                holder.imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-                            // 设置长按监听器
-                            holder.imageView.setOnLongClickListener(v -> {
-                                saveImageToMediaStore(resource, fileName);
-                                return true;
-                            });
-                        }
-
-                        @Override
-                        public void onLoadCleared(Drawable placeholder) {
-                            Log.d("PhotoAdapter", "Image load cleared at position: " + position);
-                        }
-
-                        @Override
-                        public void onLoadFailed(Drawable errorDrawable) {
-                            super.onLoadFailed(errorDrawable);
-                            Log.e("PhotoAdapter", "Image load failed at position: " + position);
-                        }
-                    });
+                holder.imageView.setOnLongClickListener(v -> {
+                    saveImageToMediaStore(bitmap, fileName);
+                    return true;
+                });
+            } else {
+                //holder.imageView.setImageResource(R.drawable.loading);
+            }
         } else {
-            ImageView imageView = holder.imageView;
-            imageView = new ImageView(context);
-            imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.loading));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
+            //holder.imageView.setImageResource(R.drawable.loading);
         }
     }
+
 
     @Override
     public int getItemCount() {
@@ -220,6 +227,15 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
 
     // 添加删除缓存方法
     public void clearCache() {
+        // 清空内存缓存
+        if (bitmapCache != null) {
+            for (int i = 0; i < bitmapCache.size(); i++) {
+                bitmapCache.remove(i);
+            }
+            bitmapCache.clear();
+        }
+
+        // 删除磁盘缓存文件夹
         File cacheDir = FileUtils.getCacheDir(context, "");
         if (cacheDir.exists() && cacheDir.isDirectory()) {
             File[] files = cacheDir.listFiles();
@@ -232,4 +248,5 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
             }
         }
     }
+
 }

@@ -1,6 +1,12 @@
 pluginManagement {
     repositories {
         google()
+        maven {
+            url 'https://maven.aliyun.com/repository/public'
+        }
+        maven {
+            url 'https://maven.aliyun.com/repository/jcenter'
+        }
         mavenCentral()
         gradlePluginPortal()
     }
@@ -11,9 +17,15 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
-
+        maven {
+            url 'https://maven.aliyun.com/repository/public'
+        }
+        maven {
+            url 'https://maven.aliyun.com/repository/jcenter'
+        }
     }
 }
+
 
 rootProject.name = "FindMaimaiUltra"
 include ':app'
