@@ -16,8 +16,6 @@ import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -32,16 +30,13 @@ import org.astral.findmaimaiultra.been.Release;
 import org.astral.findmaimaiultra.databinding.FragmentSlideshowBinding;
 import org.astral.findmaimaiultra.service.GitHubApiService;
 import org.astral.findmaimaiultra.ui.ImagePickerListener;
-import org.astral.findmaimaiultra.ui.LinkQQBot;
+import org.astral.findmaimaiultra.ui.login.LinkQQBot;
 import org.astral.findmaimaiultra.utill.GitHubApiClient;
-import org.w3c.dom.Text;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.util.Objects;
-
-import static android.app.Activity.RESULT_OK;
 
 public class SlideshowFragment extends Fragment {
     private SharedPreferences settingProperties;

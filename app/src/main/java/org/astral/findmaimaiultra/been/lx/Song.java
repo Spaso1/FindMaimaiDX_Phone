@@ -1,6 +1,8 @@
 package org.astral.findmaimaiultra.been.lx;
 
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Map;
 
 public class Song {
@@ -11,6 +13,8 @@ public class Song {
     private int bpm;
     private int version;
     private String rights;
+    @SerializedName("difficulties")
+
     private Map<String, Difficulty[]> difficulties;
 
     // Getters and Setters

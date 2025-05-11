@@ -229,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
             updatePlace();
             return true;
         });
+
         return false;
     }
 

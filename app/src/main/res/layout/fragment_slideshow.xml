@@ -163,7 +163,7 @@
                     android:id="@+id/openQQbot"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="#QQ机器人相关#"
+                    android:text="#账号#"
                     android:textColor="@android:color/white"
 
                     android:backgroundTint="?attr/colorPrimary"

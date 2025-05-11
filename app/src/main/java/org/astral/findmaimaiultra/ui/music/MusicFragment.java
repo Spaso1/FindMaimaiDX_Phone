@@ -1,13 +1,19 @@
 package org.astral.findmaimaiultra.ui.music;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.view.*;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +25,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
@@ -26,19 +33,25 @@ import com.google.gson.reflect.TypeToken;
 import okhttp3.*;
 import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.adapter.MusicRatingAdapter;
+import org.astral.findmaimaiultra.adapter.SuggestMusicRatingAdapter;
 import org.astral.findmaimaiultra.been.faker.MaiUser;
 import org.astral.findmaimaiultra.been.faker.MusicRating;
 import org.astral.findmaimaiultra.been.faker.UserMusicList;
+import org.astral.findmaimaiultra.been.lx.Song;
 import org.astral.findmaimaiultra.databinding.FragmentMusicBinding;
+import org.astral.findmaimaiultra.ui.login.LinkQQBot;
 import org.astral.findmaimaiultra.ui.MainActivity;
+import org.astral.findmaimaiultra.utill.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MusicFragment extends Fragment {
     private FragmentMusicBinding binding;
@@ -46,9 +59,14 @@ public class MusicFragment extends Fragment {
     private SharedPreferences scorePrefs;
     private RecyclerView recyclerView;
     private MusicRatingAdapter adapter;
+    private SuggestMusicRatingAdapter adapterSuggest;
+
     private List<UserMusicList> musicSongsRatings;
     private List<MusicRating> musicRatings = new ArrayList<>();
     private String userId;
+    private int iconId;
+    private String username;
+    private static Map<Integer, Song> songs = new HashMap<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -101,21 +119,184 @@ public class MusicFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         MusicViewModel musicViewModel =
                 new ViewModelProvider(this).get(MusicViewModel.class);
+        SharedPreferences settingProperties = requireActivity().getSharedPreferences("setting", Context.MODE_PRIVATE);
+        username = settingProperties.getString("paikaname", "");
+        if (settingProperties.contains("userName")) {
+            username = settingProperties.getString("userName", "");
+            SharedPreferences.Editor  editorM = setting.edit();
+            editorM.putString("paikaname",username);
+            editorM.commit();
+        }
+
+        iconId = settingProperties.getInt("iconId", 0);
 
         binding = FragmentMusicBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         recyclerView = binding.getRoot().findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2)); // 一行显示两个
+
+        if (setting.getString("image_uri", null) != null ) {
+            try {
+                File backgroundFile = FileUtils.getBackground(requireContext(), "background.jpg");
+
+                if (!backgroundFile.exists()) {
+                    Toast.makeText(requireContext(), "文件不存在，请先设置背景图片", Toast.LENGTH_SHORT).show();
+                    return root;
+                }
+
+                Bitmap bitmap = BitmapFactory.decodeFile(backgroundFile.getAbsolutePath());
+
+                if (bitmap != null) {
+                    // 获取RecyclerView的尺寸
+                    int recyclerViewWidth = 0;
+                    int recyclerViewHeight = 0;
+                    recyclerViewWidth = recyclerView.getWidth();
+                    recyclerViewHeight = recyclerView.getHeight();
+                    if (recyclerViewWidth > 0 && recyclerViewHeight > 0) {
+                        // 计算缩放比例
+                        float scaleWidth = ((float) recyclerViewWidth) / bitmap.getWidth();
+                        float scaleHeight = ((float) recyclerViewHeight) / bitmap.getHeight();
+
+                        // 选择较大的缩放比例以保持图片的原始比例
+                        float scaleFactor = Math.max(scaleWidth, scaleHeight);
+
+                        // 计算新的宽度和高度
+                        int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                        int newHeight = (int) (bitmap.getHeight() * scaleFactor);
+
+                        // 缩放图片
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+                        // 计算裁剪区域
+                        int x = (scaledBitmap.getWidth() - recyclerViewWidth) / 2;
+                        int y = (scaledBitmap.getHeight() - recyclerViewHeight) / 2;
+
+                        // 处理x和y为负数的情况
+                        x = Math.max(x, 0);
+                        y = Math.max(y, 0);
+
+                        // 裁剪图片
+                        Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, x, y, recyclerViewWidth, recyclerViewHeight);
+
+                        // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                        Bitmap transparentBitmap = Bitmap.createBitmap(croppedBitmap.getWidth(), croppedBitmap.getHeight(), croppedBitmap.getConfig());
+
+                        // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                        Canvas canvas = new Canvas(transparentBitmap);
+
+                        // 创建一个 Paint 对象，并设置透明度
+                        Paint paint = new Paint();
+                        paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                        // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                        canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                        // 创建BitmapDrawable并设置其边界为RecyclerView的尺寸
+                        BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+
+                        // 设置recyclerView的背景
+                        recyclerView.setBackground(bitmapDrawable);
+
+                    } else {
+                        // 如果RecyclerView的尺寸未确定，可以使用ViewTreeObserver来监听尺寸变化
+                        recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                int recyclerViewWidth = 0;
+                                int recyclerViewHeight = 0;
+                                recyclerViewWidth = recyclerView.getWidth();
+                                recyclerViewHeight = recyclerView.getHeight();
+
+                                // 计算缩放比例
+                                float scaleWidth = ((float) recyclerViewWidth) / bitmap.getWidth();
+                                float scaleHeight = ((float) recyclerViewHeight) / bitmap.getHeight();
+
+                                // 选择较大的缩放比例以保持图片的原始比例
+                                float scaleFactor = Math.max(scaleWidth, scaleHeight);
+
+                                // 计算新的宽度和高度
+                                int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                                int newHeight = (int) (bitmap.getHeight() * scaleFactor);
+
+                                // 缩放图片
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+                                // 计算裁剪区域
+                                int x = (scaledBitmap.getWidth() - recyclerViewWidth) / 2;
+                                int y = (scaledBitmap.getHeight() - recyclerViewHeight) / 2;
+
+                                // 处理x和y为负数的情况
+                                x = Math.max(x, 0);
+                                y = Math.max(y, 0);
+
+                                // 裁剪图片
+                                Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, x, y, recyclerViewWidth, recyclerViewHeight);
+
+                                // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                                Bitmap transparentBitmap = Bitmap.createBitmap(croppedBitmap.getWidth(), croppedBitmap.getHeight(), croppedBitmap.getConfig());
+
+                                // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                                Canvas canvas = new Canvas(transparentBitmap);
+
+                                // 创建一个 Paint 对象，并设置透明度
+                                Paint paint = new Paint();
+                                paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                                // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                                canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                                // 创建BitmapDrawable并设置其边界为RecyclerView的尺寸
+                                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+                                recyclerView.setBackground(bitmapDrawable);
+
+                            }
+                        });
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                Toast.makeText(requireContext(), "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+
+
         adapter = new MusicRatingAdapter(musicRatings);
         adapter.setOnItemClickListener(musicRating -> {
             showMusicDetailDialog(musicRating);
         });
+
         recyclerView.setAdapter(adapter);
         FloatingActionButton f = binding.fab;
         f.setOnClickListener(view -> {
             showOptionsDialog();
         });
+
+        ImageView user_avatar = binding.useravatar ;
+        Glide.with(this)
+                .load("https://assets2.lxns.net/maimai/icon/" + iconId +".png")
+                .into(user_avatar);
+        TextView user_name = binding.username;
+        user_name.setText(username);
+        if (!(iconId==0)){
+            MaterialButton login = binding.login;
+            login.setVisibility(View.GONE);
+            Intent loginIntent = new Intent(getActivity(), LinkQQBot.class);
+            login.setOnClickListener(view -> {
+                startActivity(loginIntent);
+            });
+        }else{
+            MaterialButton login = binding.login;
+            Intent loginIntent = new Intent(getActivity(), LinkQQBot.class);
+            login.setOnClickListener(view -> {
+                startActivity(loginIntent);
+            });
+        }
+        dataanlysis();
         return root;
     }
 
@@ -317,5 +498,228 @@ public class MusicFragment extends Fragment {
         musicRatings.clear();
         musicRatings.addAll(filteredList);
         adapter.notifyDataSetChanged();
+    }
+    private void dataanlysis() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            // Perform data processing in the background
+            DataAnalyzer dataAnalyzer = new DataAnalyzer();
+
+
+            try {
+                InputStream inputStream = requireContext().getAssets().open("musicLike.json");
+                int size = inputStream.available();
+                byte[] buffer = new byte[size];
+                inputStream.read(buffer);
+                inputStream.close();
+                String json = new String(buffer, StandardCharsets.UTF_8);
+                dataAnalyzer = new Gson().fromJson(json,DataAnalyzer.class);
+
+
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                InputStream inputStream = requireContext().getAssets().open("songs_cache.json");
+                int size = inputStream.available();
+                byte[] buffer = new byte[size];
+                inputStream.read(buffer);
+                inputStream.close();
+                String json = new String(buffer, StandardCharsets.UTF_8);
+                Type type = new TypeToken<Map<String, Song>>() {}.getType();
+                Map<String, Song> loadedSongs = new Gson().fromJson(json, type);
+
+                // 手动转换 key 为 Integer 并放入全局 map
+                for (Map.Entry<String, Song> entry : loadedSongs.entrySet()) {
+                    Integer id = Integer.parseInt(entry.getKey());
+                    songs.put(id, entry.getValue());
+                    songs.put(id + 10000, entry.getValue()); // 如果你需要 standard 版本
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            Collections.sort(musicRatings, (o1, o2) -> Integer.compare(o2.getRating(), o1.getRating()));
+            int total = 0;
+            List<MusicRating> b50 = musicRatings.subList(0, 50);
+            List<MusicRating> b100 = musicRatings.subList(50, 100);
+            List<Integer> ids= new ArrayList<>();
+            int worstRating = b50.get(b50.size() - 1).getRating();
+
+            List<MusicRating> suggestMusicRatingList = new ArrayList<>();
+            for (int x = 0; x < 50; x++) {
+                total += b50.get(x).getRating();
+                MusicRating m = b100.get(x);
+                int nowache = m.getAchievement();
+                int target = 0;
+                if (nowache >= 1000000 && nowache < 10050000) {
+                    target = 1005001;
+                } else if (nowache >= 995000 && nowache < 10000000) {
+                    target = 1000001;
+                } else if (nowache >= 990000 && nowache < 995000) {
+                    target = 995001;
+                } else if (nowache >= 980000 && nowache < 990000) {
+                    target = 990001;
+                } else if (nowache >= 970000 && nowache < 980000) {
+                    target = 980001;
+                }
+                double b1 = (double) target / 10000;
+                int targetRating = getRatingChart(m.getLevel_info(), b1);
+                if (targetRating > worstRating) {
+                    m.setExtNum1(target);
+                    if (m.getMusicId() > 10000) {
+                        ids.add(m.getMusicId()-10000);
+                    }else {
+                        ids.add(m.getMusicId());
+                    }
+                    m.setExtNum2(targetRating);
+                    suggestMusicRatingList.add(m);
+                }
+            }
+            List<EasySong> easySongs = new ArrayList<>();
+            //看看别人打什么
+            Log.d("TOP",total + "");
+            if (total>=16000) {
+                easySongs = dataAnalyzer.getEasySongs().get("16000");
+            }else if (total>=15500) {
+                easySongs = dataAnalyzer.getEasySongs().get("15500");
+            }else if (total>=15000) {
+                easySongs = dataAnalyzer.getEasySongs().get("15000");
+            }else if (total>=14500) {
+                easySongs = dataAnalyzer.getEasySongs().get("14500");
+            }else if (total>=14000) {
+                easySongs = dataAnalyzer.getEasySongs().get("14000");
+            }else if (total>=13000) {
+                easySongs = dataAnalyzer.getEasySongs().get("13000");
+            }else if (total>=12000) {
+                easySongs = dataAnalyzer.getEasySongs().get("12000");
+            }else if (total>=11000) {
+                easySongs = dataAnalyzer.getEasySongs().get("11000");
+            }
+            for (int x = 0 ; x < easySongs.size();x ++) {
+                EasySong e = easySongs.get(x);
+                if (e.getPercent()>0.1) {
+                    if (ids.contains(e.getId())) {
+                        continue;
+                    }
+                    ;
+                    double diff = songs.get(e.getId()).getDifficulties().get(e.getType())[e.getLevel()].getLevel_value();
+                    double b = 99.0000;
+                    for (int i = 0; i < 3; i++) {
+                        b = b + 0.5 * (i - 1);
+                        int ra = getRatingChart(diff, b);
+                        if (ra > worstRating) {
+                            MusicRating musicRating = new MusicRating();
+                            musicRating.setMusicId(e.getId());
+                            musicRating.setMusicName(e.getTitle());
+                            musicRating.setExtNum1((int)(b*10000));
+                            musicRating.setExtNum2(ra);
+                            musicRating.setRating(0);
+                            musicRating.setAchievement(0);
+                            musicRating.setLevel_info(diff);
+                            musicRating.setType(e.getType());
+                            suggestMusicRatingList.add(musicRating);
+                            break;
+                        }
+                    }
+                }
+            }
+
+
+            // Update UI on the main thread
+            handler.post(() -> {
+                RecyclerView suggest = binding.getRoot().findViewById(R.id.suggestion);
+                suggest.setLayoutManager(new GridLayoutManager(getContext(), 1));
+
+                adapterSuggest = new SuggestMusicRatingAdapter(suggestMusicRatingList);
+                suggest.setAdapter(adapterSuggest);
+                adapterSuggest.notifyDataSetChanged();
+            });
+        });
+    }
+    public int getRatingChart(double a1, double b1) {
+        double sys = 22.4;
+        if (b1 >= 100.5000) {
+            return (int) (a1 * 22.512);
+        }
+        if (b1 == 100.4999) {
+            sys = 22.2;
+        } else if (b1 >= 100.0000) {
+            sys = 21.6;
+        } else if (b1 == 99.9999) {
+            sys = 21.4;
+        } else if (b1 >= 99.5000) {
+            sys = 21.1;
+        } else if (b1 >= 99.0000) {
+            sys = 20.8;
+        } else if (b1 >= 98.0000) {
+            sys = 20.3;
+        } else if (b1 >= 97.0000) {
+            sys = 20.0;
+        } else {
+            sys = 0;
+        }
+        return (int) (a1 * sys * b1 / 100);
+    }
+}
+class DataAnalyzer {
+    Map<String, List<EasySong>> easySongs = new HashMap<>();
+
+    public Map<String, List<EasySong>> getEasySongs() {
+        return easySongs;
+    }
+
+    public void setEasySongs(Map<String, List<EasySong>> easySongs) {
+        this.easySongs = easySongs;
+    }
+}
+class EasySong {
+    private String title;
+    private int level;
+    private float percent;
+    private int id;
+    private String type;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public float getPercent() {
+        return percent;
+    }
+
+    public void setPercent(float percent) {
+        this.percent = percent;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -1,32 +1,43 @@
 // HackGetUserId.java
-package org.astral.findmaimaiultra.ui;
+package org.astral.findmaimaiultra.ui.login;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.gson.Gson;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 import okhttp3.*;
 import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.been.faker.RegionData;
 import org.astral.findmaimaiultra.been.faker.UserData;
 import org.astral.findmaimaiultra.been.faker.UserRegion;
+import org.astral.findmaimaiultra.ui.MainActivity;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -64,11 +75,7 @@ public class LinkQQBot extends AppCompatActivity {
         MaterialButton bangding = findViewById(R.id.bangding);
         bangding.setOnClickListener(v -> {
             if (key.getText().toString().equals("")) {
-                Toast.makeText(this, "请输入基于QQ机器人获取的Key", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (safecode.getText().toString().equals("")) {
-                Toast.makeText(this, "请输入您的安全码", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "请输入邮箱", Toast.LENGTH_SHORT).show();
                 return;
             }
             try {
@@ -124,11 +131,65 @@ public class LinkQQBot extends AppCompatActivity {
         });
     }
 
-    private void sendApiRequest(String key,String safecode,int code) throws Exception {
-        String url = "http://mai.godserver.cn:11451/api/qq/safeCoding?result=" + key + "&safecode=" + safecode;
+    private void getUserInfo() {
+        String url = "https://www.godserver.cn/cen/user/info";
+        SharedPreferences sharedPreferences = getSharedPreferences("setting", Context.MODE_PRIVATE);
+        String X_Session_ID = sharedPreferences.getString("sessionId", "");
 
         Request request = new Request.Builder()
                 .url(url)
+                .addHeader("X-Session-ID", X_Session_ID)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String json = response.body().string();
+                    User user = new Gson().fromJson(json, User.class);
+                    if (user.getMai_userName().equals("")) {
+                        runOnUiThread(() ->{
+                            Snackbar.make(LinkQQBot.this.findViewById(android.R.id.content), "账号未绑定QQ机器人!请绑定(网站上也可以绑定)", Snackbar.LENGTH_LONG)
+                                    .setAction("绑定", v -> {
+                                        bindUser();
+                                    })
+                                    .show();
+                        });
+                    }
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("userId",user.getQqId());
+                    editor.putString("userName",user.getMai_userName());
+                    editor.putString("paikaname",user.getMai_userName());
+
+                    editor.putString("https://mais.godserver.cn", user.getMai_userName());
+                    editor.putInt("iconId",Integer.parseInt(user.getMai_avatarId()));
+                    editor.apply();
+                    try {
+                        getUserRegionData(user.getQqId());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+
+            }
+        });
+    }
+    private void bindUser() {
+
+    }
+    private void sendApiRequest(String key,String safecode,int code) throws Exception {
+        String url = "https://www.godserver.cn/cen/user/login";
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(key);
+        loginRequest.setCodeOrPassword(safecode);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(loginRequest)))
                 .build();
         Log.d("TAG", "sendApiRequest: " + url);
         client.newCall(request).enqueue(new Callback() {
@@ -142,28 +203,44 @@ public class LinkQQBot extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
                     final String responseData = response.body().string();
+                    SharedPreferences sharedPreferences = getSharedPreferences("setting", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+
                     runOnUiThread(() -> {
-                        Toast.makeText(LinkQQBot.this, "Response: " + responseData, Toast.LENGTH_LONG).show();
-                        Log.d("TAG", "Response: " + responseData);
-                        if(responseData.equals("错误") && code==1) {
-                            try {
-                                sendApiRequest(safecode,key,2);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
+                        Message message = new Gson().fromJson(responseData, Message.class);
+                        if ("login".equals(message.getType())) {
+                            if (message.getCode() == 200) {
+                                // 登录成功
+                                editor.remove("sessionId");
+                                editor.putString("sessionId", message.getSessionId());
+                                editor.apply();
+                                Log.d("TAG","成功!");
+                                Snackbar.make(LinkQQBot.this.findViewById(android.R.id.content), "登录成功!", Snackbar.LENGTH_LONG)
+                                        .show();
+                            } else {
+                                // 登录失败
                             }
-                            return;
+                        } else if ("reg".equals(message.getType())) {
+                            // 注册流程：显示二维码
+                            editor.remove("sessionId");
+                            editor.putString("sessionId", message.getSessionId());
+                            editor.apply();
+                            Log.d("TAG","注册成功!");
+                            // Base64 解码
+                            String decodedKey = Arrays.toString(java.util.Base64.getDecoder().decode(message.getContent()));
+
+
+                            // 构建 TOTP URI
+                            String issuer = "ReisaPage - " + message.getContentType();
+                            String totpUri = String.format("otpauth://totp/%s?secret=%s&issuer=%s",
+                                    Uri.encode(issuer),
+                                    Uri.encode(decodedKey),
+                                    Uri.encode(issuer));
+                            showQRCodeDialog(totpUri);
                         }
-                        userId.setText(responseData);
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.putString("userId", responseData);
-                        editor.apply();
-                        Toast.makeText(LinkQQBot.this, "设置已保存,您的UsrId已写入硬盘!", Toast.LENGTH_SHORT).show();
-                        try {
-                            getUserRegionData(responseData);
-                            getUserData(responseData);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
+                        getUserInfo();
+
+
                     });
                 } else {
                     runOnUiThread(() -> Toast.makeText(LinkQQBot.this, "Request not successful", Toast.LENGTH_SHORT).show());
@@ -171,6 +248,48 @@ public class LinkQQBot extends AppCompatActivity {
             }
         });
     }
+    private void showQRCodeDialog(String totpUri) {
+        try {
+            // 生成二维码图片
+            Bitmap qrCodeBitmap = encodeAsQRCode(totpUri, 500, 500);
+
+            // 创建 ImageView 并设置图片
+            ImageView imageView = new ImageView(this);
+            imageView.setImageBitmap(qrCodeBitmap);
+
+            // 构建 AlertDialog
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("请使用支持2FA的软件扫描二维码绑定账号,注意!这是你的唯一密码凭证!")
+                    .setView(imageView)
+                    .setPositiveButton("确定", (dialog, which) -> dialog.dismiss())
+                    .show();
+
+        } catch (WriterException e) {
+            Toast.makeText(this, "生成二维码失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private Bitmap encodeAsQRCode(String contents, int width, int height) throws WriterException {
+        BitMatrix result;
+        try {
+            result = new MultiFormatWriter().encode(contents, BarcodeFormat.QR_CODE, width, height, null);
+        } catch (IllegalArgumentException iae) {
+            return null;
+        }
+
+        int[] pixels = new int[width * height];
+        for (int y = 0; y < height; y++) {
+            int offset = y * width;
+            for (int x = 0; x < width; x++) {
+                pixels[offset + x] = result.get(x, y) ? Color.BLACK : Color.WHITE;
+            }
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        return bitmap;
+    }
+
     private void getUserData(String userId) throws Exception {
         String url = "http://mai.godserver.cn:11451/api/qq/userData?qq=" + userId ;
 
