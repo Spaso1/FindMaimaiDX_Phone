@@ -60,14 +60,14 @@ public class MusicFragment extends Fragment {
     private RecyclerView recyclerView;
     private MusicRatingAdapter adapter;
     private SuggestMusicRatingAdapter adapterSuggest;
-
+    private DataAnalyzer dataAnalyzer;
     private List<UserMusicList> musicSongsRatings;
     private List<MusicRating> musicRatings = new ArrayList<>();
     private String userId;
     private int iconId;
     private String username;
     private static Map<Integer, Song> songs = new HashMap<>();
-
+    private Map<String, Song> loadedSongs;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -430,7 +430,7 @@ public class MusicFragment extends Fragment {
     private void showOptionsDialog() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.CustomDialogStyle);
         builder.setTitle("选项");
-        builder.setItems(new CharSequence[]{"更新数据", "分数排序", "搜索指定歌曲"}, (dialog, which) -> {
+        builder.setItems(new CharSequence[]{"更新数据", "分数排序", "搜索指定歌曲","推分安排"}, (dialog, which) -> {
             switch (which) {
                 case 0:
                     // 更新数据
@@ -459,9 +459,16 @@ public class MusicFragment extends Fragment {
                     // 搜索指定歌曲
                     showSearchDialog();
                     break;
+                case 3:
+                    //推分安排
+                    setRatingProject();
             }
         });
         builder.show();
+    }
+
+    private void setRatingProject() {
+
     }
 
     private void sortMusicRatingsByRating() {
@@ -502,10 +509,10 @@ public class MusicFragment extends Fragment {
     private void dataanlysis() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
-
+        TextView au = binding.an;
         executor.execute(() -> {
             // Perform data processing in the background
-            DataAnalyzer dataAnalyzer = new DataAnalyzer();
+            dataAnalyzer = new DataAnalyzer();
 
 
             try {
@@ -516,9 +523,6 @@ public class MusicFragment extends Fragment {
                 inputStream.close();
                 String json = new String(buffer, StandardCharsets.UTF_8);
                 dataAnalyzer = new Gson().fromJson(json,DataAnalyzer.class);
-
-
-
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -530,7 +534,7 @@ public class MusicFragment extends Fragment {
                 inputStream.close();
                 String json = new String(buffer, StandardCharsets.UTF_8);
                 Type type = new TypeToken<Map<String, Song>>() {}.getType();
-                Map<String, Song> loadedSongs = new Gson().fromJson(json, type);
+                loadedSongs = new Gson().fromJson(json, type);
 
                 // 手动转换 key 为 Integer 并放入全局 map
                 for (Map.Entry<String, Song> entry : loadedSongs.entrySet()) {
@@ -548,16 +552,16 @@ public class MusicFragment extends Fragment {
             List<MusicRating> b100 = musicRatings.subList(50, 100);
             List<Integer> ids= new ArrayList<>();
             int worstRating = b50.get(b50.size() - 1).getRating();
-
+            int bestRating = b50.get(0).getRating();
             List<MusicRating> suggestMusicRatingList = new ArrayList<>();
             for (int x = 0; x < 50; x++) {
                 total += b50.get(x).getRating();
                 MusicRating m = b100.get(x);
                 int nowache = m.getAchievement();
                 int target = 0;
-                if (nowache >= 1000000 && nowache < 10050000) {
+                if (nowache >= 1000000 && nowache < 1005000) {
                     target = 1005001;
-                } else if (nowache >= 995000 && nowache < 10000000) {
+                } else if (nowache >= 995000 && nowache < 1000000) {
                     target = 1000001;
                 } else if (nowache >= 990000 && nowache < 995000) {
                     target = 995001;
@@ -579,6 +583,38 @@ public class MusicFragment extends Fragment {
                     suggestMusicRatingList.add(m);
                 }
             }
+            for (int x = 0; x < 50; x++) {
+                MusicRating m = b50.get(x);
+                if (m.getLevel_info() > ((double) (total - 1000) / 1000)) {
+                    continue;
+                }
+                int nowache = m.getAchievement();
+                int target = 0;
+                if (nowache >= 1000000 && nowache < 1005000) {
+                    target = 1005001;
+                } else if (nowache >= 995000 && nowache < 1000000) {
+                    target = 1000001;
+                } else if (nowache >= 990000 && nowache < 995000) {
+                    target = 995001;
+                } else if (nowache >= 980000 && nowache < 990000) {
+                    target = 990001;
+                } else if (nowache >= 970000 && nowache < 980000) {
+                    target = 980001;
+                }
+                double b1 = (double) target / 10000;
+                int targetRating = getRatingChart(m.getLevel_info(), b1);
+                if (targetRating > worstRating) {
+                    m.setExtNum1(target);
+                    if (m.getMusicId() > 10000) {
+                        ids.add(m.getMusicId()-10000);
+                    }else {
+                        ids.add(m.getMusicId());
+                    }
+                    m.setExtNum2(targetRating);
+                    suggestMusicRatingList.add(m);
+                }
+            }
+
             List<EasySong> easySongs = new ArrayList<>();
             //看看别人打什么
             Log.d("TOP",total + "");
@@ -599,30 +635,31 @@ public class MusicFragment extends Fragment {
             }else if (total>=11000) {
                 easySongs = dataAnalyzer.getEasySongs().get("11000");
             }
-            for (int x = 0 ; x < easySongs.size();x ++) {
-                EasySong e = easySongs.get(x);
-                if (e.getPercent()>0.1) {
-                    if (ids.contains(e.getId())) {
-                        continue;
-                    }
-                    ;
-                    double diff = songs.get(e.getId()).getDifficulties().get(e.getType())[e.getLevel()].getLevel_value();
-                    double b = 99.0000;
-                    for (int i = 0; i < 3; i++) {
-                        b = b + 0.5 * (i - 1);
-                        int ra = getRatingChart(diff, b);
-                        if (ra > worstRating) {
-                            MusicRating musicRating = new MusicRating();
-                            musicRating.setMusicId(e.getId());
-                            musicRating.setMusicName(e.getTitle());
-                            musicRating.setExtNum1((int)(b*10000));
-                            musicRating.setExtNum2(ra);
-                            musicRating.setRating(0);
-                            musicRating.setAchievement(0);
-                            musicRating.setLevel_info(diff);
-                            musicRating.setType(e.getType());
-                            suggestMusicRatingList.add(musicRating);
-                            break;
+            if (easySongs != null) {
+                for (EasySong e : easySongs) {
+                    if (e.getPercent() > 0.1) {
+                        if (ids.contains(e.getId())) {
+                            continue;
+                        }
+                        ;
+                        double diff = Objects.requireNonNull(Objects.requireNonNull(songs.get(e.getId())).getDifficulties().get(e.getType()))[e.getLevel()].getLevel_value();
+                        double b = 99.0000;
+                        for (int i = 0; i < 3; i++) {
+                            b = b + 0.5 * (i - 1);
+                            int ra = getRatingChart(diff, b);
+                            if (ra > worstRating) {
+                                MusicRating musicRating = new MusicRating();
+                                musicRating.setMusicId(e.getId());
+                                musicRating.setMusicName(e.getTitle());
+                                musicRating.setExtNum1((int) (b * 10000));
+                                musicRating.setExtNum2(ra);
+                                musicRating.setRating(0);
+                                musicRating.setAchievement(0);
+                                musicRating.setLevel_info(diff);
+                                musicRating.setType(e.getType());
+                                suggestMusicRatingList.add(musicRating);
+                                break;
+                            }
                         }
                     }
                 }
@@ -630,9 +667,12 @@ public class MusicFragment extends Fragment {
 
 
             // Update UI on the main thread
+            int finalTotal = total;
             handler.post(() -> {
                 RecyclerView suggest = binding.getRoot().findViewById(R.id.suggestion);
                 suggest.setLayoutManager(new GridLayoutManager(getContext(), 1));
+
+                au.setText("Rating分析:最低分 " + worstRating + "分,最高分 " + bestRating + ",平均分" + (finalTotal / 50) + "分");
 
                 adapterSuggest = new SuggestMusicRatingAdapter(suggestMusicRatingList);
                 suggest.setAdapter(adapterSuggest);

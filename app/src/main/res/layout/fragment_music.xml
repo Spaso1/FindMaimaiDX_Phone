@@ -104,6 +104,12 @@
                           android:padding="8dp"
                           android:id="@+id/su"
                           android:textSize="18sp"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                          android:textColor="@color/textcolorPrimary"
+                          android:text="⭐分析"
+                          android:padding="8dp"
+                          android:id="@+id/an"
+                          android:textSize="13sp"/>
                 <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/suggestion"
                         android:layout_width="match_parent"
