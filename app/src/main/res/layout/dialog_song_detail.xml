@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 歌曲标题和作者 -->
+        <TextView
+            android:id="@+id/song_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="歌曲标题"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/song_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="歌曲作者"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 表格 -->
+        <TableLayout
+            android:id="@+id/song_table"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*" />
+
+        <!-- 额外信息 -->
+        <TextView
+            android:id="@+id/extra_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="额外信息"
+            android:layout_marginTop="16dp" />
+
+        <!-- 添加到计划按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/add_to_plan_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="添加到计划"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+</ScrollView>

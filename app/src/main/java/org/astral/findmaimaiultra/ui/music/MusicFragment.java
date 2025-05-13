@@ -12,9 +12,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.*;
 import android.widget.ImageView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -22,17 +26,20 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import okhttp3.*;
 import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.adapter.MusicRatingAdapter;
+import org.astral.findmaimaiultra.adapter.SongAdapter;
 import org.astral.findmaimaiultra.adapter.SuggestMusicRatingAdapter;
 import org.astral.findmaimaiultra.been.faker.MaiUser;
 import org.astral.findmaimaiultra.been.faker.MusicRating;
@@ -468,7 +475,96 @@ public class MusicFragment extends Fragment {
     }
 
     private void setRatingProject() {
+        // 创建弹窗
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.CustomDialogStyle);
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.rating_project_dialog, null);
+        builder.setView(dialogView);
 
+        // 初始化搜索框和列表
+        TextInputEditText searchInput = dialogView.findViewById(R.id.search_input);
+        RecyclerView songList = dialogView.findViewById(R.id.song_list);
+        songList.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        // 初始化适配器
+        List<Song> filteredList = new ArrayList<>(songs.values());
+        SongAdapter adapter = new SongAdapter(filteredList);
+        songList.setAdapter(adapter);
+
+        // 搜索框监听
+        searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim().toLowerCase();
+                filteredList.clear();
+                for (Song song : songs.values()) {
+                    if (song.getTitle().toLowerCase().contains(query) ||
+                            String.valueOf(song.getId()).contains(query) ||
+                            song.getArtist().toLowerCase().contains(query) ||
+                            song.getGenre().toLowerCase().contains(query)) {
+                        filteredList.add(song);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // 列表项点击事件
+        adapter.setOnItemClickListener(song -> {
+            showSongDetailDialog(song);
+        });
+
+        builder.setPositiveButton("关闭", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    private void showSongDetailDialog(Song song) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.CustomDialogStyle);
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_song_detail, null);
+        builder.setView(dialogView);
+
+        // 设置歌曲详情
+        TextView songTitle = dialogView.findViewById(R.id.song_title);
+        TextView songArtist = dialogView.findViewById(R.id.song_artist);
+        songTitle.setText(song.getTitle());
+        songArtist.setText(song.getArtist());
+
+        // 初始化表格
+        TableLayout tableLayout = dialogView.findViewById(R.id.song_table);
+        for (int i = 0; i < 4; i++) { // 4 行
+            TableRow row = new TableRow(requireContext());
+            for (int j = 0; j < 5; j++) { // 5 列
+                TextView cell = new TextView(requireContext());
+                cell.setText("数据 " + (i * 5 + j + 1)); // 示例数据
+                cell.setPadding(8, 8, 8, 8);
+                row.addView(cell);
+            }
+            tableLayout.addView(row);
+        }
+
+        // 设置额外的 TextView
+        TextView extraInfo = dialogView.findViewById(R.id.extra_info);
+        extraInfo.setText("额外信息：这里可以显示更多内容");
+
+        // 设置按钮点击事件
+        MaterialButton addToPlanButton = dialogView.findViewById(R.id.add_to_plan_button);
+        addToPlanButton.setOnClickListener(v -> {
+            // 将歌曲添加到计划中
+            addToPlan(song);
+            Toast.makeText(requireContext(), "已添加到计划", Toast.LENGTH_SHORT).show();
+        });
+
+        builder.setPositiveButton("关闭", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    private void addToPlan(Song song) {
+        // 实现将歌曲添加到计划的逻辑
     }
 
     private void sortMusicRatingsByRating() {
@@ -559,6 +655,9 @@ public class MusicFragment extends Fragment {
                 MusicRating m = b100.get(x);
                 int nowache = m.getAchievement();
                 int target = 0;
+                if (nowache>=1005000) {
+                    continue;
+                }
                 if (nowache >= 1000000 && nowache < 1005000) {
                     target = 1005001;
                 } else if (nowache >= 995000 && nowache < 1000000) {
@@ -590,6 +689,9 @@ public class MusicFragment extends Fragment {
                 }
                 int nowache = m.getAchievement();
                 int target = 0;
+                if (nowache>=1005000) {
+                    continue;
+                }
                 if (nowache >= 1000000 && nowache < 1005000) {
                     target = 1005001;
                 } else if (nowache >= 995000 && nowache < 1000000) {
