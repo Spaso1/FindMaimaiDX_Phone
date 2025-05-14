@@ -33,6 +33,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -41,9 +42,11 @@ import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.adapter.MusicRatingAdapter;
 import org.astral.findmaimaiultra.adapter.SongAdapter;
 import org.astral.findmaimaiultra.adapter.SuggestMusicRatingAdapter;
+import org.astral.findmaimaiultra.been.ProjectSong;
 import org.astral.findmaimaiultra.been.faker.MaiUser;
 import org.astral.findmaimaiultra.been.faker.MusicRating;
 import org.astral.findmaimaiultra.been.faker.UserMusicList;
+import org.astral.findmaimaiultra.been.lx.Difficulty;
 import org.astral.findmaimaiultra.been.lx.Song;
 import org.astral.findmaimaiultra.databinding.FragmentMusicBinding;
 import org.astral.findmaimaiultra.ui.login.LinkQQBot;
@@ -64,12 +67,14 @@ public class MusicFragment extends Fragment {
     private FragmentMusicBinding binding;
     private SharedPreferences setting;
     private SharedPreferences scorePrefs;
+    private SharedPreferences project;
     private RecyclerView recyclerView;
     private MusicRatingAdapter adapter;
     private SuggestMusicRatingAdapter adapterSuggest;
     private DataAnalyzer dataAnalyzer;
     private List<UserMusicList> musicSongsRatings;
     private List<MusicRating> musicRatings = new ArrayList<>();
+    private Map<Integer,List<MusicRating>> id2score= new HashMap<>();
     private String userId;
     private int iconId;
     private String username;
@@ -81,6 +86,7 @@ public class MusicFragment extends Fragment {
         // 获取 SharedPreferences 实例
         setting = requireContext().getSharedPreferences("setting", Context.MODE_PRIVATE);
         scorePrefs = requireContext().getSharedPreferences("score", Context.MODE_PRIVATE);
+        project = requireContext().getSharedPreferences("project",Context.MODE_PRIVATE);
         userId = setting.getString("userId", "未知");
         // 读取音乐评分列表
         musicSongsRatings = loadMusicRatings();
@@ -91,6 +97,8 @@ public class MusicFragment extends Fragment {
                 totalMusicRatings += musicRating.getRating();
             }
         }
+        loadID2Score();
+
         // 假设这里填充了音乐评分数据
         if (musicRatings.isEmpty()) {
             MusicRating empty = new MusicRating();
@@ -101,6 +109,21 @@ public class MusicFragment extends Fragment {
             toolbar.setTitle("歌曲成绩 - 总共" + musicRatings.size() + "首");
             Toast.makeText(getContext(), "总共" + musicRatings.size() + "首,有效rating:" + totalMusicRatings, Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void loadID2Score() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executor.execute(() -> {
+             for (MusicRating m : musicRatings) {
+                 if (id2score.containsKey(m.getMusicId())) {
+                     Objects.requireNonNull(id2score.get(m.getMusicId())).add(m);
+                 }else{
+                     id2score.put(m.getMusicId(), new ArrayList<>());
+                     Objects.requireNonNull(id2score.get(m.getMusicId())).add(m);
+                 }
+             }
+        });
     }
 
     private void saveMusicRatings(List<UserMusicList> musicRatings) {
@@ -303,7 +326,9 @@ public class MusicFragment extends Fragment {
                 startActivity(loginIntent);
             });
         }
-        dataanlysis();
+        if(musicRatings.size()>=50) {
+            dataanlysis();
+        }
         return root;
     }
 
@@ -523,12 +548,18 @@ public class MusicFragment extends Fragment {
         builder.show();
     }
 
+    @SuppressLint({"SetTextI18n","MissingInflatedId"})
+
     private void showSongDetailDialog(Song song) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext(), R.style.CustomDialogStyle);
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_song_detail, null);
         builder.setView(dialogView);
 
         // 设置歌曲详情
+        ImageView songImage = dialogView.findViewById(R.id.backgroundLayout);
+        Glide.with(this)
+                .load("https://assets2.lxns.net/maimai/jacket/" + song.getId() + ".png")
+                .into(songImage);
         TextView songTitle = dialogView.findViewById(R.id.song_title);
         TextView songArtist = dialogView.findViewById(R.id.song_artist);
         songTitle.setText(song.getTitle());
@@ -536,36 +567,109 @@ public class MusicFragment extends Fragment {
 
         // 初始化表格
         TableLayout tableLayout = dialogView.findViewById(R.id.song_table);
-        for (int i = 0; i < 4; i++) { // 4 行
+        Map<String, Difficulty[]> diffs = song.getDifficulties();
+        //输出diffs
+        int num = 0;
+        List<Double> diff = new ArrayList<>();
+        for (Map.Entry<String, Difficulty[]> entry : diffs.entrySet()) {
+            String key = entry.getKey();
+            Difficulty[] value = entry.getValue();
+            for (Difficulty difficulty : value) {
+                diff.add(difficulty.getLevel_value());
+                num++;
+                Log.d("TAG", "key: " + key + ", value: " + difficulty.getLevel());
+            }
+        }
+        //diff倒置
+        Collections.reverse(diff);
+        for (int i = 0; i < num+1; i++) { // 4 行
             TableRow row = new TableRow(requireContext());
-            for (int j = 0; j < 5; j++) { // 5 列
-                TextView cell = new TextView(requireContext());
-                cell.setText("数据 " + (i * 5 + j + 1)); // 示例数据
-                cell.setPadding(8, 8, 8, 8);
-                row.addView(cell);
+            if (i ==0) {
+                for (int j = 0; j < 9; j++) { // 5 列
+                    TextView cell = new TextView(requireContext());
+                    if (j==0) {
+                        cell.setText("完成度");
+                        cell.setTextColor(getResources().getColor(R.color.primary));
+                    }else {
+                        cell.setText(100.5001 - (((float)j-1) * 0.5) + "%");
+                    }
+                    cell.setPadding(8, 8, 8, 8);
+                    row.addView(cell);
+                }
+            }else {
+                for (int j = 0; j < 9; j++) { // 5 列
+                    TextView cell = new TextView(requireContext());
+                    if (j==0) {
+                        cell.setText(diff.get(i-1).toString());
+                        cell.setTextColor(getResources().getColor(R.color.primary));
+                    }else {
+                        double a = 100.5001 - (((float)j-1) * 0.5);
+                        Log.d("TAG", "a: " + a);
+                        cell.setText("" + getRatingChart(diff.get(i-1),a)); // 示例数据
+
+                        int finalI = i;
+                        int finalJ = j;
+                        if (j<3) {
+                            cell.setOnLongClickListener(v -> {
+                                //询问
+                                MaterialAlertDialogBuilder builder1 = new MaterialAlertDialogBuilder(requireContext(), R.style.CustomDialogStyle);
+                                builder1.setTitle("是否添加");
+                                builder1.setMessage("是否添加 : " + diff.get(finalI - 1) + " -> " + (100.5001 - (((float) finalJ - 1) * 0.5)) + "%");
+                                builder1.setPositiveButton("确定", (dialog, which) -> {
+                                    // 添加到计划
+                                    ProjectSong projectSong = new ProjectSong();
+                                    projectSong.setId(song.getId());
+                                    projectSong.setTargetLevel(diff.get(finalI - 1));
+                                    projectSong.setTargetA(100.5001 - (((float) finalJ - 1) * 0.5));
+                                    SharedPreferences.Editor projectE = project.edit();
+                                    Gson gson = new Gson();
+                                    String json = gson.toJson(projectSong);
+                                    projectE.putString("project" + song.getId(), json);
+                                    projectE.apply();
+                                    dialog.dismiss();
+
+                                    Snackbar.make(v, "已添加", Snackbar.LENGTH_SHORT)
+                                            .setAction("确定", null)
+                                            .show();
+                                });
+                                builder1.setNegativeButton("取消", (dialog, which) -> {
+                                    dialog.dismiss();
+                                });
+                                builder1.show();
+                                return true;
+                            });
+                        }
+                    }
+
+                    cell.setPadding(8, 8, 8, 8);
+                    row.addView(cell);
+                }
             }
             tableLayout.addView(row);
         }
 
         // 设置额外的 TextView
         TextView extraInfo = dialogView.findViewById(R.id.extra_info);
-        extraInfo.setText("额外信息：这里可以显示更多内容");
-
-        // 设置按钮点击事件
-        MaterialButton addToPlanButton = dialogView.findViewById(R.id.add_to_plan_button);
-        addToPlanButton.setOnClickListener(v -> {
-            // 将歌曲添加到计划中
-            addToPlan(song);
-            Toast.makeText(requireContext(), "已添加到计划", Toast.LENGTH_SHORT).show();
-        });
-
+        if (id2score.containsKey(song.getId()) || id2score.containsKey(song.getId() + 10000)) {
+            List<MusicRating> m = id2score.get(song.getId());
+            StringBuilder data = new StringBuilder("成绩\n");
+            if (m == null) {
+                m = (Objects.requireNonNull(id2score.get(song.getId() + 10000)));
+            }else if (id2score.containsKey(song.getId() + 10000)){
+                m.addAll(Objects.requireNonNull(id2score.get(song.getId() + 10000)));
+            }
+            for (MusicRating musicRating : m) {
+                data.append(musicRating.getLevel_info()).append(" ").append((float)musicRating.getAchievement()/10000 + "%").append("\n");
+            }
+            extraInfo.setText("BPM" + song.getBpm() + "\n" + data);
+        }
+        else{
+            extraInfo.setText("BPM" + song.getBpm());
+        }
         builder.setPositiveButton("关闭", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
 
-    private void addToPlan(Song song) {
-        // 实现将歌曲添加到计划的逻辑
-    }
 
     private void sortMusicRatingsByRating() {
         Collections.sort(musicRatings, new Comparator<MusicRating>() {
@@ -645,7 +749,12 @@ public class MusicFragment extends Fragment {
             Collections.sort(musicRatings, (o1, o2) -> Integer.compare(o2.getRating(), o1.getRating()));
             int total = 0;
             List<MusicRating> b50 = musicRatings.subList(0, 50);
-            List<MusicRating> b100 = musicRatings.subList(50, 100);
+            List<MusicRating> b100  = new ArrayList<>();
+            if (musicRatings.size()<100) {
+                b100 = musicRatings.subList(50, musicRatings.size());
+            }else {
+                b100 = musicRatings.subList(50, 100);
+            }
             List<Integer> ids= new ArrayList<>();
             int worstRating = b50.get(b50.size() - 1).getRating();
             int bestRating = b50.get(0).getRating();
@@ -767,6 +876,30 @@ public class MusicFragment extends Fragment {
                 }
             }
 
+            //遍历project
+            for (Map.Entry<String, ?> entry : project.getAll().entrySet()) {
+                String key = entry.getKey();
+                if (key.startsWith("project")) {
+                    String json = project.getString(key, null);
+                    if (json != null) {
+                        ProjectSong projectSong = new Gson().fromJson(json, ProjectSong.class);
+                        if (projectSong != null) {
+                            // 处理 projectSong 对象
+                            Song s = songs.get(projectSong.getId());
+                            MusicRating m = new MusicRating();
+                            m.setAchievement(0);
+                            m.setExtNum1((int)(projectSong.getTargetA()*10000));
+                            m.setExtNum2(getRatingChart(projectSong.getTargetLevel(), projectSong.getTargetA()));
+                            m.setMusicId(s.getId());
+                            m.setLevel_info(projectSong.getTargetLevel());
+                            m.setLevel((int) projectSong.getTargetLevel());
+                            m.setMusicName(s.getTitle());
+                            suggestMusicRatingList.add(m);
+                        }
+                    }
+                }
+            }
+
 
             // Update UI on the main thread
             int finalTotal = total;
@@ -783,6 +916,10 @@ public class MusicFragment extends Fragment {
         });
     }
     public int getRatingChart(double a1, double b1) {
+        if(b1>970001) {
+            b1 = b1 / 1000;
+        }
+
         double sys = 22.4;
         if (b1 >= 100.5000) {
             return (int) (a1 * 22.512);

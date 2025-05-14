@@ -1,37 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
-
-        <!-- 歌曲标题和作者 -->
-        <TextView
-            android:id="@+id/song_title"
+        <!-- 图片和文本部分 -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="歌曲标题"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
-        <TextView
-            android:id="@+id/song_artist"
+            <ImageView
+                android:id="@+id/backgroundLayout"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:scaleType="centerCrop"
+                android:layout_marginEnd="16dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/song_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="歌曲标题"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/song_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="歌曲作者"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 可左右滑动的表格 -->
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="歌曲作者"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp" />
+            android:scrollbars="horizontal">
+            <ScrollView
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+                <TableLayout
+                    android:id="@+id/song_table"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:stretchColumns="*" />
+            </ScrollView>
 
-        <!-- 表格 -->
-        <TableLayout
-            android:id="@+id/song_table"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:stretchColumns="*" />
+        </HorizontalScrollView>
 
         <!-- 额外信息 -->
         <TextView

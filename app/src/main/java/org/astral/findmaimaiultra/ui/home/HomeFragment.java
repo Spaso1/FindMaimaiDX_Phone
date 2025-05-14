@@ -430,6 +430,10 @@ public class HomeFragment extends Fragment {
             if (lastKnownLocation != null) {
                 // 调用高德地图 API 进行逆地理编码
                 reverseGeocode(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                sharedViewModel.addToMap("x", String.valueOf(lastKnownLocation.getLatitude()));
+                sharedViewModel.addToMap("y", String.valueOf(lastKnownLocation.getLongitude()));
+
+
             } else {
                 Toast.makeText(requireActivity().getApplicationContext(), "无法获取最新定位信息", Toast.LENGTH_SHORT).show();
                 Log.d("Location", "无法获取最新定位信息");
@@ -444,6 +448,9 @@ public class HomeFragment extends Fragment {
                     Log.d("Location", "onLocationChanged");
                     if (flag) {
                         // 调用高德地图 API 进行逆地理编码
+                        sharedViewModel.addToMap("x", String.valueOf(location.getLatitude()));
+                        sharedViewModel.addToMap("y", String.valueOf(location.getLongitude()));
+
                         reverseGeocode(location.getLatitude(), location.getLongitude());
                     }
                 }
@@ -466,6 +473,7 @@ public class HomeFragment extends Fragment {
                 // 构建请求 URL
                 x = String.valueOf(longitude);
                 y = String.valueOf(latitude);
+
                 String url = "https://restapi.amap.com/v3/geocode/regeo?key=234cad2e2f0706e54c92591647a363c3&location=" + longitude + "," + latitude;
                 Log.d("Location", url);
                 // 发起网络请求
