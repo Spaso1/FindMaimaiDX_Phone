@@ -561,7 +561,9 @@ public class MusicFragment extends Fragment {
                 .load("https://assets2.lxns.net/maimai/jacket/" + song.getId() + ".png")
                 .into(songImage);
         TextView songTitle = dialogView.findViewById(R.id.song_title);
+        songTitle.setTextColor(getResources().getColor(R.color.textcolorPrimary));
         TextView songArtist = dialogView.findViewById(R.id.song_artist);
+        songArtist.setTextColor(getResources().getColor(R.color.textcolorPrimary));
         songTitle.setText(song.getTitle());
         songArtist.setText(song.getArtist());
 
@@ -592,6 +594,7 @@ public class MusicFragment extends Fragment {
                         cell.setTextColor(getResources().getColor(R.color.primary));
                     }else {
                         cell.setText(100.5001 - (((float)j-1) * 0.5) + "%");
+                        cell.setTextColor(getResources().getColor(R.color.textcolorPrimary));
                     }
                     cell.setPadding(8, 8, 8, 8);
                     row.addView(cell);
@@ -606,6 +609,7 @@ public class MusicFragment extends Fragment {
                         double a = 100.5001 - (((float)j-1) * 0.5);
                         Log.d("TAG", "a: " + a);
                         cell.setText("" + getRatingChart(diff.get(i-1),a)); // 示例数据
+                        cell.setTextColor(getResources().getColor(R.color.textcolorPrimary));
 
                         int finalI = i;
                         int finalJ = j;
@@ -631,6 +635,7 @@ public class MusicFragment extends Fragment {
                                     Snackbar.make(v, "已添加", Snackbar.LENGTH_SHORT)
                                             .setAction("确定", null)
                                             .show();
+                                    dataanlysis();
                                 });
                                 builder1.setNegativeButton("取消", (dialog, which) -> {
                                     dialog.dismiss();
@@ -666,6 +671,8 @@ public class MusicFragment extends Fragment {
         else{
             extraInfo.setText("BPM" + song.getBpm());
         }
+        extraInfo.setTextColor(getResources().getColor(R.color.textcolorPrimary));
+
         builder.setPositiveButton("关闭", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
@@ -909,7 +916,7 @@ public class MusicFragment extends Fragment {
 
                 au.setText("Rating分析:最低分 " + worstRating + "分,最高分 " + bestRating + ",平均分" + (finalTotal / 50) + "分");
 
-                adapterSuggest = new SuggestMusicRatingAdapter(suggestMusicRatingList);
+                adapterSuggest = new SuggestMusicRatingAdapter(suggestMusicRatingList,project);
                 suggest.setAdapter(adapterSuggest);
                 adapterSuggest.notifyDataSetChanged();
             });

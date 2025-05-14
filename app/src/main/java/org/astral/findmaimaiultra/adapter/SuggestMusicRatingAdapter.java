@@ -1,10 +1,12 @@
 package org.astral.findmaimaiultra.adapter;
 
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
@@ -20,6 +22,7 @@ import java.util.List;
 public class SuggestMusicRatingAdapter extends RecyclerView.Adapter<SuggestMusicRatingAdapter.ViewHolder> {
 
     private List<MusicRating> musicRatings;
+    private final SharedPreferences projectE;
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
@@ -31,9 +34,11 @@ public class SuggestMusicRatingAdapter extends RecyclerView.Adapter<SuggestMusic
         this.listener = listener;
     }
 
-    public SuggestMusicRatingAdapter(List<MusicRating> musicRatings) {
+    public SuggestMusicRatingAdapter(List<MusicRating> musicRatings, SharedPreferences projectE) {
         this.musicRatings = musicRatings;
+        this.projectE = projectE;
     }
+
 
     @NonNull
     @Override
@@ -90,6 +95,26 @@ public class SuggestMusicRatingAdapter extends RecyclerView.Adapter<SuggestMusic
             if (listener != null) {
                 listener.onItemClick(musicRating);
             }
+        });
+
+
+        // Long-press listener to delete project
+        holder.itemView.setOnLongClickListener(v -> {
+            // Remove project from SharedPreferences
+            String projectKey = "project" + musicRating.getMusicId();
+            if (projectE.contains(projectKey)) {
+                SharedPreferences.Editor editor = projectE.edit();
+                editor.remove(projectKey);
+                editor.apply();
+
+                // Remove item from the list and refresh
+                musicRatings.remove(position);
+                notifyItemRemoved(position);
+                notifyItemRangeChanged(position, musicRatings.size());
+
+                Toast.makeText(v.getContext(), "Project removed", Toast.LENGTH_SHORT).show();
+            }
+            return true;
         });
     }
 

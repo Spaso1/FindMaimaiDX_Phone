@@ -73,12 +73,5 @@
             android:text="额外信息"
             android:layout_marginTop="16dp" />
 
-        <!-- 添加到计划按钮 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/add_to_plan_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="添加到计划"
-            android:layout_marginTop="16dp" />
     </LinearLayout>
 </ScrollView>

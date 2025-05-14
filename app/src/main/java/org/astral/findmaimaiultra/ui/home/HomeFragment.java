@@ -347,26 +347,26 @@ public class HomeFragment extends Fragment {
 
         a.clear();
         TreeMap<Double, Place> treeMap = new TreeMap<>();
+        try {
+            for (Place p : b) {
+                double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
 
-        for (Place p : b) {
-            double distance = DistanceCalculator.calculateDistance(Double.parseDouble(x), Double.parseDouble(y), p.getX(), p.getY());
-
-            if (shoucang.contains(p.getId() + "")) {
-                p.setName(p.getName() + " 收藏" + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
-                treeMap.put(distance - 1000, p);
-            } else {
-                p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
-                treeMap.put(distance, p);
+                if (shoucang.contains(p.getId() + "")) {
+                    p.setName(p.getName() + " 收藏" + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                    treeMap.put(distance - 1000, p);
+                } else {
+                    p.setName(p.getName() + " 距离您" + String.format(Locale.CHINA, "%.2f", distance) + "km");
+                    treeMap.put(distance, p);
+                }
+                if (p.getNumJ() > 0) {
+                    p.setName(p.getName() + "\uD83D\uDCB3");
+                }
             }
-            if (p.getNumJ() > 0) {
-                p.setName(p.getName() + "\uD83D\uDCB3");
+
+            for (Double key : treeMap.keySet()) {
+                a.add(treeMap.get(key));
             }
-        }
-
-        for (Double key : treeMap.keySet()) {
-            a.add(treeMap.get(key));
-        }
-
+        }catch (Exception e) {}
         boolean flag2 = true;
         if (flag2) {
             getActivity().runOnUiThread(new Runnable() {
