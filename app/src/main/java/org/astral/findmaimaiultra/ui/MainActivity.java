@@ -61,12 +61,14 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences preferences = getSharedPreferences("setting", MODE_PRIVATE);
+        String selectedTheme = preferences.getString("selected_theme", "Theme.FindMaimaiUltra");
 
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if (nfcAdapter == null) {
-            Toast.makeText(this, "NFC is not available on this device", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
+            Snackbar.make(findViewById(R.id.nav_host_fragment_content_main), "NFC 不可用", Snackbar.LENGTH_LONG).show();
+            //finish();
+            //return;
         }
 
         pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_IMMUTABLE);

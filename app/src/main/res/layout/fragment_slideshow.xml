@@ -101,7 +101,8 @@
             <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="?android:attr/dividerVertical"
+                android:id="@+id/view2"
+                android:background="?android:attr/dividerVertical"
                     android:layout_marginTop="16dp"/>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -169,7 +170,68 @@
                     android:backgroundTint="?attr/colorPrimary"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textcolorPrimary"
+                android:textSize="18sp"
+                android:id="@+id/themeText"
+                android:text="文字主题"/>
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
 
+                <LinearLayout
+                    android:id="@+id/themeCardContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="8dp">
+
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardPink"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_margin="8dp"
+                        app:cardBackgroundColor="@color/primary"
+                        app:cardCornerRadius="8dp" />
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardGreen"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_margin="8dp"
+                        app:cardBackgroundColor="@color/lineBaseGreen"
+                        app:cardCornerRadius="8dp" />
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardBlue"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_margin="8dp"
+                        app:cardBackgroundColor="@color/colorPrimary2"
+                        app:cardCornerRadius="8dp" />
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardWhite"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_margin="8dp"
+                        app:cardBackgroundColor="@color/white"
+                        app:cardCornerRadius="8dp" />
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardGray"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_margin="8dp"
+                        app:cardBackgroundColor="@color/black"
+                        app:cardCornerRadius="8dp" />
+
+                </LinearLayout>
+            </HorizontalScrollView>
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
                 <com.google.android.material.button.MaterialButton
                         android:id="@+id/save_settings_button"
@@ -182,7 +244,9 @@
                         android:paddingBottom="16dp"/>
 
             </LinearLayout>
-            <TextView android:layout_width="wrap_content"             android:textColor="@color/textcolorPrimary"
+            <TextView android:layout_width="wrap_content"
+                        android:textColor="@color/textcolorPrimary"
+                android:id="@+id/desc"
                       android:layout_height="wrap_content" android:text="@string/settin_body"/>
             <TextView
                     android:layout_width="match_parent"
@@ -192,6 +256,7 @@
             <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
+                    android:id="@+id/view3"
                     android:background="?android:attr/dividerVertical"
                     android:layout_marginTop="16dp"/>
             <TextView android:layout_width="wrap_content"         android:textColor="@color/textcolorPrimary"

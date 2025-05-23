@@ -2,6 +2,7 @@ package org.astral.findmaimaiultra.ui.slideshow;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.UiModeManager;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -14,9 +15,11 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -24,8 +27,11 @@ import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.radiobutton.MaterialRadioButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
+
+import org.astral.findmaimaiultra.R;
 import org.astral.findmaimaiultra.been.Release;
 import org.astral.findmaimaiultra.databinding.FragmentSlideshowBinding;
 import org.astral.findmaimaiultra.service.GitHubApiService;
@@ -54,7 +60,7 @@ public class SlideshowFragment extends Fragment {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-
+    private String theme;
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -76,6 +82,7 @@ public class SlideshowFragment extends Fragment {
         } else {
             requestPermissions();
         }
+        theme = settingProperties.getString("selected_theme", "Theme.FindMaimaiUltra");
     }
 
     private void show(String text) {
@@ -101,6 +108,7 @@ public class SlideshowFragment extends Fragment {
         );
     }
 
+    @SuppressLint("ResourceAsColor")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -178,7 +186,81 @@ public class SlideshowFragment extends Fragment {
                 .into(user_avatar);
         TextView user_name = binding.username;
         user_name.setText(username);
+
+        themeClick(root);
+
+
+        if (theme.contains("Pink")) {
+            //  全部设置颜色
+            user_name.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary));
+            binding.desc.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary));
+            binding.vits.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary));
+            binding.themeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary));
+        } else if (theme.contains("Blue")) {
+            user_name.setTextColor(ContextCompat.getColor(requireContext(), R.color.textcolorPrimary2));
+            binding.desc.setTextColor(ContextCompat.getColor(requireContext(), R.color.textcolorPrimary2));
+            binding.vits.setTextColor(ContextCompat.getColor(requireContext(), R.color.textcolorPrimary2));
+            binding.themeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.textcolorPrimary2));
+        } else if (theme.contains("Green")) {
+            user_name.setTextColor(ContextCompat.getColor(requireContext(), R.color.lineBaseGreen));
+            binding.desc.setTextColor(ContextCompat.getColor(requireContext(), R.color.lineBaseGreen));
+            binding.vits.setTextColor(ContextCompat.getColor(requireContext(), R.color.lineBaseGreen));
+            binding.themeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.lineBaseGreen));
+        }else if (theme.contains("White")) {
+            user_name.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
+            binding.desc.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
+            binding.vits.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
+            binding.themeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
+        }else if (theme.contains("Gray")) {
+            user_name.setTextColor(ContextCompat.getColor(requireContext(), R.color.black));
+            binding.desc.setTextColor(ContextCompat.getColor(requireContext(), R.color.black));
+            binding.vits.setTextColor(ContextCompat.getColor(requireContext(), R.color.black));
+            binding.themeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black));
+        }
+
+        binding.view2.setBackgroundColor(R.color.black);
+        binding.view3.setBackgroundColor(R.color.black);
         return root;
+    }
+
+
+    public boolean isDarkMode(Context context) {
+        UiModeManager uiModeManager = (UiModeManager) context.getSystemService(Context.UI_MODE_SERVICE);
+        return uiModeManager.getNightMode() == UiModeManager.MODE_NIGHT_YES;
+    }
+    private void themeClick(View root) {
+        CardView cardPink = root.findViewById(R.id.cardPink);
+        CardView cardGreen = root.findViewById(R.id.cardGreen);
+        CardView cardBlue = root.findViewById(R.id.cardBlue);
+        CardView cardWhite = root.findViewById(R.id.cardWhite);
+        CardView cardGray = root.findViewById(R.id.cardGray);
+
+        View.OnClickListener themeClickListener = v -> {
+            String selectedTheme = "Theme.FindMaimaiUltra";
+            int id = v.getId();
+            if (id == R.id.cardPink) {
+                selectedTheme = "Theme.FindMaimaiUltra.Pink";
+            } else if (id == R.id.cardGreen) {
+                selectedTheme = "Theme.FindMaimaiUltra.Green";
+            } else if (id == R.id.cardBlue) {
+                selectedTheme = "Theme.FindMaimaiUltra.Blue";
+            } else if (id == R.id.cardWhite) {
+                selectedTheme = "Theme.FindMaimaiUltra.White";
+            } else if (id == R.id.cardGray) {
+                selectedTheme = "Theme.FindMaimaiUltra.Gray";
+            }
+            SharedPreferences.Editor editor = settingProperties.edit();
+            editor.putString("selected_theme", selectedTheme);
+            editor.apply();
+            Snackbar .make(binding.getRoot(), "文本主题已更改", Snackbar.LENGTH_SHORT).show();
+
+        };
+
+        cardPink.setOnClickListener(themeClickListener);
+        cardGreen.setOnClickListener(themeClickListener);
+        cardBlue.setOnClickListener(themeClickListener);
+        cardWhite.setOnClickListener(themeClickListener);
+        cardGray.setOnClickListener(themeClickListener);
     }
 
     private String getAppVersionName() {

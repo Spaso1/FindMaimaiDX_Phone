@@ -85,7 +85,7 @@ public class HomeFragment extends Fragment {
     private SharedPreferences shoucang;
     private SharedPreferences settingProperties;
     private SharedPreferences settingProperties2;
-
+    private String selectedTheme;
     private FragmentHomeBinding binding;
     private SharedViewModel sharedViewModel;
     @Override
@@ -120,7 +120,7 @@ public class HomeFragment extends Fragment {
         List<Place> placeList = new ArrayList<>();
         recyclerView.setAdapter(adapter);
         requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},0x123);
-
+        selectedTheme = settingProperties2.getString("selected_theme", "Theme.FindMaimaiUltra");
         // 示例：读取 SharedPreferences 中的数据
         if (shoucang != null) {
             String savedData = shoucang.getString("key_name", "default_value");
@@ -372,7 +372,7 @@ public class HomeFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    adapter = new PlaceAdapter(a, new PlaceAdapter.OnItemClickListener() {
+                    adapter = new PlaceAdapter(a,selectedTheme, new PlaceAdapter.OnItemClickListener() {
                         @Override
                         public void onItemClick(Place place) {
                             Intent intent = new Intent(context, PageActivity.class);

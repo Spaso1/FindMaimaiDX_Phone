@@ -18,7 +18,7 @@ import org.astral.findmaimaiultra.been.Place;
 import java.util.List;
 
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHolder> {
-
+    private String theme;
     private List<Place> placeList;
     private OnItemClickListener listener;
 
@@ -26,9 +26,10 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         void onItemClick(Place place);
     }
 
-    public PlaceAdapter(List<Place> placeList, OnItemClickListener listener) {
+    public PlaceAdapter(List<Place> placeList,String theme, OnItemClickListener listener) {
         this.placeList = placeList;
         this.listener = listener;
+        this.theme = theme;
     }
 
     @NonNull
@@ -69,6 +70,40 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         } else {
             holder.imageView.setImageDrawable(ContextCompat.getDrawable(holder.itemView.getContext(), R.drawable.rank_a));
         }
+
+        //通过theme设置textview颜色
+        if (theme.contains("Pink")) {
+            holder.nameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary));
+            holder.provinceTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary));
+            holder.cityTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary));
+            holder.areaTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary));
+            holder.addressTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary));
+        } else if (theme.contains("Blue")) {
+            holder.nameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary2));
+            holder.provinceTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary2));
+            holder.cityTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary2));
+            holder.areaTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary2));
+            holder.addressTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.textcolorPrimary2));
+        } else if (theme.contains("Green")) {
+            holder.nameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.lineBaseGreen));
+            holder.provinceTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.lineBaseGreen));
+            holder.cityTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.lineBaseGreen));
+            holder.areaTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.lineBaseGreen));
+            holder.addressTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.lineBaseGreen));
+        }else if (theme.contains("White")) {
+            holder.nameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.white));
+            holder.provinceTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.white));
+            holder.cityTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.white));
+            holder.areaTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.white));
+            holder.addressTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.white));
+        }else if (theme.contains("Gray")) {
+            holder.nameTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.black));
+            holder.provinceTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.black));
+            holder.cityTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.black));
+            holder.areaTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.black));
+            holder.addressTextView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.black));
+        }
+
         Log.i("rating", rating + "|" + place.getName());
         // 控制竖线的位置
         controlVerticalLines(holder, place);

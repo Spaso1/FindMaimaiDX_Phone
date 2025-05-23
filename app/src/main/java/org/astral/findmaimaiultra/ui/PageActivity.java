@@ -8,7 +8,10 @@ import android.app.AlertDialog;
 import android.content.*;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,6 +19,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -39,6 +43,7 @@ import org.astral.findmaimaiultra.been.Market;
 import org.astral.findmaimaiultra.been.Place;
 import org.astral.findmaimaiultra.been.PlaceContent;
 import org.astral.findmaimaiultra.message.ApiResponse;
+import org.astral.findmaimaiultra.utill.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -121,6 +126,43 @@ public class PageActivity extends AppCompatActivity {
         TextView textView5 = findViewById(R.id.areaTextView);
         textView5.setText(area);
         TextView t1 = findViewById(R.id.num5);
+
+        SharedPreferences preferences = getSharedPreferences("setting", MODE_PRIVATE);
+        String selectedTheme = preferences.getString("selected_theme", "Theme.FindMaimaiUltra");
+
+        if (selectedTheme.contains("Pink")) {
+            //  全部设置颜色
+            textView.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            textView2.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            textView3.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            textView4.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            textView5.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+        } else if (selectedTheme.contains("Blue")) {
+            textView.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
+            textView2.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
+            textView3.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
+            textView4.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
+            textView5.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
+        } else if (selectedTheme.contains("Green")) {
+            textView.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
+            textView2.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
+            textView3.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
+            textView4.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
+            textView5.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
+        }else if (selectedTheme.contains("White")) {
+            textView.setTextColor(ContextCompat.getColor(this, R.color.white));
+            textView2.setTextColor(ContextCompat.getColor(this, R.color.white));
+            textView3.setTextColor(ContextCompat.getColor(this, R.color.white));
+            textView4.setTextColor(ContextCompat.getColor(this, R.color.white));
+            textView5.setTextColor(ContextCompat.getColor(this, R.color.white));
+        }else if (selectedTheme.contains("Gray")) {
+            textView.setTextColor(ContextCompat.getColor(this, R.color.black));
+            textView2.setTextColor(ContextCompat.getColor(this, R.color.black));
+            textView3.setTextColor(ContextCompat.getColor(this, R.color.black));
+            textView4.setTextColor(ContextCompat.getColor(this, R.color.black));
+            textView5.setTextColor(ContextCompat.getColor(this, R.color.black));
+        }
+
         adminIt = findViewById(R.id.admin);
         t1.setText("舞萌总机台 " + (num + numJ));
         if(getIntent().hasExtra("type")) {
@@ -397,9 +439,9 @@ public class PageActivity extends AppCompatActivity {
         LatLng latLng = new LatLng(y, x); // 北京市经纬度
         baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLngZoom(latLng, 13)); // 缩放级别调整为
 // 添加独特样式的标记
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo); // 自定义图标资源
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 300, 130, true); // 缩放到 100x100 像素
-        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromBitmap(scaledBitmap);
+        Bitmap bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.logo); // 自定义图标资源
+        Bitmap scaledBitmap2 = Bitmap.createScaledBitmap(bitmap2, 300, 130, true); // 缩放到 100x100 像素
+        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromBitmap(scaledBitmap2);
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)
                 .title("机厅位置")
@@ -408,6 +450,135 @@ public class PageActivity extends AppCompatActivity {
 
         MaterialButton moveButton =  findViewById(R.id.move);
         moveButton.setOnClickListener(v -> showBaiduMapDialog());
+
+        LinearLayout background = findViewById(R.id.background);
+
+
+        if (preferences.getString("image_uri", null) != null ) {
+            try {
+                File backgroundFile = FileUtils.getBackground(this, "background.jpg");
+
+                if (!backgroundFile.exists()) {
+                    Toast.makeText(this, "文件不存在，请先设置背景图片", Toast.LENGTH_SHORT).show();
+                }
+
+                Bitmap bitmap = BitmapFactory.decodeFile(backgroundFile.getAbsolutePath());
+
+                if (bitmap != null) {
+                    // 获取RecyclerView的尺寸
+                    int recyclerViewWidth = 0;
+                    int recyclerViewHeight = 0;
+                    recyclerViewWidth = background.getWidth();
+                    recyclerViewHeight = background.getHeight();
+                    if (recyclerViewWidth > 0 && recyclerViewHeight > 0) {
+                        // 计算缩放比例
+                        float scaleWidth = ((float) recyclerViewWidth) / bitmap.getWidth();
+                        float scaleHeight = ((float) recyclerViewHeight) / bitmap.getHeight();
+
+                        // 选择较大的缩放比例以保持图片的原始比例
+                        float scaleFactor = Math.max(scaleWidth, scaleHeight);
+
+                        // 计算新的宽度和高度
+                        int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                        int newHeight = (int) (bitmap.getHeight() * scaleFactor);
+
+                        // 缩放图片
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+                        // 计算裁剪区域
+                        int xT = (scaledBitmap.getWidth() - recyclerViewWidth) / 2;
+                        int yT = (scaledBitmap.getHeight() - recyclerViewHeight) / 2;
+
+                        // 处理x和y为负数的情况
+                        xT = Math.max(xT, 0);
+                        yT = Math.max(yT, 0);
+
+                        // 裁剪图片
+                        Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, xT, yT, recyclerViewWidth, recyclerViewHeight);
+
+                        // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                        Bitmap transparentBitmap = Bitmap.createBitmap(croppedBitmap.getWidth(), croppedBitmap.getHeight(), croppedBitmap.getConfig());
+
+                        // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                        Canvas canvas = new Canvas(transparentBitmap);
+
+                        // 创建一个 Paint 对象，并设置透明度
+                        Paint paint = new Paint();
+                        paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                        // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                        canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                        // 创建BitmapDrawable并设置其边界为RecyclerView的尺寸
+                        BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+
+                        // 设置recyclerView的背景
+                        background.setBackground(bitmapDrawable);
+
+                    } else {
+                        // 如果RecyclerView的尺寸未确定，可以使用ViewTreeObserver来监听尺寸变化
+                        background.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                background.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                int recyclerViewWidth = 0;
+                                int recyclerViewHeight = 0;
+                                recyclerViewWidth = background.getWidth();
+                                recyclerViewHeight = background.getHeight();
+
+                                // 计算缩放比例
+                                float scaleWidth = ((float) recyclerViewWidth) / bitmap.getWidth();
+                                float scaleHeight = ((float) recyclerViewHeight) / bitmap.getHeight();
+
+                                // 选择较大的缩放比例以保持图片的原始比例
+                                float scaleFactor = Math.max(scaleWidth, scaleHeight);
+
+                                // 计算新的宽度和高度
+                                int newWidth = (int) (bitmap.getWidth() * scaleFactor);
+                                int newHeight = (int) (bitmap.getHeight() * scaleFactor);
+
+                                // 缩放图片
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+                                // 计算裁剪区域
+                                int x = (scaledBitmap.getWidth() - recyclerViewWidth) / 2;
+                                int y = (scaledBitmap.getHeight() - recyclerViewHeight) / 2;
+
+                                // 处理x和y为负数的情况
+                                x = Math.max(x, 0);
+                                y = Math.max(y, 0);
+
+                                // 裁剪图片
+                                Bitmap croppedBitmap = Bitmap.createBitmap(scaledBitmap, x, y, recyclerViewWidth, recyclerViewHeight);
+
+                                // 创建一个新的 Bitmap，与裁剪后的 Bitmap 大小相同
+                                Bitmap transparentBitmap = Bitmap.createBitmap(croppedBitmap.getWidth(), croppedBitmap.getHeight(), croppedBitmap.getConfig());
+
+                                // 创建一个 Canvas 对象，用于在新的 Bitmap 上绘制
+                                Canvas canvas = new Canvas(transparentBitmap);
+
+                                // 创建一个 Paint 对象，并设置透明度
+                                Paint paint = new Paint();
+                                paint.setAlpha(128); // 设置透明度为 50% (255 * 0.5 = 128)
+
+                                // 将裁剪后的 Bitmap 绘制到新的 Bitmap 上，并应用透明度
+                                canvas.drawBitmap(croppedBitmap, 0, 0, paint);
+
+                                // 创建BitmapDrawable并设置其边界为RecyclerView的尺寸
+                                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), transparentBitmap);
+                                background.setBackground(bitmapDrawable);
+
+                            }
+                        });
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                Toast.makeText(this, "图片加载失败,权限出错!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
     private void showBaiduMapDialog() {
         // 加载弹窗布局
@@ -477,6 +648,9 @@ public class PageActivity extends AppCompatActivity {
                 .setTitle("选择新位置")
                 .create();
         mapDialog.show();
+
+
+
     }
     private void updateMapLocation() {
         mapView.onDestroy();

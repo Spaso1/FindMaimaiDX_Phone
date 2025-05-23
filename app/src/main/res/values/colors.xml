@@ -28,6 +28,10 @@
     <color name="lineBaseGreen">#1DF687</color>
     <color name="VlineBaseGreen">#C2F6C4</color>
     <color name="textcolorPrimary">#D5C4ED</color>
+
+    <color name="textcolorPrimary2">#2196F3</color>
+    <color name="colorPrimary2">#2196F3</color>
+
     <color name="border_color">#000000</color> <!-- 黑色 -->
     <color name="menu_background_color">#FFFFFF</color> <!-- 白色背景 -->
 
