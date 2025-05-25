@@ -126,7 +126,8 @@ public class PageActivity extends AppCompatActivity {
         TextView textView5 = findViewById(R.id.areaTextView);
         textView5.setText(area);
         TextView t1 = findViewById(R.id.num5);
-
+        TextView t2 = findViewById(R.id.num6);
+        t2.setText("国机 " + num);
         SharedPreferences preferences = getSharedPreferences("setting", MODE_PRIVATE);
         String selectedTheme = preferences.getString("selected_theme", "Theme.FindMaimaiUltra");
 
@@ -137,30 +138,45 @@ public class PageActivity extends AppCompatActivity {
             textView3.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
             textView4.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
             textView5.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            t1.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            t2.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+
         } else if (selectedTheme.contains("Blue")) {
             textView.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
             textView2.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
             textView3.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
             textView4.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
             textView5.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
+            t1.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
+            t2.setTextColor(ContextCompat.getColor(this, R.color.textcolorPrimary2));
+
         } else if (selectedTheme.contains("Green")) {
             textView.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
             textView2.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
             textView3.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
             textView4.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
             textView5.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
+            t1.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
+            t2.setTextColor(ContextCompat.getColor(this, R.color.lineBaseGreen));
+
         }else if (selectedTheme.contains("White")) {
             textView.setTextColor(ContextCompat.getColor(this, R.color.white));
             textView2.setTextColor(ContextCompat.getColor(this, R.color.white));
             textView3.setTextColor(ContextCompat.getColor(this, R.color.white));
             textView4.setTextColor(ContextCompat.getColor(this, R.color.white));
             textView5.setTextColor(ContextCompat.getColor(this, R.color.white));
+            t1.setTextColor(ContextCompat.getColor(this, R.color.white));
+            t2.setTextColor(ContextCompat.getColor(this, R.color.white));
+
         }else if (selectedTheme.contains("Gray")) {
             textView.setTextColor(ContextCompat.getColor(this, R.color.black));
             textView2.setTextColor(ContextCompat.getColor(this, R.color.black));
             textView3.setTextColor(ContextCompat.getColor(this, R.color.black));
             textView4.setTextColor(ContextCompat.getColor(this, R.color.black));
             textView5.setTextColor(ContextCompat.getColor(this, R.color.black));
+            t1.setTextColor(ContextCompat.getColor(this, R.color.black));
+            t2.setTextColor(ContextCompat.getColor(this, R.color.black));
+
         }
 
         adminIt = findViewById(R.id.admin);
@@ -170,8 +186,7 @@ public class PageActivity extends AppCompatActivity {
             type_code = "chu";
             t1.setText("中二总机台 " + (num + numJ));
         }
-        TextView t2 = findViewById(R.id.num6);
-        t2.setText("国机 " + num);
+
         TextView t3 = findViewById(R.id.num7);
         tagXY = new double[]{x,y};
         tagplace = name;

@@ -6,6 +6,7 @@ import android.app.UiModeManager;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -217,7 +218,12 @@ public class SlideshowFragment extends Fragment {
             binding.vits.setTextColor(ContextCompat.getColor(requireContext(), R.color.black));
             binding.themeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black));
         }
-
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        boolean isNightMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+        if (isNightMode) {
+            binding.scrollView.setBackgroundColor(getResources().getColor(R.color.primary_back2));
+            binding.fraName.setBackgroundColor(getResources().getColor(R.color.primary_back2));
+        }
         binding.view2.setBackgroundColor(R.color.black);
         binding.view3.setBackgroundColor(R.color.black);
         return root;

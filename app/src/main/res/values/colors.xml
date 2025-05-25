@@ -14,6 +14,8 @@
     <color name="primary_light">#D1C4E9</color>
     <color name="accent">#D5C4ED</color>
     <color name="primary_text">#8C8181</color>
+    <color name="primary_back2">#323232</color>
+
     <color name="backg">#CCA4A4</color>
 
     <color name="secondary_text">#727272</color>

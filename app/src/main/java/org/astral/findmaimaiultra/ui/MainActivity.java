@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.nfc.NdefMessage;
@@ -63,10 +64,27 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
         super.onCreate(savedInstanceState);
         SharedPreferences preferences = getSharedPreferences("setting", MODE_PRIVATE);
         String selectedTheme = preferences.getString("selected_theme", "Theme.FindMaimaiUltra");
+        // Check if the system is in night mode
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        boolean isNightMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
 
+// If the theme is gray and night mode is active, switch to white theme
+        if ("Theme.FindMaimaiUltra.Gray".equals(selectedTheme) && isNightMode) {
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("selected_theme", "Theme.FindMaimaiUltra.White");
+            editor.apply();
+            recreate(); // Recreate the activity to apply the new theme
+        }else if ("Theme.FindMaimaiUltra.White".equals(selectedTheme) && !isNightMode) {
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("selected_theme", "Theme.FindMaimaiUltra.Gray");
+            editor.apply();
+            recreate(); // Recreate the activity to apply the new theme
+        }
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if (nfcAdapter == null) {
-            Snackbar.make(findViewById(R.id.nav_host_fragment_content_main), "NFC 不可用", Snackbar.LENGTH_LONG).show();
+            //使用根对象
+            Toast.makeText(this, "NFC 不可用", Toast.LENGTH_LONG).show();
+            //Snackbar.make(binding.getRoot() , "NFC 不可用", Snackbar.LENGTH_LONG).show();
             //finish();
             //return;
         }

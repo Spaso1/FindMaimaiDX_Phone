@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Address;
@@ -126,7 +127,11 @@ public class HomeFragment extends Fragment {
             String savedData = shoucang.getString("key_name", "default_value");
             // 使用 savedData
         }
-
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        boolean isNightMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+        if (isNightMode) {
+            recyclerView.setBackgroundColor(getResources().getColor(R.color.primary_back2));
+        }
         if (settingProperties2.getString("image_uri", null) != null ) {
             try {
                 File backgroundFile =FileUtils.getBackground(requireContext(), "background.jpg");
