@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.*;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -130,7 +131,11 @@ public class PageActivity extends AppCompatActivity {
         t2.setText("国机 " + num);
         SharedPreferences preferences = getSharedPreferences("setting", MODE_PRIVATE);
         String selectedTheme = preferences.getString("selected_theme", "Theme.FindMaimaiUltra");
-
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        boolean isNightMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+        if (isNightMode) {
+            findViewById(R.id.background).setBackgroundColor(getResources().getColor(R.color.primary_back2));
+        }
         if (selectedTheme.contains("Pink")) {
             //  全部设置颜色
             textView.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
