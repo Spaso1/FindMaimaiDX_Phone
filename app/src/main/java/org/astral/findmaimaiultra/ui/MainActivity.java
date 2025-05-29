@@ -2,12 +2,14 @@ package org.astral.findmaimaiultra.ui;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -21,6 +23,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.widget.*;
+import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.*;
+import com.baidu.mapapi.model.LatLng;
 import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -50,6 +55,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
+import static org.astral.findmaimaiultra.ui.home.HomeFragment.x;
+import static org.astral.findmaimaiultra.ui.home.HomeFragment.y;
 
 public class MainActivity extends AppCompatActivity implements ImagePickerListener {
 
@@ -252,8 +259,92 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
 
         return false;
     }
+    private LatLng selectedLatLng = null;
 
     private void updatePlace() {
+        SDKInitializer.setAgreePrivacy(getApplicationContext(), true);
+        SDKInitializer.initialize(getApplicationContext());
+
+        Dialog mapDialog = new Dialog(this);
+        mapDialog.setContentView(R.layout.dialog_map); // Use a custom layout for the map dialog
+        mapDialog.setTitle("选择位置");
+
+        // Get the MapView from the dialog layout
+        MapView mapView = mapDialog.findViewById(R.id.mapView);
+        BaiduMap baiduMap = mapView.getMap();
+
+        // Set initial map status (e.g., center on Beijing)
+        LatLng initialLatLng = new LatLng(Double.parseDouble(y), Double.parseDouble(x)); // Beijing coordinates
+        baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLngZoom(initialLatLng, 13));
+        Snackbar.make(mapView, "请点击地图选择机厅位置", Snackbar.LENGTH_LONG).show();
+        // Add a marker when the user clicks on the map
+        baiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                baiduMap.clear(); // Clear previous markers
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 300, 130, true);
+                BitmapDescriptor descriptor = BitmapDescriptorFactory.fromBitmap(scaledBitmap);
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(latLng)
+                        .title("机厅位置")
+                        .icon(descriptor);
+                baiduMap.addOverlay(markerOptions);
+
+                // Save the selected location
+                selectedLatLng = latLng;
+
+                Snackbar.make(mapView, "已选择位置: " + latLng.latitude + ", " + latLng.longitude, Snackbar.LENGTH_LONG)
+                        .setAction("确定", v -> {
+                            // Optional: Handle the action if needed
+                            updatePlace2("",latLng.longitude, latLng.latitude);
+
+                            mapDialog.dismiss();
+                        }).show();
+            }
+
+            @Override
+            public void onMapPoiClick(MapPoi mapPoi) {
+                baiduMap.clear(); // Clear previous markers
+                LatLng latLng = mapPoi.getPosition();
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 300, 130, true);
+                BitmapDescriptor descriptor = BitmapDescriptorFactory.fromBitmap(scaledBitmap);
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(latLng)
+                        .title("机厅位置")
+                        .icon(descriptor);
+                baiduMap.addOverlay(markerOptions);
+
+                // Save the selected location
+                selectedLatLng = latLng;
+
+                Snackbar.make(mapView, "已选择位置: " + latLng.latitude + ", " + latLng.longitude, Snackbar.LENGTH_LONG)
+                        .setAction("确定", v -> {
+                            // Optional: Handle the action if needed
+                            updatePlace2(mapPoi.getName(),latLng.longitude, latLng.latitude);
+
+                            mapDialog.dismiss();
+                        }).show();
+            }
+        });
+
+        // Add a confirm button to the dialog
+        Button confirmButton = mapDialog.findViewById(R.id.confirmButton);
+        confirmButton.setOnClickListener(v -> {
+            if (selectedLatLng != null) {
+                // Handle the selected location (e.g., save it or update the UI)
+                Toast.makeText(this, "选定位置: " + selectedLatLng.latitude + ", " + selectedLatLng.longitude, Toast.LENGTH_SHORT).show();
+                mapDialog.dismiss();
+            } else {
+                Toast.makeText(this, "请先选择一个位置", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Show the dialog
+        mapDialog.show();
+    }
+    private void updatePlace2(String a,Double x,Double y) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -300,25 +391,9 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
         textAddressLabel.setText("地址:");
         EditText textAddress = new EditText(this);
         textAddress.setHint("请输入地址");
+        textAddress.setText(a);
         layout.addView(textAddressLabel);
         layout.addView(textAddress);
-
-// 创建经度输入框及其标签
-        TextView textXLabel = new TextView(this);
-        textXLabel.setText("经度:");
-        EditText textX = new EditText(this);
-        textX.setHint("请输入经度");
-        layout.addView(textXLabel);
-        layout.addView(textX);
-
-// 创建纬度输入框及其标签
-        TextView textYLabel = new TextView(this);
-        textYLabel.setText("纬度:");
-        EditText textY = new EditText(this);
-        textY.setHint("请输入纬度");
-        layout.addView(textYLabel);
-        layout.addView(textY);
-
 // 创建国机数量输入框及其标签
         TextView textNumLabel = new TextView(this);
         textNumLabel.setText("国机数量:");
@@ -354,9 +429,10 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
                     place.setProvince(textProvince.getText().toString());
                     place.setCity(textCity.getText().toString());
                     place.setArea(textArea.getText().toString());
+                    //保留6位小数Double
+                    place.setX(Double.parseDouble(String.format("%.6f", x)));
+                    place.setY(Double.parseDouble(String.format("%.6f", y)));
                     place.setAddress(textAddress.getText().toString());
-                    place.setX(Double.parseDouble(textX.getText().toString()));
-                    place.setY(Double.parseDouble(textY.getText().toString()));
                     place.setNum(Integer.parseInt(textNum.getText().toString()));
                     int num2 = 0;
                     try {
@@ -367,6 +443,8 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
                     place.setNumJ(num2);
                     place.setIsUse(Integer.parseInt(textIsUse.getText().toString()));
                     // 调用 sendUpdateNum 方法上传更新
+
+                    Log.d("SettingActivity", "更新店铺信息: " + place.toString());
                     addPlace(place);
                 })
                 .setNegativeButton("取消", null)
@@ -374,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
 
     }
     private void addPlace(Place place) {
-        String url = "http://mai.godserver.cn:11451/api/mai/v1/place";
+        String url = "https://mais.godserver.cn/api/mai/v1/place";
         String body = new Gson().toJson(place,Place.class);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), body);
         Request request = new Request.Builder()
@@ -396,7 +474,10 @@ public class MainActivity extends AppCompatActivity implements ImagePickerListen
                         Toast.makeText(MainActivity.this, "添加成功", Toast.LENGTH_SHORT).show();
                     });
                 }else {
-                    Toast.makeText(MainActivity.this, "添加失败", Toast.LENGTH_SHORT).show();
+                    runOnUiThread(() -> {
+                        Log.e("SettingActivity", "添加失败: " + response.message());
+                        Toast.makeText(MainActivity.this, "添加失败", Toast.LENGTH_SHORT).show();
+                    });
                 }
             }
         });

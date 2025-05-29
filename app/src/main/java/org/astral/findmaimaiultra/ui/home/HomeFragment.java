@@ -68,8 +68,8 @@ public class HomeFragment extends Fragment {
     private Handler handler = new Handler(Looper.getMainLooper());
     private LocationManager locationManager;
     private String tot;
-    private String x;
-    private String y;
+    public static String x;
+    public static String y;
     private PlaceAdapter adapter;
     public static List<Market> marketList = new ArrayList<>();
     private Context context;

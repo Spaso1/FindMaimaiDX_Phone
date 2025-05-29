@@ -9,6 +9,30 @@ public class Place implements Parcelable {
     private String name;
     private String province;
     private String city;
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("Place{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", province='").append(province).append('\'');
+        sb.append(", city='").append(city).append('\'');
+        sb.append(", area='").append(area).append('\'');
+        sb.append(", address='").append(address).append('\'');
+        sb.append(", isUse=").append(isUse);
+        sb.append(", x=").append(x);
+        sb.append(", y=").append(y);
+        sb.append(", count=").append(count);
+        sb.append(", good=").append(good);
+        sb.append(", bad=").append(bad);
+        sb.append(", num=").append(num);
+        sb.append(", numJ=").append(numJ);
+        sb.append(", meituan_link='").append(meituan_link).append('\'');
+        sb.append(", douyin_link='").append(douyin_link).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+
     private String area;
     private String address;
     private int isUse;
