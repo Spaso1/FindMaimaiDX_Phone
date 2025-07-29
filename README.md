@@ -1,3 +1,6 @@
+# 好啦,这个为爱发电的项目也接近尾声了...
+后续的更新以及官方权限将会由用户 findmaimai@163.com 控制,这个项目的git就存档啦
+
 # FindMaimaiUltra
 
 FindMaimaiUltra 是一个 Android 应用程序，用于查询和展示 Maimai（舞萌）游戏的成绩数据。它提供了丰富的功能，包括成绩查询、歌曲成绩展示、地图功能、搜索和排序功能等。
