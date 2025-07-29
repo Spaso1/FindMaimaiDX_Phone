@@ -57,6 +57,7 @@
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchBeta1"
+                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/textcolorPrimary"
@@ -107,6 +108,8 @@
                     android:layout_marginTop="16dp"/>
 
             <com.google.android.material.textfield.TextInputLayout
+                    android:visibility="gone"
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingTop="16dp"
@@ -124,6 +127,8 @@
 
 
             <com.google.android.material.textfield.TextInputLayout
+                    android:visibility="gone"
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingTop="16dp"
@@ -138,6 +143,8 @@
 
             </com.google.android.material.textfield.TextInputLayout>
             <com.google.android.material.textfield.TextInputLayout
+                    android:visibility="gone"
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingTop="16dp"
@@ -263,6 +270,7 @@
             <TextView android:layout_width="wrap_content"         android:textColor="@color/textcolorPrimary"
                       android:layout_height="wrap_content" android:textSize="16dp" android:id="@+id/vits" />
             <WebView android:layout_width="match_parent" android:layout_height="600dp" android:id="@+id/develop"
+                     android:visibility="gone"
                      tools:ignore="WebViewLayout"/>
 
         </LinearLayout>

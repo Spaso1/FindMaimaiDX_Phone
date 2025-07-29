@@ -19,5 +19,8 @@
         <item
                 android:id="@+id/nav_slideshow"
                 android:title="@string/menu_slideshow"/>
+        <item
+                android:id="@+id/nav_earth"
+                android:title="@string/menu_earth"/>
     </group>
 </menu>

@@ -21,14 +21,19 @@
             android:name="org.astral.findmaimaiultra.ui.music.MusicFragment"
             android:label="@string/menu_music"
             tools:layout="@layout/fragment_music"/>
-    <fragment
-            android:id="@+id/nav_pixiv"
-            android:name="org.astral.findmaimaiultra.ui.pixiv.PixivFragment"
-            android:label="@string/menu_pixiv"
-            tools:layout="@layout/fragment_pixiv"/>
+<!--    <fragment-->
+<!--            android:id="@+id/nav_pixiv"-->
+<!--            android:name="org.astral.findmaimaiultra.ui.pixiv.PixivFragment"-->
+<!--            android:label="@string/menu_pixiv"-->
+<!--            tools:layout="@layout/fragment_pixiv"/>-->
     <fragment
             android:id="@+id/nav_slideshow"
             android:name="org.astral.findmaimaiultra.ui.slideshow.SlideshowFragment"
             android:label="@string/menu_slideshow"
             tools:layout="@layout/fragment_slideshow"/>
+    <fragment
+            android:id="@+id/nav_earth"
+            android:name="org.astral.findmaimaiultra.ui.earth.EarthFragment"
+            android:label="@string/menu_earth"
+            tools:layout="@layout/fragment_webview"/>
 </navigation>

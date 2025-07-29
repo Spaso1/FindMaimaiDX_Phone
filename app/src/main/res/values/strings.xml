@@ -40,6 +40,7 @@
     <string name="nav_header_subtitle">Reisa</string>
     <string name="action_settings">设置</string>
     <string name="menu_pixiv">Engine</string>
+    <string name="menu_earth">全球地图</string>
 
 
 </resources>
